@@ -158,6 +158,10 @@
           <i data-lucide="briefcase" class="w-4 h-4"></i>
           <span>Portofolio & Kinerja</span>
         </button>
+        <button onclick="switchTab('dividends')" id="tab-btn-dividends" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all">
+          <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+          <span>Dividen & Proyeksi</span>
+        </button>
         <button onclick="switchTab('mutations')" id="tab-btn-mutations" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all">
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
           <span>Mutasi Dana</span>
@@ -382,6 +386,200 @@
 
           <div id="dividend-list-container" class="flex-1 overflow-y-auto max-h-64 space-y-2.5 pr-1">
             <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1B: DIVIDEN & PROYEKSI (ESTIMASI BULANAN/TAHUNAN & BREAKDOWN)     -->
+    <!-- ===================================================================== -->
+    <section id="tab-panel-dividends" class="tab-panel hidden space-y-6">
+
+      <!-- Hero Summary Card: Perjalanan Dividen Saya -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white border border-slate-800 p-5 sm:p-6 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-16 -bottom-16 w-64 h-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <!-- Left: Rata-rata Dividen / Bulan -->
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-semibold">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Perjalanan Dividen & Passive Income</span>
+            </div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 pt-1">
+              Rata-Rata Estimasi Dividen / Bulan
+            </div>
+            <div id="div-hero-monthly-avg" class="text-3xl sm:text-4xl font-extrabold font-mono tabular-nums tracking-tight text-amber-400">
+              Rp 0
+            </div>
+            <p class="text-xs text-slate-400">
+              Proyeksi otomatis berdasarkan kepemilikan lembar saham saat ini & estimasi DPS tahunan per emiten.
+            </p>
+          </div>
+
+          <!-- Right: 6 Sub-Metrics Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-4 lg:min-w-[540px]">
+            <div>
+              <div class="text-[11px] text-slate-400">Estimasi Dividen Setahun</div>
+              <div id="div-hero-annual-est" class="text-sm sm:text-base font-bold font-mono tabular-nums text-white mt-0.5">Rp 0</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Yield on Cost (YoC)</div>
+              <div id="div-hero-yoc" class="text-sm sm:text-base font-bold font-mono tabular-nums text-amber-400 mt-0.5">0,00%</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Dividend Yield (Market)</div>
+              <div id="div-hero-mkt-yield" class="text-sm sm:text-base font-bold font-mono tabular-nums text-emerald-400 mt-0.5">0,00%</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Nilai Portofolio Saham</div>
+              <div id="div-hero-stock-val" class="text-sm sm:text-base font-bold font-mono tabular-nums text-slate-200 mt-0.5">Rp 0</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Modal Saham (Cost)</div>
+              <div id="div-hero-stock-cost" class="text-sm sm:text-base font-bold font-mono tabular-nums text-slate-200 mt-0.5">Rp 0</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Realisasi Dividen (Tercatat)</div>
+              <div id="div-hero-actual-total" class="text-sm sm:text-base font-bold font-mono tabular-nums text-indigo-400 mt-0.5">Rp 0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row: Monthly Stacked Estimation & Breakdown by Emiten -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Stacked Bar Chart: Estimasi Dividen Tiap Bulan (Jan - Des by Emiten) -->
+        <div class="lg:col-span-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Estimasi Dividen Tiap Bulan (Jan – Des)</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  Breakdown per Emiten
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Distribusi jadwal pencairan dividen Interim & Final sepanjang tahun berdasarkan porsi tiap emiten
+              </p>
+            </div>
+            <button
+              onclick="openDividendModal()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition-colors"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Catat Dividen Cair</span>
+            </button>
+          </div>
+          <div class="relative h-80 w-full">
+            <canvas id="chart-div-monthly-est"></canvas>
+          </div>
+        </div>
+
+        <!-- Doughnut Chart: Kontribusi Dividen Tahunan per Emiten -->
+        <div class="lg:col-span-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col">
+          <div class="mb-3">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Porsi Dividen per Emiten</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Kontribusi masing-masing saham terhadap total dividen tahunan</p>
+          </div>
+          <div class="relative h-56 w-full my-auto">
+            <canvas id="chart-div-emiten-share"></canvas>
+          </div>
+          <div id="div-emiten-share-legend" class="mt-3 space-y-1.5 max-h-28 overflow-y-auto pr-1 text-xs">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Table: Breakdown Estimasi & Jadwal Dividen per Emiten -->
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Breakdown Estimasi & Jadwal Dividen per Emiten</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Klik <strong>Atur DPS</strong> untuk menyesuaikan estimasi Dividen/Lembar (Rp) dan bulan pencairan tiap emiten</p>
+          </div>
+          <div class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            Total Estimasi Tahunan: <strong id="div-table-total-badge">Rp 0</strong>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <th class="py-3.5 px-4">Emiten</th>
+                <th class="py-3.5 px-3 text-right">Lembar</th>
+                <th class="py-3.5 px-3 text-right">Est. DPS / Thn</th>
+                <th class="py-3.5 px-3">Jadwal Cair (Bulan)</th>
+                <th class="py-3.5 px-3 text-right">Estimasi / Tahun</th>
+                <th class="py-3.5 px-3 text-right">Sudah Cair (Aktual)</th>
+                <th class="py-3.5 px-3 text-right">Rata-rata / Bln</th>
+                <th class="py-3.5 px-3 text-right">Yield on Cost</th>
+                <th class="py-3.5 px-3 text-right">Kontribusi</th>
+                <th class="py-3.5 px-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="div-breakdown-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/70 text-xs sm:text-sm">
+              <!-- Populated via JS -->
+            </tbody>
+            <tfoot id="div-breakdown-table-foot" class="bg-slate-50/90 dark:bg-slate-950/80 border-t-2 border-slate-200 dark:border-slate-800 font-semibold text-xs sm:text-sm">
+              <!-- Populated via JS -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Realisasi Dividen Aktual (Grafik Bulanan/Tahunan + Tabel Riwayat) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Chart: Realisasi Dividen Aktual -->
+        <div class="lg:col-span-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Grafik Realisasi Dividen Tunai (Aktual)</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Dividen bersih yang sudah cair ke RDN & mendongkrak NAV/Unit</p>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+              <button type="button" id="div-actual-mode-monthly" onclick="setDivActualChartMode('MONTHLY')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white transition-all">
+                Bulanan
+              </button>
+              <button type="button" id="div-actual-mode-annual" onclick="setDivActualChartMode('ANNUAL')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-400 transition-all">
+                Tahunan
+              </button>
+            </div>
+          </div>
+          <div class="relative h-64 w-full my-auto">
+            <canvas id="chart-div-actual-history"></canvas>
+          </div>
+        </div>
+
+        <!-- Table: Riwayat Realisasi Dividen Tunai -->
+        <div class="lg:col-span-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          <div class="px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Log Realisasi Dividen Cair</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Otomatis menambah Saldo Kas RDN & menaikkan Harga Unit</p>
+            </div>
+            <select id="div-history-filter-ticker" onchange="renderDividendsTab()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <option value="ALL">Semua Emiten</option>
+            </select>
+          </div>
+          <div class="overflow-x-auto flex-1 max-h-72">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 font-semibold">
+                  <th class="py-2.5 px-4">Tanggal</th>
+                  <th class="py-2.5 px-3">Emiten</th>
+                  <th class="py-2.5 px-3 text-right">Dividen Bersih</th>
+                  <th class="py-2.5 px-3">Keterangan</th>
+                  <th class="py-2.5 px-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="div-actual-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/70">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1160,12 +1358,16 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="div-ticker" required placeholder="BBRI" oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="div-ticker" list="div-ticker-options" required placeholder="BBRI" oninput="this.value = this.value.toUpperCase(); onDivTickerInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <datalist id="div-ticker-options"></datalist>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Cair</label>
             <input type="date" id="div-date" required class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
+        </div>
+        <div id="div-holding-hint" class="hidden px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between gap-2">
+          <!-- Populated via JS when matching holding ticker -->
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Nominal Dividen Bersih (Rp)</label>
@@ -1175,9 +1377,119 @@
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan (Opsional)</label>
           <input type="text" id="div-note" placeholder="Dividen Final / Interim" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
+        <label class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
+          <input type="checkbox" id="div-sync-schedule" checked class="w-4 h-4 mt-0.5 rounded accent-indigo-600" />
+          <span>Otomatis hitung & simpan estimasi DPS + bulan cair ke grafik proyeksi jika emiten ini belum memiliki jadwal dividen</span>
+        </label>
         <div class="flex justify-end gap-2 pt-1">
           <button type="button" onclick="closeModal('modal-dividend')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white">Simpan Dividen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3B: Atur Estimasi DPS & Jadwal Pencairan Dividen per Emiten -->
+  <div id="modal-dividend-schedule" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Atur Proyeksi Dividen: <span id="sched-ticker-label" class="text-amber-500 font-mono"></span></h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Estimasi Dividen per Lembar (DPS) & Bulan Pembayaran</p>
+        </div>
+        <button onclick="closeModal('modal-dividend-schedule')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveDividendSchedule(event)" class="p-5 space-y-4">
+        <input type="hidden" id="sched-ticker-input" />
+
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
+          <div>
+            <span class="text-slate-500 block">Kepemilikan Saat Ini:</span>
+            <strong id="sched-owned-shares" class="font-mono">0 lembar</strong>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-500 block">Avg. Price:</span>
+            <strong id="sched-owned-avg" class="font-mono">Rp 0</strong>
+          </div>
+        </div>
+
+        <!-- Dividen Termin 1 (Final) -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
+          <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Pembayaran 1 (Dividen Final / Utama)</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
+              <select id="sched-month-1" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3" selected>April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS (Rp / Lembar)</label>
+              <input type="number" id="sched-dps-1" min="0" step="any" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Dividen Termin 2 (Interim - Opsional) -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
+          <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400">Pembayaran 2 (Dividen Interim — Opsional)</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
+              <select id="sched-month-2" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11" selected>Desember</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS Interim (Rp / Lbr)</label>
+              <input type="number" id="sched-dps-2" min="0" step="any" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Preview Estimasi -->
+        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-300">Total DPS Setahun:</span>
+            <strong id="sched-prev-dps" class="font-mono text-slate-900 dark:text-white">Rp 0 / lbr</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-300">Estimasi Dividen Setahun:</span>
+            <strong id="sched-prev-annual" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-300">Proyeksi Yield on Cost:</span>
+            <strong id="sched-prev-yoc" class="font-mono text-emerald-600 dark:text-emerald-400">0,00%</strong>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="closeModal('modal-dividend-schedule')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950">Simpan Proyeksi</button>
         </div>
       </form>
     </div>
@@ -1456,6 +1768,15 @@
           { id: "m-09", date: "2026-09-15", month: "Sep", year: 2026, type: "TOPUP", amount: 2500000, unitPriceAtTx: 1232.9100, unitsChanged: 2500000 / 1232.9100, note: "Top Up September 2026" },
           { id: "m-10", date: "2026-10-15", month: "Okt", year: 2026, type: "TOPUP", amount: 2500000, unitPriceAtTx: 1128.7092, unitsChanged: 2500000 / 1128.7092, note: "Top Up Oktober 2026" }
         ],
+        dividendSchedules: {
+          BBRI: { payouts: [{ month: 3, dps: 208, label: "Final" }, { month: 0, dps: 135, label: "Interim" }] },
+          BMRI: { payouts: [{ month: 3, dps: 354, label: "Final" }] },
+          TLKM: { payouts: [{ month: 5, dps: 178, label: "Final" }] },
+          BBNI: { payouts: [{ month: 3, dps: 280, label: "Final" }] },
+          INDF: { payouts: [{ month: 6, dps: 267, label: "Final" }] },
+          ASII: { payouts: [{ month: 4, dps: 421, label: "Final" }, { month: 9, dps: 98, label: "Interim" }] },
+          BBCA: { payouts: [{ month: 3, dps: 227.5, label: "Final" }, { month: 11, dps: 50, label: "Interim" }] }
+        },
         dividends: [],
         journal: [],
         monthlyHistory: {
@@ -1507,22 +1828,62 @@
     // Application State
     let state = loadInitialState();
     let activeTab = "portfolio";
+    let divActualChartMode = "MONTHLY";
     let charts = {};
 
-    // Firebase Cloud State
-    let db = null;
+    // Firebase Runtime State
+    const appId = typeof __app_id !== "undefined" ? __app_id : "portfolio-nav-tracker";
     let auth = null;
+    let db = null;
     let currentUser = null;
     let isCloudReady = false;
     let isRemoteUpdate = false;
-    const appId = typeof __app_id !== "undefined" ? __app_id : "portfolio-nav-tracker";
+
+    const EMITEN_PALETTE = [
+      "#38bdf8", // Sky
+      "#a78bfa", // Purple
+      "#34d399", // Emerald
+      "#fbbf24", // Amber
+      "#f472b6", // Pink
+      "#fb923c", // Orange
+      "#2dd4bf", // Teal
+      "#818cf8", // Indigo
+      "#f87171", // Rose
+      "#a3e635"  // Lime
+    ];
+
+    const IDX_DIVIDEND_PRESETS = {
+      ADRO: { payouts: [{ month: 4, dps: 210, label: "Final" }, { month: 0, dps: 165, label: "Interim" }] },
+      PTBA: { payouts: [{ month: 5, dps: 397, label: "Final" }] },
+      ITMG: { payouts: [{ month: 3, dps: 1747, label: "Final" }, { month: 8, dps: 1228, label: "Interim" }] },
+      UNTR: { payouts: [{ month: 4, dps: 1569, label: "Final" }, { month: 9, dps: 667, label: "Interim" }] },
+      BJTM: { payouts: [{ month: 3, dps: 54.4, label: "Final" }] },
+      BJBR: { payouts: [{ month: 3, dps: 95.05, label: "Final" }] },
+      BNGA: { payouts: [{ month: 4, dps: 122.6, label: "Final" }] },
+      NISP: { payouts: [{ month: 3, dps: 72, label: "Final" }] },
+      PGAS: { payouts: [{ month: 5, dps: 148.3, label: "Final" }] },
+      SIDO: { payouts: [{ month: 4, dps: 18, label: "Final" }, { month: 10, dps: 18, label: "Interim" }] },
+      KLBF: { payouts: [{ month: 5, dps: 31, label: "Final" }] },
+      ICBP: { payouts: [{ month: 6, dps: 200, label: "Final" }] },
+      POWR: { payouts: [{ month: 5, dps: 46, label: "Final" }, { month: 11, dps: 27, label: "Interim" }] },
+      SMSM: { payouts: [{ month: 4, dps: 35, label: "Final" }, { month: 10, dps: 70, label: "Interim" }] }
+    };
+
+    function getEmitenColor(ticker, index = 0) {
+      if (!ticker) return EMITEN_PALETTE[index % EMITEN_PALETTE.length];
+      let hash = 0;
+      for (let i = 0; i < ticker.length; i++) {
+        hash = ticker.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return EMITEN_PALETTE[Math.abs(hash + index) % EMITEN_PALETTE.length];
+    }
 
     // =========================================================================
-    // 2. CORE FINANCIAL & IPOT FEE ENGINE (UNIT PENYERTAAN + PMK 131/2024)
+    // 2. CORE NAV / UNIT PENYERTAAN & IPOT FEE ENGINE (PMK NO. 131 TAHUN 2024)
     // =========================================================================
     /**
      * Menghitung rincian biaya transaksi BELI sesuai Trade Confirmation IPOT / Indo Premier
-     * (PMK No. 131 Tahun 2024: DPP = (Broker Fee + Levy Fee) * 11/12, VAT = 12% * DPP)
+     * Default %Fee All-In = 0.19%
      */
     function calculateIPOTBuyFee(tradeAmount, buyFeePct = 0.19) {
       const amount = Math.max(0, Number(tradeAmount) || 0);
@@ -1855,6 +2216,7 @@
         cash: typeof imported.cash === "number" ? imported.cash : def.cash,
         holdings: Array.isArray(imported.holdings) ? imported.holdings : def.holdings,
         mutations: Array.isArray(imported.mutations) ? imported.mutations : def.mutations,
+        dividendSchedules: { ...def.dividendSchedules, ...(imported.dividendSchedules || {}) },
         dividends: Array.isArray(imported.dividends) ? imported.dividends : [],
         journal: Array.isArray(imported.journal) ? imported.journal : [],
         monthlyHistory: imported.monthlyHistory || def.monthlyHistory,
@@ -1870,17 +2232,622 @@
     }
 
     // =========================================================================
-    // 5. RENDERING ALL 5 TABS & CHARTS
+    // 5. RENDERING ALL TABS & CHARTS
     // =========================================================================
     function renderAll() {
       const metrics = computeMetrics();
       renderPortfolioTab(metrics);
+      renderDividendsTab(metrics);
       renderMutationsTab(metrics);
       renderAnalyticsTab(metrics);
       renderJournalTab();
       renderCalculatorTab(metrics);
       lucide.createIcons();
     }
+
+    // --- TAB 1B: DIVIDEN & PROYEKSI ---
+    function computeDividendAnalytics(m) {
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const schedules = state.dividendSchedules || {};
+
+      let totalAnnualEst = 0;
+      let totalActualPaidForHoldings = 0;
+      const monthlyTotals = new Array(12).fill(0);
+
+      const perEmiten = m.holdings.map((h, idx) => {
+        const sched = schedules[h.ticker] || { payouts: [] };
+        const payouts = Array.isArray(sched.payouts) ? sched.payouts : [];
+        const totalDps = payouts.reduce((sum, p) => sum + (Number(p.dps) || 0), 0);
+        const monthlyBreakdown = new Array(12).fill(0);
+
+        payouts.forEach((p) => {
+          const mIdx = Number(p.month);
+          const dps = Number(p.dps) || 0;
+          if (mIdx >= 0 && mIdx < 12 && dps > 0) {
+            const val = h.shares * dps;
+            monthlyBreakdown[mIdx] += val;
+            monthlyTotals[mIdx] += val;
+          }
+        });
+
+        const annualEst = h.shares * totalDps;
+        totalAnnualEst += annualEst;
+        const actualPaid = state.dividends
+          .filter((d) => d.ticker === h.ticker)
+          .reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+        totalActualPaidForHoldings += actualPaid;
+
+        const realizationPct = annualEst > 0 ? (actualPaid / annualEst) * 100 : 0;
+        const monthlyAvg = annualEst / 12;
+        const yoc = h.cost > 0 ? (annualEst / h.cost) * 100 : 0;
+        const mktYield = h.valuation > 0 ? (annualEst / h.valuation) * 100 : 0;
+
+        return {
+          ...h,
+          color: getEmitenColor(h.ticker, idx),
+          payouts,
+          totalDps,
+          monthlyBreakdown,
+          annualEst,
+          actualPaid,
+          realizationPct,
+          monthlyAvg,
+          yoc,
+          mktYield,
+          sharePct: 0
+        };
+      });
+
+      perEmiten.forEach((item) => {
+        item.sharePct = totalAnnualEst > 0 ? (item.annualEst / totalAnnualEst) * 100 : 0;
+      });
+
+      const monthlyAvgTotal = totalAnnualEst / 12;
+      const portfolioYoC = m.totalStockCost > 0 ? (totalAnnualEst / m.totalStockCost) * 100 : 0;
+      const portfolioMktYield = m.totalStockValuation > 0 ? (totalAnnualEst / m.totalStockValuation) * 100 : 0;
+
+      return {
+        monthNames,
+        perEmiten,
+        monthlyTotals,
+        totalAnnualEst,
+        totalActualPaidForHoldings,
+        monthlyAvgTotal,
+        portfolioYoC,
+        portfolioMktYield
+      };
+    }
+
+    window.renderDividendsTab = function (metrics = null) {
+      const m = metrics || computeMetrics();
+      const divData = computeDividendAnalytics(m);
+
+      // Update Hero Card
+      document.getElementById("div-hero-monthly-avg").textContent = formatIDR(divData.monthlyAvgTotal);
+      document.getElementById("div-hero-annual-est").textContent = formatIDR(divData.totalAnnualEst);
+      document.getElementById("div-hero-yoc").textContent = formatNumber(divData.portfolioYoC, 2) + "%";
+      document.getElementById("div-hero-mkt-yield").textContent = formatNumber(divData.portfolioMktYield, 2) + "%";
+      document.getElementById("div-hero-stock-val").textContent = formatIDR(m.totalStockValuation);
+      document.getElementById("div-hero-stock-cost").textContent = formatIDR(m.totalStockCost);
+      document.getElementById("div-hero-actual-total").textContent = formatIDR(m.totalDividends);
+
+      document.getElementById("div-table-total-badge").textContent = formatIDR(divData.totalAnnualEst);
+
+      // Breakdown Table Body
+      const tbody = document.getElementById("div-breakdown-table-body");
+      tbody.innerHTML = divData.perEmiten
+        .map((item) => {
+          const scheduleBadges =
+            item.payouts.filter((p) => Number(p.dps) > 0).length > 0
+              ? item.payouts
+                  .filter((p) => Number(p.dps) > 0)
+                  .map(
+                    (p) =>
+                      `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 mr-1 mb-0.5">
+                        <strong class="text-emerald-600 dark:text-emerald-400">${divData.monthNames[p.month]}</strong>: Rp ${formatNumber(p.dps, 1)}
+                      </span>`
+                  )
+                  .join("")
+              : `<span class="text-xs text-slate-400 italic">Belum diatur</span>`;
+
+          return `
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${item.color}"></span>
+                  <div>
+                    <div class="font-mono font-bold text-slate-900 dark:text-white">${item.ticker}</div>
+                    <div class="text-[11px] text-slate-500 truncate max-w-[130px]">${item.name || "Emiten BEI"}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                ${formatNumber(item.shares, 0)}
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-white">
+                Rp ${formatNumber(item.totalDps, 2)}
+              </td>
+              <td class="py-3 px-3">
+                <div class="flex flex-wrap">${scheduleBadges}</div>
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-amber-600 dark:text-amber-400">
+                ${formatIDR(item.annualEst)}
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums">
+                <div class="font-semibold ${item.actualPaid > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"}">
+                  ${formatIDR(item.actualPaid)}
+                </div>
+                ${
+                  item.annualEst > 0
+                    ? `<div class="text-[10px] ${item.realizationPct >= 100 ? "text-emerald-500 font-bold" : "text-slate-400"}">${formatNumber(item.realizationPct, 0)}% tercapai</div>`
+                    : ""
+                }
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                ${formatIDR(item.monthlyAvg)}
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  ${formatNumber(item.yoc, 2)}%
+                </span>
+              </td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                ${formatNumber(item.sharePct, 1)}%
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <button
+                    onclick="openDividendScheduleModal('${item.ticker}')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 transition-colors"
+                    title="Atur Estimasi DPS & Bulan Cair"
+                  >
+                    Atur DPS
+                  </button>
+                  ${
+                    item.annualEst > 0
+                      ? `<button
+                          onclick="quickRealizeDividend('${item.ticker}', ${Math.round(item.annualEst)})"
+                          class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors"
+                          title="Catat Dividen Cair ke Saldo Kas RDN"
+                        >
+                          Cairkan
+                        </button>`
+                      : ""
+                  }
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      document.getElementById("div-breakdown-table-foot").innerHTML = `
+        <tr class="text-slate-900 dark:text-white bg-slate-100/80 dark:bg-slate-900">
+          <td class="py-3.5 px-4 font-extrabold">TOTAL PROYEKSI DIVIDEN</td>
+          <td class="py-3.5 px-3 text-right font-mono text-xs text-slate-500">${divData.perEmiten.length} Emiten</td>
+          <td class="py-3.5 px-3 text-right font-mono">-</td>
+          <td class="py-3.5 px-3 text-xs text-slate-500">12 Bulan (Jan – Des)</td>
+          <td class="py-3.5 px-3 text-right font-mono text-amber-600 dark:text-amber-400">${formatIDR(divData.totalAnnualEst)}</td>
+          <td class="py-3.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">${formatIDR(m.totalDividends)}</td>
+          <td class="py-3.5 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">${formatIDR(divData.monthlyAvgTotal)}</td>
+          <td class="py-3.5 px-3 text-right font-mono">${formatNumber(divData.portfolioYoC, 2)}%</td>
+          <td class="py-3.5 px-3 text-right font-mono">100,0%</td>
+          <td class="py-3.5 px-4 text-center text-[11px] text-slate-400">YoC Portfolio</td>
+        </tr>
+      `;
+
+      // Render Legend for Doughnut
+      const legendEl = document.getElementById("div-emiten-share-legend");
+      legendEl.innerHTML = divData.perEmiten
+        .slice()
+        .sort((a, b) => b.annualEst - a.annualEst)
+        .map(
+          (item) => `
+          <div class="flex items-center justify-between py-1 px-2 rounded-lg bg-slate-50 dark:bg-slate-950/70">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${item.color}"></span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">${item.ticker}</span>
+            </div>
+            <div class="font-mono text-slate-600 dark:text-slate-300">
+              <span>${formatCompactIDR(item.annualEst)}</span>
+              <span class="text-slate-400 ml-1">(${formatNumber(item.sharePct, 1)}%)</span>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+
+      // Render Actual Dividend History Table & Filter
+      const filterSelect = document.getElementById("div-history-filter-ticker");
+      const currentFilter = filterSelect.value || "ALL";
+      const uniqueTickers = [...new Set(state.dividends.map((d) => d.ticker))];
+      filterSelect.innerHTML =
+        `<option value="ALL">Semua Emiten (${state.dividends.length})</option>` +
+        uniqueTickers.map((t) => `<option value="${t}">${t}</option>`).join("");
+      filterSelect.value = uniqueTickers.includes(currentFilter) ? currentFilter : "ALL";
+
+      const filteredDivs =
+        filterSelect.value === "ALL"
+          ? state.dividends
+          : state.dividends.filter((d) => d.ticker === filterSelect.value);
+
+      const actualTbody = document.getElementById("div-actual-table-body");
+      if (filteredDivs.length === 0) {
+        actualTbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-slate-400">
+              Belum ada dividen tunai aktual yang dicatat. Klik <strong>Catat Dividen Cair</strong> atau tombol <strong>Cairkan</strong> di tabel atas saat dividen masuk ke RDN.
+            </td>
+          </tr>
+        `;
+      } else {
+        actualTbody.innerHTML = filteredDivs
+          .slice()
+          .reverse()
+          .map(
+            (d) => `
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+              <td class="py-2.5 px-4 font-mono text-slate-500">${d.date}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-mono font-bold">${d.ticker}</span>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">+${formatIDR(d.amount)}</td>
+              <td class="py-2.5 px-3 text-slate-500">${d.note || "Dividen Tunai"}</td>
+              <td class="py-2.5 px-4 text-center">
+                <button onclick="deleteDividend('${d.id}')" class="p-1 text-slate-400 hover:text-rose-500 rounded" title="Hapus">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </td>
+            </tr>
+          `
+          )
+          .join("");
+      }
+
+      // Render Charts
+      renderDividendMonthlyEstChart(divData);
+      renderDividendEmitenDoughnut(divData);
+      renderDividendActualChart(divData);
+    };
+
+    function formatShortLabelID(val) {
+      if (!val || val <= 0) return "";
+      if (val >= 1e6) {
+        const jt = val / 1e6;
+        return (jt >= 10 ? jt.toFixed(1) : jt.toFixed(2)).replace(".", ",") + " jt";
+      }
+      if (val >= 1e3) {
+        const rb = val / 1e3;
+        return (rb >= 100 ? Math.round(rb) : rb.toFixed(1)).toString().replace(".", ",") + " rb";
+      }
+      return Math.round(val).toString();
+    }
+
+    function renderDividendMonthlyEstChart(divData) {
+      const ctx = document.getElementById("chart-div-monthly-est");
+      if (!ctx) return;
+
+      const isDark = document.documentElement.classList.contains("dark");
+      const gridColor = isDark ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)";
+      const textColor = isDark ? "#94a3b8" : "#475569";
+      const labelColor = isDark ? "#f8fafc" : "#0f172a";
+
+      const datasets = divData.perEmiten
+        .filter((item) => item.annualEst > 0)
+        .map((item) => ({
+          label: item.ticker,
+          data: item.monthlyBreakdown,
+          backgroundColor: item.color,
+          borderRadius: 4,
+          borderSkipped: false
+        }));
+
+      const stackTotalsPlugin = {
+        id: "stackTotalsPlugin",
+        afterDatasetsDraw(chart) {
+          const { ctx: c, scales } = chart;
+          if (!scales.x || !scales.y) return;
+          c.save();
+          c.font = "600 10px 'JetBrains Mono', monospace";
+          c.fillStyle = labelColor;
+          c.textAlign = "center";
+          c.textBaseline = "bottom";
+
+          divData.monthlyTotals.forEach((total, i) => {
+            if (total > 0) {
+              const xPos = scales.x.getPixelForValue(i);
+              const yPos = scales.y.getPixelForValue(total);
+              c.fillText(formatShortLabelID(total), xPos, yPos - 5);
+            }
+          });
+          c.restore();
+        }
+      };
+
+      const maxMonthVal = Math.max(...divData.monthlyTotals, 100000);
+
+      if (charts.divMonthlyEst) charts.divMonthlyEst.destroy();
+      charts.divMonthlyEst = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: divData.monthNames,
+          datasets
+        },
+        plugins: [stackTotalsPlugin],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: { top: 22 }
+          },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: textColor,
+                boxWidth: 10,
+                boxHeight: 10,
+                usePointStyle: true,
+                pointStyle: "circle",
+                font: { family: "JetBrains Mono", size: 11 }
+              }
+            },
+            tooltip: {
+              mode: "index",
+              intersect: false,
+              callbacks: {
+                label: (c) => {
+                  if (!c.parsed.y) return null;
+                  return ` ${c.dataset.label}: ${formatIDR(c.parsed.y)}`;
+                },
+                footer: (items) => {
+                  const sum = items.reduce((acc, it) => acc + (it.parsed.y || 0), 0);
+                  return sum > 0 ? `Total Bulan Ini: ${formatIDR(sum)}` : "";
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { color: textColor, font: { family: "Inter", size: 11, weight: "600" } }
+            },
+            y: {
+              stacked: true,
+              suggestedMax: maxMonthVal * 1.15,
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                font: { family: "JetBrains Mono", size: 10 },
+                callback: (v) => formatShortLabelID(v) || "0"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderDividendEmitenDoughnut(divData) {
+      const ctx = document.getElementById("chart-div-emiten-share");
+      if (!ctx) return;
+
+      const activeItems = divData.perEmiten.filter((i) => i.annualEst > 0);
+      if (charts.divEmitenShare) charts.divEmitenShare.destroy();
+
+      charts.divEmitenShare = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: activeItems.length > 0 ? activeItems.map((i) => i.ticker) : ["Belum ada proyeksi"],
+          datasets: [
+            {
+              data: activeItems.length > 0 ? activeItems.map((i) => i.annualEst) : [1],
+              backgroundColor: activeItems.length > 0 ? activeItems.map((i) => i.color) : ["rgba(148, 163, 184, 0.2)"],
+              borderWidth: 0,
+              hoverOffset: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "66%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (c) => {
+                  if (activeItems.length === 0) return " Atur DPS emiten untuk melihat porsi";
+                  const item = activeItems[c.dataIndex];
+                  return ` ${item.ticker}: ${formatIDR(item.annualEst)} (${formatNumber(item.sharePct, 1)}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderDividendActualChart(divData) {
+      const ctx = document.getElementById("chart-div-actual-history");
+      if (!ctx) return;
+
+      const isDark = document.documentElement.classList.contains("dark");
+      const gridColor = isDark ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.06)";
+      const textColor = isDark ? "#94a3b8" : "#475569";
+
+      const allTickers = [...new Set([...state.holdings.map((h) => h.ticker), ...state.dividends.map((d) => d.ticker)])];
+      let labels = [];
+      let datasets = [];
+
+      if (divActualChartMode === "MONTHLY") {
+        labels = divData.monthNames;
+        datasets = allTickers
+          .map((ticker, idx) => {
+            const monthlyArr = new Array(12).fill(0);
+            state.dividends.forEach((d) => {
+              if (d.ticker === ticker) {
+                const dt = new Date(d.date);
+                if (!isNaN(dt.getTime())) {
+                  monthlyArr[dt.getMonth()] += Number(d.amount) || 0;
+                }
+              }
+            });
+            return {
+              label: ticker,
+              data: monthlyArr,
+              backgroundColor: getEmitenColor(ticker, idx),
+              borderRadius: 4
+            };
+          })
+          .filter((ds) => ds.data.some((v) => v > 0));
+      } else {
+        const yearsSet = new Set(["2026"]);
+        state.dividends.forEach((d) => {
+          const dt = new Date(d.date);
+          if (!isNaN(dt.getTime())) yearsSet.add(String(dt.getFullYear()));
+        });
+        labels = [...yearsSet].sort();
+        datasets = allTickers
+          .map((ticker, idx) => {
+            const yearArr = labels.map((yr) =>
+              state.dividends
+                .filter((d) => d.ticker === ticker && String(new Date(d.date).getFullYear()) === yr)
+                .reduce((sum, d) => sum + (Number(d.amount) || 0), 0)
+            );
+            return {
+              label: ticker,
+              data: yearArr,
+              backgroundColor: getEmitenColor(ticker, idx),
+              borderRadius: 6
+            };
+          })
+          .filter((ds) => ds.data.some((v) => v > 0));
+      }
+
+      if (datasets.length === 0) {
+        datasets = [
+          {
+            label: "Belum ada realisasi",
+            data: labels.map(() => 0),
+            backgroundColor: "rgba(99, 102, 241, 0.3)"
+          }
+        ];
+      }
+
+      if (charts.divActualHistory) charts.divActualHistory.destroy();
+      charts.divActualHistory = new Chart(ctx, {
+        type: "bar",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: textColor, boxWidth: 10, font: { family: "JetBrains Mono", size: 10 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (c) => ` ${c.dataset.label}: ${formatIDR(c.parsed.y)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { color: textColor, font: { family: "Inter", size: 11 } }
+            },
+            y: {
+              stacked: true,
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                font: { family: "JetBrains Mono", size: 10 },
+                callback: (v) => formatShortLabelID(v) || "0"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    window.setDivActualChartMode = function (mode) {
+      divActualChartMode = mode;
+      const mBtn = document.getElementById("div-actual-mode-monthly");
+      const aBtn = document.getElementById("div-actual-mode-annual");
+      if (mode === "MONTHLY") {
+        mBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white transition-all";
+        aBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-400 transition-all";
+      } else {
+        aBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white transition-all";
+        mBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-400 transition-all";
+      }
+      renderDividendsTab();
+    };
+
+    window.openDividendScheduleModal = function (ticker) {
+      const h = state.holdings.find((x) => x.ticker === ticker);
+      if (!h) return;
+      const sched = (state.dividendSchedules && state.dividendSchedules[ticker]) || { payouts: [] };
+      const p1 = sched.payouts[0] || { month: 3, dps: 0 };
+      const p2 = sched.payouts[1] || { month: 11, dps: 0 };
+
+      document.getElementById("sched-ticker-input").value = ticker;
+      document.getElementById("sched-ticker-label").textContent = ticker;
+      document.getElementById("sched-owned-shares").textContent = `${formatNumber(h.shares, 0)} lembar`;
+      document.getElementById("sched-owned-avg").textContent = `Rp ${formatNumber(h.avgPrice, 2)}`;
+      document.getElementById("sched-month-1").value = String(p1.month ?? 3);
+      document.getElementById("sched-dps-1").value = p1.dps || 0;
+      document.getElementById("sched-month-2").value = String(p2.month ?? 11);
+      document.getElementById("sched-dps-2").value = p2.dps || 0;
+
+      updateSchedulePreview();
+      openModal("modal-dividend-schedule");
+    };
+
+    window.updateSchedulePreview = function () {
+      const ticker = document.getElementById("sched-ticker-input").value;
+      const h = state.holdings.find((x) => x.ticker === ticker);
+      if (!h) return;
+
+      const dps1 = parseFloat(document.getElementById("sched-dps-1").value) || 0;
+      const dps2 = parseFloat(document.getElementById("sched-dps-2").value) || 0;
+      const totalDps = dps1 + dps2;
+      const annualEst = h.shares * totalDps;
+      const cost = h.shares * h.avgPrice;
+      const yoc = cost > 0 ? (annualEst / cost) * 100 : 0;
+
+      document.getElementById("sched-prev-dps").textContent = `Rp ${formatNumber(totalDps, 2)} / lbr`;
+      document.getElementById("sched-prev-annual").textContent = formatIDR(annualEst);
+      document.getElementById("sched-prev-yoc").textContent = `${formatNumber(yoc, 2)}%`;
+    };
+
+    window.handleSaveDividendSchedule = function (e) {
+      e.preventDefault();
+      const ticker = document.getElementById("sched-ticker-input").value;
+      const m1 = parseInt(document.getElementById("sched-month-1").value, 10);
+      const dps1 = parseFloat(document.getElementById("sched-dps-1").value) || 0;
+      const m2 = parseInt(document.getElementById("sched-month-2").value, 10);
+      const dps2 = parseFloat(document.getElementById("sched-dps-2").value) || 0;
+
+      if (!state.dividendSchedules) state.dividendSchedules = {};
+      const payouts = [];
+      if (dps1 > 0) payouts.push({ month: m1, dps: dps1, label: "Final" });
+      if (dps2 > 0) payouts.push({ month: m2, dps: dps2, label: "Interim" });
+
+      state.dividendSchedules[ticker] = { payouts };
+      closeModal("modal-dividend-schedule");
+      commitStateChange(`Proyeksi dividen ${ticker} diperbarui!`);
+    };
+
+    window.quickRealizeDividend = function (ticker, suggestedAmount) {
+      openDividendModal();
+      document.getElementById("div-ticker").value = ticker;
+      document.getElementById("div-amount").value = suggestedAmount;
+      document.getElementById("div-note").value = `Dividen Tunai ${ticker}`;
+    };
 
     // --- TAB 1: PORTOFOLIO & KINERJA ---
     function renderPortfolioTab(m) {
@@ -2302,7 +3269,7 @@
     }
 
     // --- TAB 3: GRAFIK & HISTORIS (BULANAN & TAHUNAN) ---
-    function renderAnalyticsTab(metrics = null) {
+    window.renderAnalyticsTab = function (metrics = null) {
       const m = metrics || computeMetrics();
 
       // Sync Benchmark inputs
@@ -2454,7 +3421,7 @@
       renderMonthlyPerformanceChart(monthlyRows);
       renderAnnualPerformanceChart(syncedAnnualHistory);
       renderAnnualTopUpChart(syncedAnnualTopUps);
-    }
+    };
 
     function renderMonthlyPerformanceChart(monthlyRows) {
       const ctx = document.getElementById("chart-monthly-performance");
@@ -2471,36 +3438,33 @@
           labels: monthlyRows.map((r) => r.month),
           datasets: [
             {
-              label: "Portofolio YTD (%)",
+              label: "Portofolio (%)",
               data: monthlyRows.map((r) => r.port),
               borderColor: "#10b981",
-              backgroundColor: "rgba(16, 185, 129, 0.14)",
+              backgroundColor: "rgba(16, 185, 129, 0.12)",
               fill: true,
-              borderWidth: 3,
+              tension: 0.3,
+              borderWidth: 2.5,
               pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.25,
               spanGaps: false
             },
             {
-              label: "IHSG YTD (%)",
+              label: "IHSG (%)",
               data: monthlyRows.map((r) => r.ihsg),
               borderColor: "#f59e0b",
-              backgroundColor: "transparent",
+              tension: 0.3,
               borderWidth: 2,
-              borderDash: [5, 4],
               pointRadius: 3.5,
-              tension: 0.25,
               spanGaps: false
             },
             {
-              label: "LQ45 YTD (%)",
+              label: "LQ45 (%)",
               data: monthlyRows.map((r) => r.lq45),
               borderColor: "#6366f1",
-              backgroundColor: "transparent",
+              borderDash: [5, 5],
+              tension: 0.3,
               borderWidth: 2,
               pointRadius: 3.5,
-              tension: 0.25,
               spanGaps: false
             }
           ]
@@ -2510,17 +3474,17 @@
           maintainAspectRatio: false,
           interaction: { mode: "index", intersect: false },
           plugins: {
-            legend: { labels: { color: textColor, font: { family: "Inter", size: 12 } } },
+            legend: { labels: { color: textColor, font: { family: "Inter", size: 11 } } },
             tooltip: {
               callbacks: {
-                label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) + "%" : "-"}`
+                label: (c) => (c.parsed.y !== null ? ` ${c.dataset.label}: ${formatPct(c.parsed.y)}` : null)
               }
             }
           },
           scales: {
             x: {
               grid: { display: false },
-              ticks: { color: textColor, font: { family: "JetBrains Mono", size: 11 } }
+              ticks: { color: textColor, font: { family: "Inter", size: 11 } }
             },
             y: {
               grid: { color: gridColor },
@@ -2535,7 +3499,7 @@
       });
     }
 
-    function renderAnnualPerformanceChart(annualData) {
+    function renderAnnualPerformanceChart(syncedAnnualHistory) {
       const ctx = document.getElementById("chart-annual-performance");
       if (!ctx) return;
 
@@ -2547,23 +3511,23 @@
       charts.annualPerf = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: annualData.map((a) => String(a.year)),
+          labels: syncedAnnualHistory.map((a) => String(a.year)),
           datasets: [
             {
               label: "Portofolio (%)",
-              data: annualData.map((a) => a.port),
+              data: syncedAnnualHistory.map((a) => a.port),
               backgroundColor: "#10b981",
               borderRadius: 6
             },
             {
               label: "IHSG (%)",
-              data: annualData.map((a) => a.ihsg),
+              data: syncedAnnualHistory.map((a) => a.ihsg),
               backgroundColor: "#f59e0b",
               borderRadius: 6
             },
             {
               label: "LQ45 (%)",
-              data: annualData.map((a) => a.lq45),
+              data: syncedAnnualHistory.map((a) => a.lq45),
               backgroundColor: "#6366f1",
               borderRadius: 6
             }
@@ -2576,7 +3540,7 @@
             legend: { labels: { color: textColor, font: { family: "Inter", size: 11 } } },
             tooltip: {
               callbacks: {
-                label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(2)}%`
+                label: (c) => ` ${c.dataset.label}: ${formatPct(c.parsed.y)}`
               }
             }
           },
@@ -2598,7 +3562,7 @@
       });
     }
 
-    function renderAnnualTopUpChart(topUpData) {
+    function renderAnnualTopUpChart(syncedAnnualTopUps) {
       const ctx = document.getElementById("chart-annual-topup");
       if (!ctx) return;
 
@@ -2610,12 +3574,12 @@
       charts.annualTopUp = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: topUpData.map((t) => String(t.year)),
+          labels: syncedAnnualTopUps.map((t) => String(t.year)),
           datasets: [
             {
-              label: "Top Up Tahunan (Rp Juta)",
-              data: topUpData.map((t) => Number((t.amount / 1e6).toFixed(2))),
-              backgroundColor: topUpData.map((t) => (t.autoLive ? "#10b981" : "rgba(99, 102, 241, 0.85)")),
+              label: "Total Top Up (Rp)",
+              data: syncedAnnualTopUps.map((t) => t.amount),
+              backgroundColor: "rgba(99, 102, 241, 0.85)",
               borderRadius: 8
             }
           ]
@@ -2627,7 +3591,7 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: (c) => `Total Top Up: Rp ${c.parsed.y.toFixed(2)} Juta`
+                label: (c) => ` Top Up: ${formatIDR(c.parsed.y)}`
               }
             }
           },
@@ -2640,8 +3604,8 @@
               grid: { color: gridColor },
               ticks: {
                 color: textColor,
-                font: { family: "JetBrains Mono", size: 11 },
-                callback: (v) => "Rp " + v + " Jt"
+                font: { family: "JetBrains Mono", size: 10 },
+                callback: (v) => formatCompactIDR(v)
               }
             }
           }
@@ -2649,69 +3613,65 @@
       });
     }
 
-    // --- TAB 4: JURNAL TP / CL ---
     function renderJournalTab() {
-      const totalPL = state.journal.reduce((acc, j) => acc + Number(j.realizedPL || 0), 0);
-      const wins = state.journal.filter((j) => j.realizedPL > 0).length;
-      const losses = state.journal.filter((j) => j.realizedPL < 0).length;
-      const count = state.journal.length;
-      const winRate = count > 0 ? (wins / count) * 100 : 0;
-      const avgPct = count > 0 ? state.journal.reduce((acc, j) => acc + Number(j.realizedPLPct || 0), 0) / count : 0;
+      const entries = state.journal || [];
+      const totalPL = entries.reduce((sum, j) => sum + (Number(j.realizedPL) || 0), 0);
+      const winCount = entries.filter((j) => Number(j.realizedPL) > 0).length;
+      const lossCount = entries.filter((j) => Number(j.realizedPL) < 0).length;
+      const winRate = entries.length > 0 ? (winCount / entries.length) * 100 : 0;
+      const avgPct =
+        entries.length > 0
+          ? entries.reduce((sum, j) => sum + (Number(j.realizedPLPct) || 0), 0) / entries.length
+          : 0;
 
-      const plEl = document.getElementById("jrn-kpi-total-pl");
-      plEl.textContent = (totalPL >= 0 ? "+" : "") + formatIDR(totalPL);
-      plEl.className = `text-lg sm:text-xl font-bold font-mono tabular-nums ${colorClass(totalPL)}`;
+      const totalPlEl = document.getElementById("jrn-kpi-total-pl");
+      totalPlEl.textContent = `${totalPL >= 0 ? "+" : ""}${formatIDR(totalPL)}`;
+      totalPlEl.className = `text-lg sm:text-xl font-bold font-mono tabular-nums ${colorClass(totalPL)}`;
 
-      document.getElementById("jrn-kpi-winrate").textContent = formatNumber(winRate, 1) + "%";
-      document.getElementById("jrn-kpi-winrate-sub").textContent = `${wins} TP / ${losses} CL`;
-      document.getElementById("jrn-kpi-count").textContent = String(count);
+      document.getElementById("jrn-kpi-winrate").textContent = `${formatNumber(winRate, 1)}%`;
+      document.getElementById("jrn-kpi-winrate-sub").textContent = `${winCount} TP / ${lossCount} CL`;
+      document.getElementById("jrn-kpi-count").textContent = String(entries.length);
 
-      const avgEl = document.getElementById("jrn-kpi-avg-pct");
-      avgEl.textContent = formatPct(avgPct);
-      avgEl.className = `text-lg sm:text-xl font-bold font-mono tabular-nums ${colorClass(avgPct)}`;
+      const avgPctEl = document.getElementById("jrn-kpi-avg-pct");
+      avgPctEl.textContent = formatPct(avgPct);
+      avgPctEl.className = `text-lg sm:text-xl font-bold font-mono tabular-nums ${colorClass(avgPct)}`;
 
       const tbody = document.getElementById("journal-table-body");
-      if (state.journal.length === 0) {
+      if (entries.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="py-10 text-center text-slate-400">
-              <div class="flex flex-col items-center">
-                <i data-lucide="book-open" class="w-8 h-8 mb-2 opacity-50"></i>
-                <p class="text-xs font-medium">Belum ada riwayat penjualan (TP / CL).</p>
-                <p class="text-[11px] mt-0.5">Klik tombol "Jual" pada saham di tab Portofolio atau "Catat Manual TP / CL".</p>
-              </div>
+            <td colspan="9" class="py-10 text-center text-xs text-slate-400">
+              Belum ada posisi saham yang ditutup. Klik tombol <strong>Jual</strong> di tabel Portofolio atau <strong>Catat Manual TP / CL</strong>.
             </td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = state.journal
+      tbody.innerHTML = entries
         .slice()
         .reverse()
         .map(
           (j) => `
-          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
             <td class="py-3 px-4 font-mono text-xs text-slate-500">${j.date}</td>
-            <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${j.ticker}</td>
-            <td class="py-3 px-3 text-right font-mono">${formatNumber(j.shares, 0)} <span class="text-[10px] text-slate-400">(${formatNumber(j.shares / 100, 1)} lot)</span></td>
-            <td class="py-3 px-3 text-right font-mono">${formatNumber(j.avgCost, 2)}</td>
-            <td class="py-3 px-3 text-right font-mono">${formatNumber(j.sellPrice, 2)}</td>
-            <td class="py-3 px-3 text-right font-mono font-bold ${colorClass(j.realizedPL)}">
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono font-bold text-xs">${j.ticker}</span>
+            </td>
+            <td class="py-3 px-3 text-right font-mono tabular-nums">
+              ${formatNumber(j.shares, 0)} <span class="text-[11px] text-slate-400">(${formatNumber(j.shares / 100, 1)} lot)</span>
+            </td>
+            <td class="py-3 px-3 text-right font-mono tabular-nums">Rp ${formatNumber(j.avgCost, 2)}</td>
+            <td class="py-3 px-3 text-right font-mono tabular-nums">Rp ${formatNumber(j.sellPrice, 2)}</td>
+            <td class="py-3 px-3 text-right font-mono font-bold tabular-nums ${colorClass(j.realizedPL)}">
               ${j.realizedPL >= 0 ? "+" : ""}${formatIDR(j.realizedPL)}
             </td>
-            <td class="py-3 px-3 text-right font-mono">
-              <span class="px-2 py-0.5 rounded text-[11px] font-bold ${
-                j.realizedPLPct >= 0
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-              }">
-                ${formatPct(j.realizedPLPct)}
-              </span>
+            <td class="py-3 px-3 text-right font-mono font-bold tabular-nums ${colorClass(j.realizedPLPct)}">
+              ${formatPct(j.realizedPLPct)}
             </td>
-            <td class="py-3 px-3 text-xs text-slate-500">${j.note || (j.realizedPL >= 0 ? "Take Profit" : "Cut Loss")}</td>
+            <td class="py-3 px-3 text-xs text-slate-500 dark:text-slate-400">${j.note || "-"}</td>
             <td class="py-3 px-4 text-center">
-              <button onclick="deleteJournalEntry('${j.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-500/10" title="Hapus Baris">
+              <button onclick="deleteJournalEntry('${j.id}')" class="p-1 text-slate-400 hover:text-rose-500 rounded" title="Hapus">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </td>
@@ -2721,39 +3681,43 @@
         .join("");
     }
 
-    // --- TAB 5: KALKULATOR AVERAGE ---
     function renderCalculatorTab(m) {
-      const sel = document.getElementById("calc-load-ticker");
-      const currentVal = sel.value;
-      sel.innerHTML =
-        `<option value="">-- Muat dari Portofolio --</option>` +
-        m.holdings
-          .map((h) => `<option value="${h.id}">${h.ticker} (${formatNumber(h.shares, 0)} lbr @ ${formatNumber(h.avgPrice, 2)})</option>`)
-          .join("");
-      sel.value = currentVal;
+      const select = document.getElementById("calc-load-ticker");
+      if (select) {
+        const prevVal = select.value;
+        select.innerHTML =
+          `<option value="">-- Muat dari Portofolio --</option>` +
+          m.holdings
+            .map((h) => `<option value="${h.id}">${h.ticker} (${formatNumber(h.shares, 0)} lbr @ Rp ${formatNumber(h.avgPrice, 0)})</option>`)
+            .join("");
+        if (m.holdings.some((h) => h.id === prevVal)) {
+          select.value = prevVal;
+        }
+      }
       recalculateAverageSim();
     }
 
-    // =========================================================================
-    // 6. USER ACTIONS & INTERACTIVE HANDLERS
-    // =========================================================================
     window.switchTab = function (tabId) {
       activeTab = tabId;
-      document.querySelectorAll(".tab-panel").forEach((el) => el.classList.add("hidden"));
-      document.getElementById(`tab-panel-${tabId}`).classList.remove("hidden");
+      document.querySelectorAll(".tab-panel").forEach((panel) => {
+        panel.classList.add("hidden");
+      });
+      const targetPanel = document.getElementById("tab-panel-" + tabId);
+      if (targetPanel) {
+        targetPanel.classList.remove("hidden");
+      }
 
       document.querySelectorAll(".tab-btn").forEach((btn) => {
-        btn.classList.remove("bg-emerald-600", "text-white", "shadow-sm");
-        btn.classList.add("text-slate-600", "dark:text-slate-400", "hover:bg-slate-100", "dark:hover:bg-slate-900");
+        btn.className =
+          "tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white";
       });
-      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-      activeBtn.classList.remove("text-slate-600", "dark:text-slate-400", "hover:bg-slate-100", "dark:hover:bg-slate-900");
-      activeBtn.classList.add("bg-emerald-600", "text-white", "shadow-sm");
+      const activeBtn = document.getElementById("tab-btn-" + tabId);
+      if (activeBtn) {
+        activeBtn.className =
+          "tab-btn active-tab flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all bg-emerald-600 text-white shadow-sm shadow-emerald-600/20";
+      }
 
-      // Trigger resize for Chart.js canvases in newly shown tab
-      Object.values(charts).forEach((ch) => {
-        if (ch && typeof ch.resize === "function") ch.resize();
-      });
+      renderAll();
     };
 
     window.toggleTheme = function () {
@@ -2968,6 +3932,11 @@
           avgPrice: finalAvgPrice,
           currentPrice: price
         });
+
+        if (!state.dividendSchedules) state.dividendSchedules = {};
+        if (!state.dividendSchedules[ticker] && IDX_DIVIDEND_PRESETS[ticker]) {
+          state.dividendSchedules[ticker] = JSON.parse(JSON.stringify(IDX_DIVIDEND_PRESETS[ticker]));
+        }
       }
 
       closeModal("modal-buy");
@@ -3209,6 +4178,14 @@
         state.cash -= costDiff;
       }
 
+      const oldTicker = h.ticker;
+      if (oldTicker !== newTicker && state.dividendSchedules && state.dividendSchedules[oldTicker]) {
+        if (!state.dividendSchedules[newTicker]) {
+          state.dividendSchedules[newTicker] = state.dividendSchedules[oldTicker];
+        }
+        delete state.dividendSchedules[oldTicker];
+      }
+
       h.ticker = newTicker;
       h.name = newName;
       h.shares = newShares;
@@ -3239,11 +4216,43 @@
 
     // Dividends
     window.openDividendModal = function () {
+      const datalist = document.getElementById("div-ticker-options");
+      if (datalist) {
+        datalist.innerHTML = state.holdings
+          .map((h) => `<option value="${h.ticker}">${h.name || h.ticker} (${formatNumber(h.shares, 0)} lbr)</option>`)
+          .join("");
+      }
       document.getElementById("div-ticker").value = "";
       document.getElementById("div-date").value = new Date().toISOString().split("T")[0];
       document.getElementById("div-amount").value = "";
       document.getElementById("div-note").value = "";
+      document.getElementById("div-sync-schedule").checked = true;
+      const hint = document.getElementById("div-holding-hint");
+      if (hint) hint.classList.add("hidden");
       openModal("modal-dividend");
+    };
+
+    window.onDivTickerInput = function () {
+      const ticker = document.getElementById("div-ticker").value.trim().toUpperCase();
+      const hint = document.getElementById("div-holding-hint");
+      if (!hint) return;
+      const h = state.holdings.find((x) => x.ticker === ticker);
+      if (!h) {
+        hint.classList.add("hidden");
+        return;
+      }
+      const sched = (state.dividendSchedules && state.dividendSchedules[ticker]) || { payouts: [] };
+      const totalDps = (sched.payouts || []).reduce((sum, p) => sum + (Number(p.dps) || 0), 0);
+      const estTotal = Math.round(h.shares * totalDps);
+      hint.classList.remove("hidden");
+      hint.innerHTML = `
+        <span>Dimiliki: <strong class="font-mono">${formatNumber(h.shares, 0)} lbr</strong></span>
+        ${
+          estTotal > 0
+            ? `<button type="button" onclick="document.getElementById('div-amount').value=${estTotal}" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Isi Est: ${formatIDR(estTotal)}</button>`
+            : `<span class="text-slate-400">DPS belum diatur</span>`
+        }
+      `;
     };
 
     window.handleAddDividend = function (e) {
@@ -3252,6 +4261,7 @@
       const date = document.getElementById("div-date").value;
       const amount = parseFloat(document.getElementById("div-amount").value);
       const note = document.getElementById("div-note").value.trim();
+      const syncSchedule = document.getElementById("div-sync-schedule")?.checked ?? true;
 
       if (!ticker || isNaN(amount) || amount <= 0) {
         showToast("Nominal dividen tidak valid", "error");
@@ -3268,8 +4278,28 @@
         note: note || `Dividen Tunai ${ticker}`
       });
 
+      // Auto-sync dividend schedule if ticker is held and has no DPS configured yet
+      let syncedMsg = "";
+      if (syncSchedule) {
+        const held = state.holdings.find((x) => x.ticker === ticker);
+        if (held && held.shares > 0) {
+          if (!state.dividendSchedules) state.dividendSchedules = {};
+          const existingSched = state.dividendSchedules[ticker];
+          const existingDps = (existingSched?.payouts || []).reduce((s, p) => s + (Number(p.dps) || 0), 0);
+          if (!existingSched || existingDps <= 0) {
+            const dt = new Date(date);
+            const payoutMonth = isNaN(dt.getTime()) ? new Date().getMonth() : dt.getMonth();
+            const impliedDps = Number((amount / held.shares).toFixed(2));
+            state.dividendSchedules[ticker] = {
+              payouts: [{ month: payoutMonth, dps: impliedDps, label: "Aktual" }]
+            };
+            syncedMsg = ` & jadwal DPS (Rp ${formatNumber(impliedDps, 2)}/lbr) disinkronkan`;
+          }
+        }
+      }
+
       closeModal("modal-dividend");
-      commitStateChange(`Dividen ${ticker} (+${formatIDR(amount)}) ditambahkan ke Kas & mendongkrak NAV/Unit!`);
+      commitStateChange(`Dividen ${ticker} (+${formatIDR(amount)}) masuk Kas${syncedMsg}!`);
     };
 
     window.deleteDividend = function (id) {
