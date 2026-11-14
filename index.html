@@ -1229,6 +1229,87 @@
     </div>
   </div>
 
+  <!-- Modal 9: Edit Data Emiten -->
+  <div id="modal-edit-holding" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Edit Data Emiten: <span id="edit-holding-title-ticker" class="text-sky-500 font-mono"></span></h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Koreksi kode emiten, nama, jumlah lembar/lot, average price, atau harga pasar</p>
+        </div>
+        <button onclick="closeModal('modal-edit-holding')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleEditHolding(event)" class="p-5 space-y-3.5">
+        <input type="hidden" id="edit-holding-id" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
+            <input type="text" id="edit-holding-ticker" required maxlength="6" oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Perusahaan / Sektor</label>
+            <input type="text" id="edit-holding-name" placeholder="Nama Emiten Tbk" class="w-full px-3 py-2 rounded-xl text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Lembar</label>
+              <span id="edit-prev-lots" class="text-[10px] font-mono text-sky-500 font-semibold">0 lot</span>
+            </div>
+            <input type="number" id="edit-holding-shares" min="1" step="1" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Price (Rp)</label>
+            <input type="number" id="edit-holding-avg" min="0" step="any" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Price (Rp)</label>
+            <input type="number" id="edit-holding-current" min="1" step="any" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
+        </div>
+
+        <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-0.5">
+          <input type="checkbox" id="edit-holding-adjust-cash" onchange="updateEditHoldingPreview()" class="w-4 h-4 mt-0.5 rounded accent-sky-600" />
+          <span>Sesuaikan Saldo Kas RDN otomatis berdasarkan selisih perubahan Cost/Modal (centang jika koreksi ini memengaruhi kas RDN)</span>
+        </label>
+
+        <!-- Live Edit Preview -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Cost / Modal Sebelumnya:</span>
+            <span id="edit-prev-old-cost" class="font-mono text-slate-600 dark:text-slate-300">Rp 0</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Cost / Modal Baru:</span>
+            <span id="edit-prev-new-cost" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Selisih Modal:</span>
+            <span id="edit-prev-cost-diff" class="font-mono font-semibold">Rp 0</span>
+          </div>
+          <div class="flex justify-between pt-1 border-t border-slate-200/70 dark:border-slate-800/70">
+            <span class="text-slate-500">Proyeksi Unrealized P/L:</span>
+            <span id="edit-prev-pl" class="font-mono font-bold">Rp 0 (0,00%)</span>
+          </div>
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-500">Proyeksi Saldo Kas RDN:</span>
+            <span id="edit-prev-cash" class="font-mono font-semibold">Rp 0</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="closeModal('modal-edit-holding')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal 6: Manual Journal TP/CL -->
   <div id="modal-manual-journal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
     <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
@@ -1917,6 +1998,13 @@
                     title="Jual / Withdraw Saham"
                   >
                     Jual
+                  </button>
+                  <button
+                    onclick="openEditHoldingModal('${h.id}')"
+                    class="p-1.5 rounded-lg text-sky-600 dark:text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 transition-colors"
+                    title="Edit Data Emiten"
+                  >
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                   </button>
                   <button
                     onclick="confirmDeleteHolding('${h.id}', '${h.ticker}')"
@@ -3031,6 +3119,104 @@
           commitStateChange(`Emiten ${ticker} dihapus dari portofolio.`);
         }
       );
+    };
+
+    // Edit Existing Holding
+    window.openEditHoldingModal = function (id) {
+      const h = state.holdings.find((x) => x.id === id);
+      if (!h) return;
+      document.getElementById("edit-holding-id").value = h.id;
+      document.getElementById("edit-holding-title-ticker").textContent = h.ticker;
+      document.getElementById("edit-holding-ticker").value = h.ticker;
+      document.getElementById("edit-holding-name").value = h.name || "";
+      document.getElementById("edit-holding-shares").value = h.shares;
+      document.getElementById("edit-holding-avg").value = h.avgPrice;
+      document.getElementById("edit-holding-current").value = h.currentPrice;
+      document.getElementById("edit-holding-adjust-cash").checked = false;
+      updateEditHoldingPreview();
+      openModal("modal-edit-holding");
+    };
+
+    window.updateEditHoldingPreview = function () {
+      const id = document.getElementById("edit-holding-id").value;
+      const h = state.holdings.find((x) => x.id === id);
+      if (!h) return;
+
+      const newShares = parseFloat(document.getElementById("edit-holding-shares").value) || 0;
+      const newAvg = parseFloat(document.getElementById("edit-holding-avg").value) || 0;
+      const newCurrent = parseFloat(document.getElementById("edit-holding-current").value) || 0;
+      const adjustCash = document.getElementById("edit-holding-adjust-cash").checked;
+
+      const oldCost = h.shares * h.avgPrice;
+      const newCost = newShares * newAvg;
+      const costDiff = newCost - oldCost;
+      const newValuation = newShares * newCurrent;
+      const newPL = newValuation - newCost;
+      const newPLPct = newCost > 0 ? (newPL / newCost) * 100 : 0;
+      const projectedCash = adjustCash ? state.cash - costDiff : state.cash;
+
+      document.getElementById("edit-prev-lots").textContent = `${formatNumber(newShares / 100, 2)} lot`;
+      document.getElementById("edit-prev-old-cost").textContent = formatIDR(oldCost);
+      document.getElementById("edit-prev-new-cost").textContent = formatIDR(newCost);
+
+      const diffEl = document.getElementById("edit-prev-cost-diff");
+      diffEl.textContent = `${costDiff >= 0 ? "+" : ""}${formatIDR(costDiff)}`;
+      diffEl.className = `font-mono font-semibold ${costDiff > 0 ? "text-amber-500" : costDiff < 0 ? "text-emerald-500" : ""}`;
+
+      const plEl = document.getElementById("edit-prev-pl");
+      plEl.textContent = `${newPL >= 0 ? "+" : ""}${formatIDR(newPL)} (${formatPct(newPLPct)})`;
+      plEl.className = `font-mono font-bold ${colorClass(newPL)}`;
+
+      const cashEl = document.getElementById("edit-prev-cash");
+      cashEl.textContent = formatIDR(projectedCash);
+      cashEl.className = `font-mono font-semibold ${projectedCash < 0 ? "text-rose-500" : ""}`;
+    };
+
+    window.handleEditHolding = function (e) {
+      e.preventDefault();
+      const id = document.getElementById("edit-holding-id").value;
+      const h = state.holdings.find((x) => x.id === id);
+      if (!h) return;
+
+      const newTicker = document.getElementById("edit-holding-ticker").value.trim().toUpperCase();
+      const newName = document.getElementById("edit-holding-name").value.trim() || `${newTicker} Tbk`;
+      const newShares = Math.round(parseFloat(document.getElementById("edit-holding-shares").value));
+      const newAvg = parseFloat(document.getElementById("edit-holding-avg").value);
+      const newCurrent = parseFloat(document.getElementById("edit-holding-current").value);
+      const adjustCash = document.getElementById("edit-holding-adjust-cash").checked;
+
+      if (!newTicker || isNaN(newShares) || newShares <= 0 || isNaN(newAvg) || newAvg < 0 || isNaN(newCurrent) || newCurrent <= 0) {
+        showToast("Pastikan seluruh data emiten terisi dengan benar!", "error");
+        return;
+      }
+
+      const duplicate = state.holdings.some((x) => x.id !== id && x.ticker === newTicker);
+      if (duplicate) {
+        showToast(`Kode emiten ${newTicker} sudah ada di daftar portofolio!`, "error");
+        return;
+      }
+
+      const oldCost = h.shares * h.avgPrice;
+      const newCost = newShares * newAvg;
+      const costDiff = newCost - oldCost;
+
+      if (adjustCash && state.cash - costDiff < 0) {
+        showToast("Saldo Kas RDN tidak mencukupi untuk penyesuaian selisih modal ini!", "error");
+        return;
+      }
+
+      if (adjustCash) {
+        state.cash -= costDiff;
+      }
+
+      h.ticker = newTicker;
+      h.name = newName;
+      h.shares = newShares;
+      h.avgPrice = newAvg;
+      h.currentPrice = newCurrent;
+
+      closeModal("modal-edit-holding");
+      commitStateChange(`Data emiten ${newTicker} berhasil diperbarui!`);
     };
 
     // Cash Modal
