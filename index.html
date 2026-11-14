@@ -820,7 +820,13 @@
 
           <!-- Rencana Beli Baru -->
           <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-3">
-            <div class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">2. Rencana Pembelian Tambahan</div>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">2. Rencana Pembelian Tambahan</div>
+              <label class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
+                <input type="checkbox" id="calc-include-ipot-fee" checked onchange="recalculateAverageSim()" class="w-3.5 h-3.5 rounded accent-emerald-600" />
+                <span>Fee Beli IPOT (0,19%)</span>
+              </label>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Harga Beli Baru (Rp)</label>
@@ -893,24 +899,27 @@
   <!-- MODALS (CUSTOM UI - NO BROWSER ALERT/CONFIRM)                         -->
   <!-- ===================================================================== -->
 
-  <!-- Modal 1: Beli / Tambah Saham -->
-  <div id="modal-buy" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+  <!-- Modal 1: Beli / Tambah Saham (IPOT / Indo Premier PMK 131/2024 Engine) -->
+  <div id="modal-buy" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white" id="modal-buy-title">Beli / Tambah Posisi Saham</h3>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white" id="modal-buy-title">Beli / Tambah Posisi Saham</h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Kalkulasi otomatis Trade Confirmation IPOT (PMK No. 131 Tahun 2024)</p>
+        </div>
         <button onclick="closeModal('modal-buy')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleBuyStock(event)" class="p-5 space-y-4">
+      <form onsubmit="handleBuyStock(event)" class="p-5 space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: BBRI" oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: ADRO" oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sektor / Nama</label>
-            <input type="text" id="buy-name" placeholder="Perbankan" class="w-full px-3 py-2 rounded-xl text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="buy-name" placeholder="Energi / Pertambangan" class="w-full px-3 py-2 rounded-xl text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -923,39 +932,83 @@
                 <option value="SHARES">Lembar</option>
               </select>
             </div>
-            <input type="number" id="buy-qty" min="1" step="1" required placeholder="10" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="number" id="buy-qty" min="1" step="1" required placeholder="25" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Beli / Lbr (Rp)</label>
-            <input type="number" id="buy-price" min="1" step="any" required placeholder="2800" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="number" id="buy-price" min="1" step="any" required placeholder="2480" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 items-center">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fee Broker (%)</label>
-            <input type="number" id="buy-fee" value="0" min="0" max="5" step="0.01" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+        <div class="grid grid-cols-12 gap-3 items-end">
+          <div class="col-span-7">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Sekuritas</label>
+            <select id="buy-fee-preset" onchange="onBuyFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+              <option value="IPOT">IPOT / Indo Premier (0,19% All-In)</option>
+              <option value="CUSTOM">Custom % Fee Broker</option>
+              <option value="ZERO">0% (Tanpa Fee)</option>
+            </select>
           </div>
-          <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 pt-4 cursor-pointer">
-            <input type="checkbox" id="buy-deduct-cash" checked onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-emerald-600" />
-            <span>Potong Saldo Kas RDN</span>
-          </label>
+          <div class="col-span-5">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee All-In</label>
+            <input type="number" id="buy-fee" value="0.19" min="0" max="5" step="0.0001" oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
-          <div class="flex justify-between">
-            <span class="text-slate-500">Total Lembar Dibeli:</span>
-            <span id="buy-prev-shares" class="font-mono font-semibold">0 lembar</span>
+        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+          <input type="checkbox" id="buy-deduct-cash" checked onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-emerald-600" />
+          <span>Potong Saldo Kas RDN sesuai Net Amount</span>
+        </label>
+
+        <!-- Live Trade Confirmation Preview (IPOT Style) -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+          <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-1.5">
+            <span class="font-bold text-[11px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Live Trade Confirmation (IPOT)</span>
+            <span id="buy-prev-shares" class="font-mono font-semibold text-slate-600 dark:text-slate-300">0 lembar</span>
           </div>
+
           <div class="flex justify-between">
-            <span class="text-slate-500">Total Nilai Transaksi:</span>
+            <span class="text-slate-500">Trade Amount (Bruto):</span>
+            <span id="buy-prev-trade-amount" class="font-mono font-semibold text-slate-800 dark:text-slate-200">Rp 0</span>
+          </div>
+
+          <!-- Rincian Komponen Fee PMK 131/2024 -->
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 py-1.5 px-2.5 rounded-lg bg-white/80 dark:bg-slate-900/90 border border-slate-200/60 dark:border-slate-800/80 text-[11px]">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Broker Fee:</span>
+              <span id="buy-prev-broker" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Levy (0,03%):</span>
+              <span id="buy-prev-levy" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">KPEI (0,01%):</span>
+              <span id="buy-prev-kpei" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">DPP (11/12):</span>
+              <span id="buy-prev-dpp" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">VAT 12%:</span>
+              <span id="buy-prev-vat" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between font-semibold">
+              <span class="text-amber-600 dark:text-amber-400">Total Fee:</span>
+              <span id="buy-prev-total-fee" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-0.5">
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Net Amount (Debet RDN):</span>
             <span id="buy-prev-total" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Proyeksi Avg. Price Baru:</span>
-            <span id="buy-prev-newavg" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">Rp 0</span>
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Avg. Price Baru (Inc. Fee):</span>
+            <span id="buy-prev-newavg" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">Rp 0,00</span>
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-between text-[11px] pt-0.5 border-t border-slate-200/70 dark:border-slate-800/70">
             <span class="text-slate-500">Sisa Saldo Kas RDN:</span>
             <span id="buy-prev-cash" class="font-mono">Rp 0</span>
           </div>
@@ -969,16 +1022,19 @@
     </div>
   </div>
 
-  <!-- Modal 2: Jual / Withdraw Saham -->
-  <div id="modal-sell" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+  <!-- Modal 2: Jual / Withdraw Saham (IPOT / Indo Premier Sell Fee 0,29% Engine) -->
+  <div id="modal-sell" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Jual / Withdraw Saham: <span id="sell-ticker-label" class="text-emerald-500 font-mono"></span></h3>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Jual / Withdraw Saham: <span id="sell-ticker-label" class="text-emerald-500 font-mono"></span></h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Perhitungan Fee Jual IPOT (termasuk Sales Tax PPh 0,10% & VAT 12%)</p>
+        </div>
         <button onclick="closeModal('modal-sell')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleSellStock(event)" class="p-5 space-y-4">
+      <form onsubmit="handleSellStock(event)" class="p-5 space-y-3.5">
         <input type="hidden" id="sell-holding-id" />
         <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
           <div>
@@ -986,31 +1042,41 @@
             <strong id="sell-owned-shares" class="font-mono">0 lbr</strong>
           </div>
           <div class="text-right">
-            <span class="text-slate-500 block">Avg. Price:</span>
+            <span class="text-slate-500 block">Avg. Price (Inc. Fee):</span>
             <strong id="sell-owned-avg" class="font-mono">Rp 0</strong>
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Lembar Dijual</label>
-            <div class="flex gap-1">
-              <button type="button" onclick="setSellFraction(0.25)" class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">25%</button>
-              <button type="button" onclick="setSellFraction(0.5)" class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">50%</button>
-              <button type="button" onclick="setSellFraction(1)" class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
-            </div>
-          </div>
-          <input type="number" id="sell-shares" min="1" step="1" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
-        </div>
-
         <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lembar Dijual</label>
+              <div class="flex gap-1">
+                <button type="button" onclick="setSellFraction(0.25)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">25%</button>
+                <button type="button" onclick="setSellFraction(0.5)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">50%</button>
+                <button type="button" onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
+              </div>
+            </div>
+            <input type="number" id="sell-shares" min="1" step="1" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Jual / Lbr (Rp)</label>
             <input type="number" id="sell-price" min="1" step="any" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fee Jual (%)</label>
-            <input type="number" id="sell-fee" value="0" min="0" max="5" step="0.01" oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+        </div>
+
+        <div class="grid grid-cols-12 gap-3 items-end">
+          <div class="col-span-7">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Jual Sekuritas</label>
+            <select id="sell-fee-preset" onchange="onSellFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+              <option value="IPOT">IPOT / Indo Premier (0,29% All-In)</option>
+              <option value="CUSTOM">Custom % Fee Jual</option>
+              <option value="ZERO">0% (Tanpa Fee)</option>
+            </select>
+          </div>
+          <div class="col-span-5">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee Jual</label>
+            <input type="number" id="sell-fee" value="0.29" min="0" max="5" step="0.0001" oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1021,22 +1087,51 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan TP/CL</label>
-            <input type="text" id="sell-note" placeholder="Take Profit / Rebalancing" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="sell-note" placeholder="Take Profit / Cut Loss" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
           <input type="checkbox" id="sell-add-cash" checked class="w-4 h-4 rounded accent-emerald-600" />
-          <span>Masukkan hasil penjualan ke Saldo Kas RDN</span>
+          <span>Masukkan Net Proceeds ke Saldo Kas RDN</span>
         </label>
 
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+        <!-- Live Sell Trade Confirmation Preview -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
           <div class="flex justify-between">
-            <span class="text-slate-500">Hasil Penjualan Bersih:</span>
-            <span id="sell-prev-proceeds" class="font-mono font-bold">Rp 0</span>
+            <span class="text-slate-500">Trade Amount Jual (Bruto):</span>
+            <span id="sell-prev-trade-amount" class="font-mono font-semibold">Rp 0</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 py-1.5 px-2.5 rounded-lg bg-white/80 dark:bg-slate-900/90 border border-slate-200/60 dark:border-slate-800/80 text-[11px]">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Broker Fee:</span>
+              <span id="sell-prev-broker" class="font-mono">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Levy + KPEI:</span>
+              <span id="sell-prev-levy-kpei" class="font-mono">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">VAT 12% (DPP):</span>
+              <span id="sell-prev-vat" class="font-mono">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Sales Tax (0,10%):</span>
+              <span id="sell-prev-salestax" class="font-mono">Rp 0</span>
+            </div>
+            <div class="col-span-2 flex justify-between font-semibold border-t border-slate-200/60 dark:border-slate-800/60 pt-1">
+              <span class="text-amber-600 dark:text-amber-400">Total Fee Jual:</span>
+              <span id="sell-prev-total-fee" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between">
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Net Proceeds (Masuk RDN):</span>
+            <span id="sell-prev-proceeds" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Realized P/L (Jurnal TP/CL):</span>
+            <span class="font-semibold text-slate-700 dark:text-slate-200">Realized P/L Bersih (TP/CL):</span>
             <span id="sell-prev-pl" class="font-mono font-bold">Rp 0 (0,00%)</span>
           </div>
         </div>
@@ -1243,10 +1338,12 @@
     // =========================================================================
     // 1. INITIAL TEMPLATE DATA (PRE-LOADED 2026 UNIT PENYERTAAN SYSTEM)
     // =========================================================================
+    const LOCAL_STORAGE_KEY = "portfolio_nav_tracker_favo_v1";
+
     function getInitialTemplateData() {
       return {
         meta: {
-          portfolioName: "Portofolio Saham — Reksadana Unit System",
+          portfolioName: "Portofolio Saham — Favo Perdana (Unit System)",
           initialCapital: 211094375,
           initialUnitPrice: 1199.7647,
           initialUnits: 175946.4797,
@@ -1314,8 +1411,20 @@
       };
     }
 
+    function loadInitialState() {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+          return mergeWithDefaults(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.warn("Local storage load skipped:", e);
+      }
+      return getInitialTemplateData();
+    }
+
     // Application State
-    let state = getInitialTemplateData();
+    let state = loadInitialState();
     let activeTab = "portfolio";
     let charts = {};
 
@@ -1328,8 +1437,99 @@
     const appId = typeof __app_id !== "undefined" ? __app_id : "portfolio-nav-tracker";
 
     // =========================================================================
-    // 2. CORE FINANCIAL CALCULATION ENGINE (UNIT PENYERTAAN / NAV SYSTEM)
+    // 2. CORE FINANCIAL & IPOT FEE ENGINE (UNIT PENYERTAAN + PMK 131/2024)
     // =========================================================================
+    /**
+     * Menghitung rincian biaya transaksi BELI sesuai Trade Confirmation IPOT / Indo Premier
+     * (PMK No. 131 Tahun 2024: DPP = (Broker Fee + Levy Fee) * 11/12, VAT = 12% * DPP)
+     */
+    function calculateIPOTBuyFee(tradeAmount, buyFeePct = 0.19) {
+      const amount = Math.max(0, Number(tradeAmount) || 0);
+      const feePct = Math.max(0, Number(buyFeePct) || 0);
+
+      if (amount === 0 || feePct === 0) {
+        return {
+          tradeAmount: amount,
+          totalFeeAllIn: 0,
+          kpeiFee: 0,
+          levyFee: 0,
+          brokerFee: 0,
+          dpp: 0,
+          vat12: 0,
+          totalFee: 0,
+          netAmount: amount
+        };
+      }
+
+      const totalFeeAllIn = Math.round(amount * (feePct / 100));
+      const kpeiFee = Math.round(amount * 0.0001); // 0.01%
+      const levyFee = Math.round(amount * 0.0003); // 0.03% IDX + KSEI
+      const brokerFee = Math.max(0, Math.round((totalFeeAllIn - kpeiFee) / 1.11) - levyFee);
+      const dpp = Math.round(((brokerFee + levyFee) * 11) / 12);
+      const vat12 = Math.round(dpp * 0.12);
+      const totalFee = brokerFee + levyFee + kpeiFee + vat12;
+      const netAmount = amount + totalFee;
+
+      return {
+        tradeAmount: amount,
+        totalFeeAllIn,
+        kpeiFee,
+        levyFee,
+        brokerFee,
+        dpp,
+        vat12,
+        totalFee,
+        netAmount
+      };
+    }
+
+    /**
+     * Menghitung rincian biaya transaksi JUAL sesuai Trade Confirmation IPOT / Indo Premier
+     * Default %Fee All-In = 0.29% (termasuk Sales Tax PPh Final 0.10%)
+     */
+    function calculateIPOTSellFee(tradeAmount, sellFeePct = 0.29) {
+      const amount = Math.max(0, Number(tradeAmount) || 0);
+      const feePct = Math.max(0, Number(sellFeePct) || 0);
+
+      if (amount === 0 || feePct === 0) {
+        return {
+          tradeAmount: amount,
+          totalFeeAllIn: 0,
+          salesTax: 0,
+          kpeiFee: 0,
+          levyFee: 0,
+          brokerFee: 0,
+          dpp: 0,
+          vat12: 0,
+          totalFee: 0,
+          netProceeds: amount
+        };
+      }
+
+      const totalFeeAllIn = Math.round(amount * (feePct / 100));
+      const salesTax = Math.round(amount * 0.001); // 0.10% PPh Final Penjualan Saham
+      const kpeiFee = Math.round(amount * 0.0001); // 0.01%
+      const levyFee = Math.round(amount * 0.0003); // 0.03%
+      const brokerFee = Math.max(0, Math.round((totalFeeAllIn - salesTax - kpeiFee) / 1.11) - levyFee);
+      const dpp = Math.round(((brokerFee + levyFee) * 11) / 12);
+      const vat12 = Math.round(dpp * 0.12);
+      const totalFee = brokerFee + levyFee + kpeiFee + vat12 + salesTax;
+      const netProceeds = Math.max(0, amount - totalFee);
+
+      return {
+        tradeAmount: amount,
+        totalFeeAllIn,
+        salesTax,
+        kpeiFee,
+        levyFee,
+        brokerFee,
+        dpp,
+        vat12,
+        totalFee,
+        netProceeds
+      };
+    }
+
     function computeMetrics() {
       let totalStockCost = 0;
       let totalStockValuation = 0;
@@ -1500,6 +1700,9 @@
                   isRemoteUpdate = true;
                   const parsed = JSON.parse(data.payload);
                   state = mergeWithDefaults(parsed);
+                  try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+                  } catch (e) {}
                   renderAll();
                 } catch (e) {
                   console.error("Failed to parse cloud state:", e);
@@ -1524,6 +1727,11 @@
     }
 
     async function saveStateToCloud() {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Local storage save warning:", e);
+      }
       if (!isCloudReady || !currentUser || !db || isRemoteUpdate) return;
       try {
         updateCloudUI("syncing", "Menyimpan...", currentUser.uid);
@@ -2467,92 +2675,124 @@
 
     window.openModal = function (id) {
       const el = document.getElementById(id);
-      if (el) {
-        el.classList.remove("hidden");
-        el.classList.add("flex");
-        lucide.createIcons();
-      }
+      if (!el) return;
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+      lucide.createIcons();
     };
 
     window.closeModal = function (id) {
       const el = document.getElementById(id);
-      if (el) {
-        el.classList.add("hidden");
-        el.classList.remove("flex");
-      }
+      if (!el) return;
+      el.classList.add("hidden");
+      el.classList.remove("flex");
     };
 
     window.openCloudModal = function () {
       openModal("modal-cloud");
     };
 
-    // Inline Current Price Edit
-    window.updateSinglePrice = function (holdingId, newPriceVal) {
-      const price = parseFloat(newPriceVal);
-      if (isNaN(price) || price <= 0) {
-        showToast("Harga pasar harus lebih besar dari 0", "error");
+    window.updateSinglePrice = function (id, val) {
+      const h = state.holdings.find((x) => x.id === id);
+      const price = parseFloat(val);
+      if (!h || isNaN(price) || price <= 0) {
+        showToast("Harga saham harus lebih besar dari 0", "error");
         renderAll();
         return;
       }
-      const h = state.holdings.find((x) => x.id === holdingId);
-      if (h) {
-        h.currentPrice = price;
-        commitStateChange(`Harga ${h.ticker} diperbarui ke ${formatIDR(price)}`);
-      }
+      h.currentPrice = price;
+      commitStateChange(`Harga ${h.ticker} diperbarui ke Rp ${formatNumber(price, 0)}`);
     };
 
-    // Bulk Price Updater
     window.openBulkPriceModal = function () {
-      const container = document.getElementById("bulk-price-list");
-      container.innerHTML = state.holdings
-        .map(
-          (h) => `
-          <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-            <div>
-              <div class="font-mono font-bold text-sm text-slate-900 dark:text-white">${h.ticker}</div>
-              <div class="text-[11px] text-slate-500">Avg: ${formatNumber(h.avgPrice, 2)}</div>
+      const list = document.getElementById("bulk-price-list");
+      if (!list) return;
+      if (state.holdings.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Belum ada emiten di portofolio.</p>`;
+      } else {
+        list.innerHTML = state.holdings
+          .map(
+            (h) => `
+            <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
+              <div>
+                <div class="font-mono font-bold text-xs sm:text-sm text-slate-900 dark:text-white">${h.ticker}</div>
+                <div class="text-[11px] text-slate-500">Avg: Rp ${formatNumber(h.avgPrice, 2)}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 font-mono">Rp</span>
+                <input
+                  type="number"
+                  data-holding-id="${h.id}"
+                  value="${h.currentPrice}"
+                  min="1"
+                  step="any"
+                  required
+                  class="bulk-price-input w-28 text-right px-3 py-1.5 rounded-lg text-sm font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              data-holding-id="${h.id}"
-              value="${h.currentPrice}"
-              min="1"
-              step="any"
-              required
-              class="bulk-price-input w-32 text-right px-3 py-1.5 rounded-lg font-mono font-bold text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
-            />
-          </div>
-        `
-        )
-        .join("");
+          `
+          )
+          .join("");
+      }
       openModal("modal-bulk-price");
     };
 
     window.handleBulkPriceSave = function (e) {
       e.preventDefault();
-      document.querySelectorAll(".bulk-price-input").forEach((inp) => {
+      const inputs = document.querySelectorAll(".bulk-price-input");
+      let updatedCount = 0;
+      inputs.forEach((inp) => {
         const id = inp.getAttribute("data-holding-id");
-        const val = parseFloat(inp.value);
+        const newPrice = parseFloat(inp.value);
         const h = state.holdings.find((x) => x.id === id);
-        if (h && !isNaN(val) && val > 0) {
-          h.currentPrice = val;
+        if (h && !isNaN(newPrice) && newPrice > 0) {
+          h.currentPrice = newPrice;
+          updatedCount++;
         }
       });
       closeModal("modal-bulk-price");
-      commitStateChange("Semua harga pasar berhasil diperbarui!");
+      if (updatedCount > 0) {
+        commitStateChange(`Harga pasar ${updatedCount} emiten berhasil diperbarui!`);
+      }
     };
 
-    // Buy / Add Stock
+    // Buy / Add Stock (with IPOT / Indo Premier PMK 131/2024 Calculator)
     window.openBuyModal = function (ticker = "", name = "", price = "") {
       document.getElementById("buy-ticker").value = ticker;
       document.getElementById("buy-name").value = name;
       document.getElementById("buy-qty").value = "";
       document.getElementById("buy-price").value = price;
-      document.getElementById("buy-fee").value = "0";
+      document.getElementById("buy-fee-preset").value = "IPOT";
+      document.getElementById("buy-fee").value = "0.19";
       document.getElementById("buy-deduct-cash").checked = true;
       document.getElementById("modal-buy-title").textContent = ticker ? `Tambah Posisi: ${ticker}` : "Beli / Tambah Saham Baru";
       updateBuyPreview();
       openModal("modal-buy");
+    };
+
+    window.onBuyFeePresetChange = function () {
+      const preset = document.getElementById("buy-fee-preset").value;
+      const feeInput = document.getElementById("buy-fee");
+      if (preset === "IPOT") {
+        feeInput.value = "0.19";
+      } else if (preset === "ZERO") {
+        feeInput.value = "0";
+      }
+      updateBuyPreview();
+    };
+
+    window.onBuyFeeManualInput = function () {
+      const val = parseFloat(document.getElementById("buy-fee").value);
+      const presetSelect = document.getElementById("buy-fee-preset");
+      if (val === 0.19) {
+        presetSelect.value = "IPOT";
+      } else if (val === 0) {
+        presetSelect.value = "ZERO";
+      } else {
+        presetSelect.value = "CUSTOM";
+      }
+      updateBuyPreview();
     };
 
     window.updateBuyPreview = function () {
@@ -2563,22 +2803,31 @@
       const feePct = parseFloat(document.getElementById("buy-fee").value) || 0;
       const deductCash = document.getElementById("buy-deduct-cash").checked;
 
-      const buyShares = mode === "LOT" ? qty * 100 : qty;
-      const grossCost = buyShares * price;
-      const totalCost = grossCost * (1 + feePct / 100);
+      const buyShares = mode === "LOT" ? Math.round(qty * 100) : Math.round(qty);
+      const grossTradeAmount = buyShares * price;
+      const feeBreakdown = calculateIPOTBuyFee(grossTradeAmount, feePct);
+      const netAmount = feeBreakdown.netAmount;
 
       const existing = state.holdings.find((h) => h.ticker === ticker);
-      let newAvg = buyShares > 0 ? totalCost / buyShares : 0;
+      let newAvg = buyShares > 0 ? netAmount / buyShares : 0;
       if (existing && buyShares > 0) {
         const totalShares = existing.shares + buyShares;
-        newAvg = (existing.shares * existing.avgPrice + totalCost) / totalShares;
+        newAvg = (existing.shares * existing.avgPrice + netAmount) / totalShares;
       }
 
-      const remainingCash = deductCash ? state.cash - totalCost : state.cash;
+      const remainingCash = deductCash ? state.cash - netAmount : state.cash;
 
       document.getElementById("buy-prev-shares").textContent = `${formatNumber(buyShares, 0)} lembar`;
-      document.getElementById("buy-prev-total").textContent = formatIDR(totalCost);
-      document.getElementById("buy-prev-newavg").textContent = formatNumber(newAvg, 2);
+      document.getElementById("buy-prev-trade-amount").textContent = formatIDR(feeBreakdown.tradeAmount);
+      document.getElementById("buy-prev-broker").textContent = formatIDR(feeBreakdown.brokerFee);
+      document.getElementById("buy-prev-levy").textContent = formatIDR(feeBreakdown.levyFee);
+      document.getElementById("buy-prev-kpei").textContent = formatIDR(feeBreakdown.kpeiFee);
+      document.getElementById("buy-prev-dpp").textContent = formatIDR(feeBreakdown.dpp);
+      document.getElementById("buy-prev-vat").textContent = formatIDR(feeBreakdown.vat12);
+      document.getElementById("buy-prev-total-fee").textContent = formatIDR(feeBreakdown.totalFee);
+      document.getElementById("buy-prev-total").textContent = formatIDR(netAmount);
+      document.getElementById("buy-prev-newavg").textContent = `Rp ${formatNumber(newAvg, 2)}`;
+
       const cashEl = document.getElementById("buy-prev-cash");
       cashEl.textContent = formatIDR(remainingCash);
       cashEl.className = `font-mono font-semibold ${remainingCash < 0 ? "text-rose-500" : ""}`;
@@ -2600,21 +2849,25 @@
         return;
       }
 
-      const totalCost = buyShares * price * (1 + feePct / 100);
+      const grossTradeAmount = buyShares * price;
+      const feeBreakdown = calculateIPOTBuyFee(grossTradeAmount, feePct);
+      const netAmount = feeBreakdown.netAmount;
 
-      if (deductCash && totalCost > state.cash) {
-        showToast("Saldo Kas RDN tidak mencukupi untuk transaksi ini!", "error");
+      if (deductCash && netAmount > state.cash) {
+        showToast("Saldo Kas RDN tidak mencukupi untuk Net Amount transaksi ini!", "error");
         return;
       }
 
       if (deductCash) {
-        state.cash -= totalCost;
+        state.cash -= netAmount;
       }
 
+      let finalAvgPrice = netAmount / buyShares;
       const existing = state.holdings.find((h) => h.ticker === ticker);
       if (existing) {
         const totalShares = existing.shares + buyShares;
-        existing.avgPrice = (existing.shares * existing.avgPrice + totalCost) / totalShares;
+        finalAvgPrice = (existing.shares * existing.avgPrice + netAmount) / totalShares;
+        existing.avgPrice = finalAvgPrice;
         existing.shares = totalShares;
         existing.currentPrice = price;
         if (name && name !== `${ticker} Tbk`) existing.name = name;
@@ -2624,32 +2877,59 @@
           ticker,
           name,
           shares: buyShares,
-          avgPrice: totalCost / buyShares,
+          avgPrice: finalAvgPrice,
           currentPrice: price
         });
       }
 
       closeModal("modal-buy");
-      commitStateChange(`Pembelian ${formatNumber(buyShares, 0)} lbr ${ticker} berhasil dicatat!`);
+      commitStateChange(
+        `Beli ${formatNumber(buyShares, 0)} lbr ${ticker} berhasil! Avg inc. fee: Rp ${formatNumber(finalAvgPrice, 2)}`
+      );
     };
 
-    // Sell / Withdraw Stock
+    // Sell / Withdraw Stock (with IPOT 0,29% Sell Fee Engine)
     window.openSellModal = function (holdingId) {
       const h = state.holdings.find((x) => x.id === holdingId);
       if (!h) return;
       document.getElementById("sell-holding-id").value = h.id;
       document.getElementById("sell-ticker-label").textContent = h.ticker;
       document.getElementById("sell-owned-shares").textContent = `${formatNumber(h.shares, 0)} lbr (${formatNumber(h.shares / 100, 2)} lot)`;
-      document.getElementById("sell-owned-avg").textContent = formatNumber(h.avgPrice, 2);
+      document.getElementById("sell-owned-avg").textContent = `Rp ${formatNumber(h.avgPrice, 2)}`;
       document.getElementById("sell-shares").value = h.shares;
       document.getElementById("sell-shares").max = h.shares;
       document.getElementById("sell-price").value = h.currentPrice;
-      document.getElementById("sell-fee").value = "0";
+      document.getElementById("sell-fee-preset").value = "IPOT";
+      document.getElementById("sell-fee").value = "0.29";
       document.getElementById("sell-date").value = new Date().toISOString().split("T")[0];
       document.getElementById("sell-note").value = "";
       document.getElementById("sell-add-cash").checked = true;
       updateSellPreview();
       openModal("modal-sell");
+    };
+
+    window.onSellFeePresetChange = function () {
+      const preset = document.getElementById("sell-fee-preset").value;
+      const feeInput = document.getElementById("sell-fee");
+      if (preset === "IPOT") {
+        feeInput.value = "0.29";
+      } else if (preset === "ZERO") {
+        feeInput.value = "0";
+      }
+      updateSellPreview();
+    };
+
+    window.onSellFeeManualInput = function () {
+      const val = parseFloat(document.getElementById("sell-fee").value);
+      const presetSelect = document.getElementById("sell-fee-preset");
+      if (val === 0.29) {
+        presetSelect.value = "IPOT";
+      } else if (val === 0) {
+        presetSelect.value = "ZERO";
+      } else {
+        presetSelect.value = "CUSTOM";
+      }
+      updateSellPreview();
     };
 
     window.setSellFraction = function (frac) {
@@ -2669,12 +2949,21 @@
       const price = parseFloat(document.getElementById("sell-price").value) || 0;
       const feePct = parseFloat(document.getElementById("sell-fee").value) || 0;
 
-      const netProceeds = shares * price * (1 - feePct / 100);
+      const grossTradeAmount = shares * price;
+      const sellBreakdown = calculateIPOTSellFee(grossTradeAmount, feePct);
+      const netProceeds = sellBreakdown.netProceeds;
       const costBasis = shares * h.avgPrice;
       const realizedPL = netProceeds - costBasis;
       const realizedPLPct = costBasis > 0 ? (realizedPL / costBasis) * 100 : 0;
 
+      document.getElementById("sell-prev-trade-amount").textContent = formatIDR(sellBreakdown.tradeAmount);
+      document.getElementById("sell-prev-broker").textContent = formatIDR(sellBreakdown.brokerFee);
+      document.getElementById("sell-prev-levy-kpei").textContent = formatIDR(sellBreakdown.levyFee + sellBreakdown.kpeiFee);
+      document.getElementById("sell-prev-vat").textContent = formatIDR(sellBreakdown.vat12);
+      document.getElementById("sell-prev-salestax").textContent = formatIDR(sellBreakdown.salesTax);
+      document.getElementById("sell-prev-total-fee").textContent = formatIDR(sellBreakdown.totalFee);
       document.getElementById("sell-prev-proceeds").textContent = formatIDR(netProceeds);
+
       const plEl = document.getElementById("sell-prev-pl");
       plEl.textContent = `${realizedPL >= 0 ? "+" : ""}${formatIDR(realizedPL)} (${formatPct(realizedPLPct)})`;
       plEl.className = `font-mono font-bold ${colorClass(realizedPL)}`;
@@ -2698,7 +2987,9 @@
         return;
       }
 
-      const netProceeds = sellShares * sellPrice * (1 - feePct / 100);
+      const grossTradeAmount = sellShares * sellPrice;
+      const sellBreakdown = calculateIPOTSellFee(grossTradeAmount, feePct);
+      const netProceeds = sellBreakdown.netProceeds;
       const costBasis = sellShares * h.avgPrice;
       const realizedPL = netProceeds - costBasis;
       const realizedPLPct = costBasis > 0 ? (realizedPL / costBasis) * 100 : 0;
@@ -2717,7 +3008,7 @@
         sellPrice,
         realizedPL,
         realizedPLPct,
-        note: note || (realizedPL >= 0 ? "Take Profit" : "Cut Loss")
+        note: note || (realizedPL >= 0 ? "Take Profit (Net Fee)" : "Cut Loss (Net Fee)")
       });
 
       // Update or remove holding
@@ -2727,7 +3018,7 @@
       }
 
       closeModal("modal-sell");
-      commitStateChange(`Penjualan ${h.ticker} tercatat ke Kas & Jurnal TP/CL!`);
+      commitStateChange(`Penjualan ${h.ticker} (Net: ${formatIDR(netProceeds)}) tercatat ke Kas & Jurnal TP/CL!`);
     };
 
     // Delete Holding Confirmation
@@ -3043,9 +3334,15 @@
       const newPrice = parseFloat(document.getElementById("calc-new-price").value) || 0;
       const newShares = parseFloat(document.getElementById("calc-new-shares").value) || 0;
       const targetPrice = parseFloat(document.getElementById("calc-target-price").value) || 0;
+      const includeIpotFee = document.getElementById("calc-include-ipot-fee")?.checked ?? true;
 
       const curCost = curShares * curAvg;
-      const addedCost = newShares * newPrice;
+      const addedGrossCost = newShares * newPrice;
+      const feeInfo = includeIpotFee
+        ? calculateIPOTBuyFee(addedGrossCost, 0.19)
+        : calculateIPOTBuyFee(addedGrossCost, 0);
+      const addedCost = feeInfo.netAmount;
+
       const totalShares = curShares + newShares;
       const totalCost = curCost + addedCost;
       const newAvg = totalShares > 0 ? totalCost / totalShares : 0;
@@ -3060,7 +3357,9 @@
       document.getElementById("calc-res-total-shares").textContent = `${formatNumber(totalShares, 0)} lbr`;
       document.getElementById("calc-res-total-lots").textContent = `${formatNumber(totalShares / 100, 2)} Lot`;
       document.getElementById("calc-res-total-cost").textContent = formatIDR(totalCost);
-      document.getElementById("calc-res-added-cost").textContent = `+Modal Baru: ${formatIDR(addedCost)}`;
+      document.getElementById("calc-res-added-cost").textContent = includeIpotFee
+        ? `+Net: ${formatIDR(addedCost)} (Fee: ${formatIDR(feeInfo.totalFee)})`
+        : `+Modal Baru: ${formatIDR(addedCost)}`;
 
       const targetEl = document.getElementById("calc-res-target-pl");
       targetEl.textContent = `${targetPL >= 0 ? "+" : ""}${formatIDR(targetPL)}`;
@@ -3204,6 +3503,7 @@
     // 9. BOOTSTRAP APPLICATION ON LOAD
     // =========================================================================
     window.addEventListener("DOMContentLoaded", () => {
+      switchTab("portfolio");
       renderAll();
       initCloudSync();
     });
