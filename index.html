@@ -4700,129 +4700,176 @@
       if (badge) badge.textContent = `YTD ${state.meta.activeYear || 2026}`;
       if (!container) return;
 
-      const items = [
-        { label: "Portofolio (Unit NAV / TWR)", val: m.ytdReturnPct, barColor: m.ytdReturnPct >= 0 ? "bg-emerald-500" : "bg-rose-500" },
-        { label: "Indeks Harga Saham Gabungan (IHSG)", val: m.ihsgReturnPct, barColor: "bg-sky-500" },
-        { label: "Indeks Saham Likuid (LQ45)", val: m.lq45ReturnPct, barColor: "bg-indigo-500" }
-      ];
-      const maxAbs = Math.max(10, ...items.map((i) => Math.abs(i.val)));
+      const getSemanticBarColor = (val) => {
+        if (val > 0.0001) return "bg-emerald-500";
+        if (val < -0.0001) return "bg-rose-500";
+        return "bg-slate-400";
+      };
 
-      container.innerHTML = items
-        .map((it) => {
-          const widthPct = Math.min(100, (Math.abs(it.val) / maxAbs) * 100);
+      const items = [
+        {
+          label: "Portofolio (Unit NAV / TWR)",
+          val: m.ytdReturnPct,
+          barColor: getSemanticBarColor(m.ytdReturnPct),
+          alphaVsPorto: null
+        },
+        {
+          label: "Indeks Harga Saham Gabungan (IHSG)",
+          val: m.ihsgReturnPct,
+          barColor: getSemanticBarColor(m.ihsgReturnPct),
+          alphaVsPorto: m.alphaIhsg
+        },
+        {
+          label: "Indeks Saham Likuid (LQ45)",
+          val: m.lq45ReturnPct,
+          barColor: getSemanticBarColor(m.lq45ReturnPct),
+          alphaVsPorto: m.alphaLq45
+        }
+      ];
+      const maxAbs = Math.max(5, ...items.map((i) => Math.abs(i.val)));
+
+      const axisHeaderHTML = `
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 pb-1 border-b border-slate-100 dark:border-slate-800/70">
+          <span>&larr; Negatif (-)</span>
+          <span class="font-bold text-slate-500 dark:text-slate-400">0,00%</span>
+          <span>Positif (+) &rarr;</span>
+        </div>
+      `;
+
+      const rowsHTML = items
+        .map((item) => {
+          const halfWidthPct = Math.min(50, (Math.abs(item.val) / maxAbs) * 50);
+          const isNeg = item.val < -0.0001;
+          const isPos = item.val > 0.0001;
+          const barPositionStyle = isNeg
+            ? `right: 50%; width: ${halfWidthPct}%;`
+            : isPos
+            ? `left: 50%; width: ${halfWidthPct}%;`
+            : `left: 50%; width: 0%;`;
+          const barRadiusClass = isNeg ? "rounded-l-full" : isPos ? "rounded-r-full" : "rounded-full";
+
+          const alphaBadgeHTML =
+            item.alphaVsPorto !== null
+              ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                  item.alphaVsPorto >= 0
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                }">Porto ${formatPct(item.alphaVsPorto)}</span>`
+              : "";
+
           return `
             <div class="space-y-1.5">
-              <div class="flex justify-between text-xs font-semibold">
-                <span class="text-slate-700 dark:text-slate-300">${it.label}</span>
-                <span class="font-mono font-bold ${colorClass(it.val)}">${formatPct(it.val)}</span>
+              <div class="flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center flex-wrap font-semibold text-slate-700 dark:text-slate-200">
+                  <span>${item.label}</span>
+                  ${alphaBadgeHTML}
+                </div>
+                <span class="font-mono font-bold ${colorClass(item.val)} shrink-0">${formatPct(item.val)}</span>
               </div>
-              <div class="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                <div class="h-full rounded-full ${it.barColor} transition-all duration-500" style="width: ${widthPct}%"></div>
+              <div class="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 relative overflow-hidden flex items-center">
+                <div class="absolute left-1/2 -translate-x-1/2 w-0.5 h-full bg-slate-400/80 dark:bg-slate-500 z-10"></div>
+                ${
+                  isNeg || isPos
+                    ? `<div class="absolute top-0 h-full ${item.barColor} ${barRadiusClass} transition-all duration-500" style="${barPositionStyle}"></div>`
+                    : `<div class="absolute left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-slate-400"></div>`
+                }
               </div>
             </div>
           `;
         })
         .join("");
+
+      container.innerHTML = axisHeaderHTML + rowsHTML;
     }
 
     function renderPortfolioDividendRecap(m) {
-      const jkt = getJakartaTimeInfo();
-      const currentCalYear = jkt.year;
-      const yearSet = new Set([currentCalYear, Number(state.meta.activeYear) || currentCalYear]);
-      for (const d of state.dividends) {
-        const y = Number(String(d.date || "").slice(0, 4));
-        if (y >= 2000) yearSet.add(y);
-      }
-      const sortedYears = Array.from(yearSet).sort((a, b) => b - a);
-
-      const yearSel = document.getElementById("porto-div-recap-year-select");
-      let selectedYr = yearSel && yearSel.dataset.userPicked === "1"
-        ? Number(yearSel.value)
-        : currentCalYear;
-      if (!yearSet.has(selectedYr)) selectedYr = currentCalYear;
-
-      if (yearSel) {
-        yearSel.innerHTML = sortedYears
-          .map((yr) => `<option value="${yr}" ${yr === selectedYr ? "selected" : ""}>${yr}</option>`)
-          .join("");
-      }
-
-      const activeYr = String(selectedYr);
-      const totalAllTime = m.totalDividendsReceived;
-      const countAll = state.dividends.length;
-
-      const yearTotal = state.dividends
-        .filter((d) => String(d.date || "").startsWith(activeYr))
-        .reduce((s, d) => s + (Number(d.amount) || 0), 0);
-
-      const yieldOnPaidIn = m.totalPaidInCapital > 0 ? (totalAllTime / m.totalPaidInCapital) * 100 : 0;
-
       const allTimeEl = document.getElementById("porto-div-recap-alltime");
-      if (allTimeEl) allTimeEl.textContent = formatIDR(totalAllTime);
-
       const countEl = document.getElementById("porto-div-recap-count");
-      if (countEl) countEl.textContent = `${countAll}x pencairan dividen tercatat`;
-
-      const yrLabelEl = document.getElementById("porto-div-recap-year-label");
-      if (yrLabelEl) yrLabelEl.textContent = `Dividen Tahun ${activeYr}`;
-
-      const yrTotalEl = document.getElementById("porto-div-recap-year-total");
-      if (yrTotalEl) yrTotalEl.textContent = formatIDR(yearTotal);
-
+      const yearLabelEl = document.getElementById("porto-div-recap-year-label");
+      const yearSelectEl = document.getElementById("porto-div-recap-year-select");
+      const yearTotalEl = document.getElementById("porto-div-recap-year-total");
       const yieldPaidInEl = document.getElementById("porto-div-recap-yield-paidin");
-      if (yieldPaidInEl) yieldPaidInEl.textContent = `Kumulatif: ${formatNum(yieldOnPaidIn, 2)}% dari Modal Disetor`;
-
       const breakdownEl = document.getElementById("porto-div-recap-breakdown");
+
+      if (!allTimeEl) return;
+
+      const activeYear = String(state.meta.activeYear || getJakartaTimeInfo().year);
+      const byYear = {};
+      const byTicker = {};
+      let allTimeTotal = 0;
+
+      for (const d of state.dividends) {
+        const amt = Number(d.amount) || 0;
+        const yr = String(d.date || "").slice(0, 4) || activeYear;
+        const t = String(d.ticker || "LAINNYA").toUpperCase();
+        allTimeTotal += amt;
+        byYear[yr] = (byYear[yr] || 0) + amt;
+        byTicker[t] = (byTicker[t] || 0) + amt;
+      }
+
+      const yearSet = new Set([activeYear, String(getJakartaTimeInfo().year), ...Object.keys(byYear)]);
+      const sortedYears = Array.from(yearSet).filter((y) => y.length === 4).sort((a, b) => Number(b) - Number(a));
+
+      if (yearSelectEl) {
+        const prevPicked = yearSelectEl.dataset.userPicked === "1" ? yearSelectEl.value : activeYear;
+        yearSelectEl.innerHTML = sortedYears
+          .map((y) => `<option value="${y}">${y}</option>`)
+          .join("");
+        yearSelectEl.value = sortedYears.includes(prevPicked) ? prevPicked : activeYear;
+      }
+
+      const selectedYr = yearSelectEl ? yearSelectEl.value : activeYear;
+      const yearTotal = byYear[selectedYr] || 0;
+      const paidInRatio = m.totalPaidInCapital > 0 ? (allTimeTotal / m.totalPaidInCapital) * 100 : 0;
+
+      allTimeEl.textContent = formatIDR(allTimeTotal);
+      if (countEl) countEl.textContent = `${state.dividends.length}x pencairan dividen`;
+      if (yearLabelEl) yearLabelEl.textContent = `Dividen Tahun ${selectedYr}`;
+      if (yearTotalEl) yearTotalEl.textContent = formatIDR(yearTotal);
+      if (yieldPaidInEl) yieldPaidInEl.textContent = `Kumulatif: ${formatNum(paidInRatio, 2)}% dari Modal Disetor`;
+
       if (breakdownEl) {
         if (state.dividends.length === 0) {
           breakdownEl.innerHTML = `<span>Belum ada dividen tunai tercatat</span>`;
         } else {
-          const byTicker = {};
-          for (const d of state.dividends) {
-            const t = d.ticker || "LAINNYA";
-            byTicker[t] = (byTicker[t] || 0) + (Number(d.amount) || 0);
-          }
-          const topTickers = Object.entries(byTicker).sort((a, b) => b[1] - a[1]);
-          breakdownEl.innerHTML = topTickers
-            .map(([t, amt]) => `<span class="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">${escapeHTML(t)}: ${formatCompactIDR(amt)}</span>`)
-            .join("");
+          const yearBadges = Object.entries(byYear)
+            .sort((a, b) => Number(b[0]) - Number(a[0]))
+            .map(([yr, tot]) => `<span class="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold">${yr}: ${formatCompactIDR(tot)}</span>`);
+          const tickerBadges = Object.entries(byTicker)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([tk, tot]) => `<span class="px-2 py-0.5 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${escapeHTML(tk)}: ${formatCompactIDR(tot)}</span>`);
+          breakdownEl.innerHTML = [...yearBadges, ...tickerBadges].join("");
         }
       }
     }
 
     // =========================================================================
-    // 11. TAB 2: DIVIDENDS & PROJECTION RENDERER
+    // 11. TAB 2 RENDERER: DIVIDENDS & PROJECTIONS
     // =========================================================================
     function renderDividendsTab() {
       const m = computeMetrics();
       const jkt = getJakartaTimeInfo();
-      const activeYr = Number(state.meta.activeYear) || jkt.year;
+      const activeYr = String(state.meta.activeYear || jkt.year);
 
       const yearSelect = document.getElementById("div-year-select");
-      const yearSet = new Set([activeYr, jkt.year]);
-      for (const d of state.dividends) {
-        const y = Number(String(d.date || "").slice(0, 4));
-        if (y >= 2000) yearSet.add(y);
-      }
-      const sortedYears = Array.from(yearSet).sort((a, b) => b - a);
-      let selectedYear = yearSelect && yearSelect.dataset.userPicked === "1"
-        ? Number(yearSelect.value)
-        : jkt.year;
-      if (!yearSet.has(selectedYear)) selectedYear = jkt.year;
-
+      const yearSet = new Set([activeYr, String(jkt.year)]);
+      state.dividends.forEach((d) => {
+        const y = String(d.date || "").slice(0, 4);
+        if (y.length === 4) yearSet.add(y);
+      });
+      const years = Array.from(yearSet).sort((a, b) => Number(b) - Number(a));
       if (yearSelect) {
-        yearSelect.innerHTML = sortedYears
-          .map((yr) => `<option value="${yr}" class="bg-slate-900 text-white" ${yr === selectedYear ? "selected" : ""}>${yr}</option>`)
-          .join("");
+        const currentChoice = yearSelect.dataset.userPicked === "1" ? yearSelect.value : activeYr;
+        yearSelect.innerHTML = years.map((y) => `<option value="${y}" class="bg-slate-900 text-white">${y}</option>`).join("");
+        yearSelect.value = years.includes(currentChoice) ? currentChoice : activeYr;
       }
+      const selectedYear = yearSelect ? yearSelect.value : activeYr;
 
-      const selectedYrStr = String(selectedYear);
-
-      // Compute monthly matrix and per-holding dividend estimates
       const monthlyTotals = new Array(12).fill(0);
-      const monthlyEmitenDetails = Array.from({ length: 12 }, () => []);
-      const emitenRows = [];
-      let totalEstimatedAnnual = 0;
+      const monthlyEmitens = Array.from({ length: 12 }, () => []);
+      const emitenBreakdown = [];
+      let annualEstimate = 0;
 
       for (const h of state.holdings) {
         const shares = Number(h.shares) || 0;
@@ -4832,191 +4879,282 @@
         const payouts = Array.isArray(sched.payouts) ? sched.payouts : [];
 
         let totalDps = 0;
-        let annualEst = 0;
-        const payoutBadges = [];
+        let emitenEst = 0;
+        const scheduleBadges = [];
 
-        payouts.forEach((p, pIdx) => {
+        for (const p of payouts) {
           const mo = Math.max(0, Math.min(11, Number(p.month) || 0));
           const dps = Math.max(0, Number(p.dps) || 0);
           if (dps > 0) {
-            totalDps += dps;
             const amt = shares * dps;
-            annualEst += amt;
+            const payoutIdx = scheduleBadges.length;
+            const dpsFormatted = dps % 1 === 0 ? Math.round(dps).toLocaleString("id-ID") : formatNum(dps, 1);
+            const pillStyle =
+              payoutIdx === 0
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                : "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30";
+            totalDps += dps;
+            emitenEst += amt;
             monthlyTotals[mo] += amt;
-            monthlyEmitenDetails[mo].push({ ticker: h.ticker, amount: amt });
-            payoutBadges.push({
-              text: `${MONTH_SHORT_ID[mo]} (Rp ${formatNum(dps, 0)})`,
-              isInterim: pIdx > 0
-            });
+            monthlyEmitens[mo].push({ ticker: h.ticker, amount: amt });
+            scheduleBadges.push(
+              `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold border whitespace-nowrap ${pillStyle}">${MONTH_SHORT_ID[mo]} (Rp ${dpsFormatted})</span>`
+            );
           }
-        });
+        }
 
-        const actualPaidForYear = state.dividends
-          .filter((d) => d.ticker === h.ticker && String(d.date || "").startsWith(selectedYrStr))
+        annualEstimate += emitenEst;
+        const actualYearEmiten = state.dividends
+          .filter((d) => d.ticker === h.ticker && String(d.date || "").startsWith(selectedYear))
           .reduce((s, d) => s + (Number(d.amount) || 0), 0);
 
-        totalEstimatedAnnual += annualEst;
-        emitenRows.push({
+        emitenBreakdown.push({
           ticker: h.ticker,
-          name: h.name || `${h.ticker} Tbk`,
+          name: h.name,
           shares,
           cost,
           val,
           totalDps,
-          payoutBadges,
-          annualEst,
-          monthlyAvg: annualEst / 12,
-          actualPaidForYear,
-          yoc: cost > 0 ? (annualEst / cost) * 100 : 0,
-          marketYield: val > 0 ? (annualEst / val) * 100 : 0
+          payoutCount: scheduleBadges.length,
+          scheduleHTML:
+            scheduleBadges.length > 0
+              ? `<div class="flex flex-col items-start gap-1">${scheduleBadges.join("")}</div>`
+              : `<button type="button" onclick="openDividendScheduleModal('${escapeHTML(h.ticker)}')" class="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-amber-500 transition-colors whitespace-nowrap">Belum diatur</button>`,
+          annualEst: emitenEst,
+          monthlyAvg: emitenEst / 12,
+          actualYear: actualYearEmiten,
+          yoc: cost > 0 ? (emitenEst / cost) * 100 : 0,
+          mktYield: val > 0 ? (emitenEst / val) * 100 : 0
         });
       }
 
-      const monthlyAvgTotal = totalEstimatedAnnual / 12;
-      const portfolioYoC = m.stockCostTotal > 0 ? (totalEstimatedAnnual / m.stockCostTotal) * 100 : 0;
-      const portfolioMktYield = m.stockValTotal > 0 ? (totalEstimatedAnnual / m.stockValTotal) * 100 : 0;
-
       const actualYearTotal = state.dividends
-        .filter((d) => String(d.date || "").startsWith(selectedYrStr))
+        .filter((d) => String(d.date || "").startsWith(selectedYear))
         .reduce((s, d) => s + (Number(d.amount) || 0), 0);
 
-      // Peak month & active months insights
-      let peakMonthIdx = -1;
-      let peakMonthAmt = 0;
+      const overallYoC = m.stockCostTotal > 0 ? (annualEstimate / m.stockCostTotal) * 100 : 0;
+      const overallMktYield = m.stockValTotal > 0 ? (annualEstimate / m.stockValTotal) * 100 : 0;
+      const progressPct = annualEstimate > 0 ? (actualYearTotal / annualEstimate) * 100 : 0;
+
+      let peakMonthIdx = 0;
+      let peakMonthVal = 0;
       let activeMonthsCount = 0;
-      monthlyTotals.forEach((amt, idx) => {
-        if (amt > 0) activeMonthsCount++;
-        if (amt > peakMonthAmt) {
-          peakMonthAmt = amt;
+      monthlyTotals.forEach((val, idx) => {
+        if (val > 0) activeMonthsCount++;
+        if (val > peakMonthVal) {
+          peakMonthVal = val;
           peakMonthIdx = idx;
         }
       });
 
-      document.getElementById("div-hero-monthly-avg").textContent = formatIDR(monthlyAvgTotal);
-      document.getElementById("div-hero-annual").textContent = formatIDR(totalEstimatedAnnual);
-      document.getElementById("div-hero-yoc").textContent = `${formatNum(portfolioYoC, 2)}%`;
-      document.getElementById("div-hero-yield-market").textContent = `${formatNum(portfolioMktYield, 2)}%`;
+      document.getElementById("div-hero-monthly-avg").textContent = formatIDR(annualEstimate / 12);
+      document.getElementById("div-hero-annual").textContent = formatIDR(annualEstimate);
+      document.getElementById("div-hero-yoc").textContent = `${formatNum(overallYoC, 2)}%`;
+      document.getElementById("div-hero-yield-market").textContent = `${formatNum(overallMktYield, 2)}%`;
       document.getElementById("div-hero-stock-val").textContent = formatIDR(m.stockValTotal);
       document.getElementById("div-hero-stock-cost").textContent = formatIDR(m.stockCostTotal);
-
-      document.getElementById("div-hero-actual-label").textContent = `Dividen Cair (${selectedYrStr})`;
+      document.getElementById("div-hero-actual-label").textContent = `Dividen Cair (${selectedYear})`;
       document.getElementById("div-hero-actual-total").textContent = formatIDR(actualYearTotal);
       document.getElementById("div-hero-alltime-sub").textContent = `All-Time: ${formatIDR(m.totalDividendsReceived)}`;
 
       document.getElementById("div-insight-peak").textContent =
-        peakMonthIdx >= 0 ? `Panen Tertinggi: ${MONTH_NAMES_ID[peakMonthIdx]} (${formatCompactIDR(peakMonthAmt)})` : "Panen Tertinggi: —";
+        peakMonthVal > 0 ? `Panen Tertinggi: ${MONTH_NAMES_ID[peakMonthIdx]} (${formatCompactIDR(peakMonthVal)})` : "Panen Tertinggi: —";
       document.getElementById("div-insight-active-months").textContent = `${activeMonthsCount}/12 Bulan Cair`;
 
-      // Progress bar
-      const progressPct = totalEstimatedAnnual > 0 ? Math.min(100, (actualYearTotal / totalEstimatedAnnual) * 100) : 0;
-      const remainingEst = Math.max(0, totalEstimatedAnnual - actualYearTotal);
-      document.getElementById("div-progress-title").textContent = `Progres Realisasi Dividen Tahun ${selectedYrStr} (Aktual vs Estimasi)`;
-      document.getElementById("div-progress-remaining").textContent = `Sisa Potensi: ${formatIDR(remainingEst)}`;
+      document.getElementById("div-progress-title").textContent = `Progres Realisasi Dividen Tahun ${selectedYear} (Aktual vs Estimasi)`;
+      document.getElementById("div-progress-remaining").textContent = `Sisa Potensi: ${formatIDR(Math.max(0, annualEstimate - actualYearTotal))}`;
       document.getElementById("div-progress-pct").textContent = `${formatNum(progressPct, 1)}%`;
-      document.getElementById("div-progress-bar").style.width = `${progressPct}%`;
+      document.getElementById("div-progress-bar").style.width = `${Math.min(100, progressPct)}%`;
 
-      // 12-Month Harvest Calendar Grid with Color-Coded Emiten Badges & Intensity Bars
+      // 12-Month Calendar Grid
       const calGrid = document.getElementById("dividend-calendar-grid");
       if (calGrid) {
         calGrid.innerHTML = MONTH_NAMES_ID.map((mName, idx) => {
-          const amt = monthlyTotals[idx];
-          const isPeak = idx === peakMonthIdx && amt > 0;
-          const isCurMonth = idx === jkt.monthIndex && selectedYear === jkt.year;
-          const intensityPct = peakMonthAmt > 0 ? Math.min(100, Math.round((amt / peakMonthAmt) * 100)) : 0;
-
-          const cardStyle = isPeak
-            ? "border-amber-500/70 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-orange-500/10 shadow-sm shadow-amber-500/10"
-            : isCurMonth
-            ? "border-emerald-500/70 bg-gradient-to-br from-emerald-500/15 to-teal-500/5 shadow-sm shadow-emerald-500/10"
-            : amt > 0
-            ? "border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-slate-50/80 to-emerald-500/5 dark:from-indigo-500/10 dark:via-slate-950/70 dark:to-emerald-500/5"
-            : "border-slate-200/60 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-950/40 opacity-65";
-
-          const chips = monthlyEmitenDetails[idx]
+          const val = monthlyTotals[idx];
+          const isPeak = peakMonthVal > 0 && idx === peakMonthIdx;
+          const isCurrent = idx === jkt.monthIndex;
+          const cardCls = isPeak
+            ? "border-amber-500/70 bg-gradient-to-b from-amber-500/15 to-amber-500/5"
+            : isCurrent
+            ? "border-emerald-500/70 bg-gradient-to-b from-emerald-500/15 to-emerald-500/5"
+            : "border-slate-200/80 dark:border-slate-800/90 bg-slate-50/70 dark:bg-slate-950/60";
+          const monthTitleCls = isPeak
+            ? "text-amber-600 dark:text-amber-400 font-bold"
+            : isCurrent
+            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+            : val > 0
+            ? "text-slate-800 dark:text-slate-100 font-bold"
+            : "text-slate-500 dark:text-slate-400 font-semibold";
+          const amountCls = isPeak
+            ? "text-amber-600 dark:text-amber-400"
+            : val > 0
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-slate-400 dark:text-slate-500";
+          const rightBadge =
+            isPeak && isCurrent
+              ? '<div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40">PEAK</span><span class="w-2 h-2 rounded-full bg-emerald-500" title="Bulan Ini"></span></div>'
+              : isPeak
+              ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40">PEAK</span>'
+              : isCurrent
+              ? '<span class="w-2 h-2 rounded-full bg-emerald-500" title="Bulan Ini"></span>'
+              : "";
+          const chips = monthlyEmitens[idx]
             .map((item) => {
-              const hex = getEmitenColor(item.ticker);
-              return `<span title="${escapeHTML(item.ticker)}: ${formatIDR(item.amount)}" style="background-color:${hex}22; border-color:${hex}55; color:${hex};" class="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold border">${escapeHTML(item.ticker)}</span>`;
+              const c = getEmitenColor(item.ticker);
+              return `<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold" style="background:${c}18; border:1px solid ${c}55; color:${c}">${escapeHTML(item.ticker)}</span>`;
             })
             .join("");
-
-          const barColor = isPeak ? "bg-amber-500" : isCurMonth ? "bg-emerald-500" : "bg-indigo-500";
+          const barPct = peakMonthVal > 0 && val > 0 ? Math.max(6, Math.min(100, (val / peakMonthVal) * 100)) : 0;
 
           return `
-            <div class="rounded-xl border p-3 ${cardStyle} flex flex-col justify-between gap-2 transition-all hover:scale-[1.01]">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold ${isPeak ? "text-amber-600 dark:text-amber-300" : isCurMonth ? "text-emerald-600 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200"}">${mName}</span>
-                ${isPeak ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-300">PEAK</span>` : isCurMonth ? `<span class="w-2 h-2 rounded-full bg-emerald-500" title="Bulan Ini"></span>` : ""}
+            <div class="p-3.5 rounded-xl border ${cardCls} flex flex-col justify-between min-h-[108px]">
+              <div>
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-xs ${monthTitleCls}">${mName}</span>
+                  ${rightBadge}
+                </div>
+                <div class="font-mono font-bold text-sm sm:text-[15px] ${amountCls} my-1.5">
+                  ${val > 0 ? formatCompactIDR(val) : "Rp 0"}
+                </div>
+                <div class="flex flex-wrap gap-1 min-h-[20px]">
+                  ${chips || '<span class="text-xs text-slate-400 dark:text-slate-600">—</span>'}
+                </div>
               </div>
-              <div class="font-mono font-extrabold text-xs sm:text-sm ${amt > 0 ? (isPeak ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400") : "text-slate-400"}">
-                ${amt > 0 ? formatCompactIDR(amt) : "Rp 0"}
-              </div>
-              <div class="flex flex-wrap gap-1 min-h-[22px]">
-                ${chips || `<span class="text-[10px] text-slate-400">—</span>`}
-              </div>
-              <div class="w-full h-1 rounded-full bg-slate-200/70 dark:bg-slate-800 overflow-hidden mt-0.5">
-                <div class="h-full rounded-full ${barColor}" style="width: ${intensityPct}%"></div>
+              <div class="w-full h-1 rounded-full bg-slate-200 dark:bg-slate-800/90 overflow-hidden mt-2.5">
+                <div class="h-full rounded-full ${isPeak ? "bg-amber-400" : "bg-indigo-500"} transition-all duration-500" style="width:${barPct}%"></div>
               </div>
             </div>
           `;
         }).join("");
       }
 
-      // Breakdown Table with Color-Coded Emiten Badges & Porsi Bars
-      const colHeader = document.getElementById("div-col-actual-header");
-      if (colHeader) colHeader.textContent = `Sudah Cair (${selectedYrStr})`;
+      // Stacked Monthly Chart
+      const stackedCanvas = document.getElementById("chart-dividend-monthly-stacked");
+      if (stackedCanvas) {
+        destroyChart("divStacked");
+        const datasets = state.holdings.map((h) => {
+          const shares = Number(h.shares) || 0;
+          const sched = state.dividendSchedules[h.ticker] || { payouts: [] };
+          const arr = new Array(12).fill(0);
+          (sched.payouts || []).forEach((p) => {
+            const mo = Math.max(0, Math.min(11, Number(p.month) || 0));
+            arr[mo] += shares * (Math.max(0, Number(p.dps) || 0));
+          });
+          return {
+            label: h.ticker,
+            data: arr,
+            backgroundColor: getEmitenColor(h.ticker),
+            borderRadius: 4
+          };
+        });
 
-      const tbody = document.getElementById("dividend-breakdown-body");
-      tbody.innerHTML = emitenRows
+        charts.divStacked = new Chart(stackedCanvas, {
+          type: "bar",
+          data: { labels: MONTH_SHORT_ID, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+              y: {
+                stacked: true,
+                ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) },
+                grid: { color: getChartGridColor() }
+              }
+            },
+            plugins: {
+              legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}`
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Emiten Contribution Donut
+      const donutCanvas = document.getElementById("chart-dividend-emiten-donut");
+      if (donutCanvas) {
+        destroyChart("divDonut");
+        const activeDivItems = emitenBreakdown.filter((i) => i.annualEst > 0);
+        charts.divDonut = new Chart(donutCanvas, {
+          type: "doughnut",
+          data: {
+            labels: activeDivItems.length > 0 ? activeDivItems.map((i) => i.ticker) : ["Belum ada estimasi"],
+            datasets: [
+              {
+                data: activeDivItems.length > 0 ? activeDivItems.map((i) => i.annualEst) : [1],
+                backgroundColor: activeDivItems.length > 0 ? activeDivItems.map((i) => getEmitenColor(i.ticker)) : ["#475569"],
+                borderWidth: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "65%",
+            plugins: {
+              legend: { position: "bottom", labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    if (activeDivItems.length === 0) return " Atur jadwal DPS emiten";
+                    const val = Number(ctx.raw) || 0;
+                    const pct = annualEstimate > 0 ? (val / annualEstimate) * 100 : 0;
+                    return ` ${ctx.label}: ${formatIDR(val)} (${formatNum(pct, 1)}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Breakdown Table
+      document.getElementById("div-col-actual-header").textContent = `Sudah Cair (${selectedYear})`;
+      const bdBody = document.getElementById("dividend-breakdown-body");
+      bdBody.innerHTML = emitenBreakdown
         .sort((a, b) => b.annualEst - a.annualEst)
-        .map((r) => {
-          const sharePct = totalEstimatedAnnual > 0 ? (r.annualEst / totalEstimatedAnnual) * 100 : 0;
-          const hex = getEmitenColor(r.ticker);
+        .map((item) => {
+          const sharePct = annualEstimate > 0 ? (item.annualEst / annualEstimate) * 100 : 0;
+          const badgeColor = getEmitenColor(item.ticker);
           return `
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
               <td class="py-3 px-4">
                 <div class="flex items-center gap-2.5">
-                  <span style="background-color:${hex}22; border-color:${hex}55; color:${hex};" class="w-8 h-8 rounded-xl border font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
-                    ${escapeHTML(r.ticker)}
+                  <span class="w-8 h-8 rounded-full font-mono font-bold text-[11px] flex items-center justify-center shrink-0" style="background:${badgeColor}18; border:1px solid ${badgeColor}66; color:${badgeColor}">
+                    ${escapeHTML(item.ticker)}
                   </span>
                   <div class="min-w-0">
-                    <div class="font-mono font-bold text-slate-900 dark:text-white text-xs sm:text-sm">${escapeHTML(r.ticker)}</div>
-                    <div class="text-[10px] text-slate-500 truncate max-w-[130px]">${escapeHTML(r.name)}</div>
+                    <div class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm leading-tight">${escapeHTML(item.ticker)}</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[145px]">${escapeHTML(item.name || "")}</div>
                   </div>
                 </div>
               </td>
-              <td class="py-3 px-3 text-right font-mono">${r.shares.toLocaleString("id-ID")}</td>
-              <td class="py-3 px-3 text-right font-mono font-semibold text-amber-600 dark:text-amber-400">Rp ${formatNum(r.totalDps, 2)}</td>
-              <td class="py-3 px-3">
-                <div class="flex flex-wrap gap-1">
-                  ${r.payoutBadges.length > 0
-                    ? r.payoutBadges
-                        .map(
-                          (b) =>
-                            `<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border ${
-                              b.isInterim
-                                ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25"
-                                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
-                            }">${b.text}</span>`
-                        )
-                        .join("")
-                    : `<span class="text-[11px] text-slate-400">Belum diatur</span>`}
-                </div>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                ${item.shares.toLocaleString("id-ID")}
               </td>
-              <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${formatIDR(r.annualEst)}</td>
-              <td class="py-3 px-3 text-right font-mono text-slate-600 dark:text-slate-300">${formatIDR(r.monthlyAvg)}</td>
-              <td class="py-3 px-3 text-right font-mono font-semibold text-indigo-600 dark:text-indigo-400">${formatIDR(r.actualPaidForYear)}</td>
-              <td class="py-3 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">${formatNum(r.yoc, 2)}%</td>
-              <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${formatNum(r.marketYield, 2)}%</td>
-              <td class="py-3 px-3 text-right font-mono">
-                <div class="font-semibold text-slate-700 dark:text-slate-200">${formatNum(sharePct, 1)}%</div>
-                <div class="w-16 ml-auto h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mt-1">
-                  <div style="width:${Math.min(100, sharePct)}%; background-color:${hex};" class="h-full rounded-full"></div>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                Rp ${formatNum(item.totalDps, 2)}
+              </td>
+              <td class="py-3 px-3">${item.scheduleHTML}</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">${formatIDR(item.annualEst)}</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap">${formatIDR(item.monthlyAvg)}</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">${formatIDR(item.actualYear)}</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">${formatNum(item.yoc, 2)}%</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${formatNum(item.mktYield, 2)}%</td>
+              <td class="py-3 px-3 text-right font-mono tabular-nums whitespace-nowrap">
+                <div class="font-bold text-slate-900 dark:text-white text-xs">${formatNum(sharePct, 1)}%</div>
+                <div class="mt-1.5 h-1.5 w-14 ml-auto rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${Math.min(100, sharePct)}%; background:${badgeColor}"></div>
                 </div>
               </td>
               <td class="py-3 px-4 text-center">
-                <div class="inline-flex items-center gap-1">
-                  <button type="button" onclick="openDividendScheduleModal('${escapeHTML(r.ticker)}')" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300">Atur DPS</button>
-                  <button type="button" onclick="openDividendModal('${escapeHTML(r.ticker)}')" class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300">+ Cair</button>
+                <div class="inline-flex items-center gap-1.5">
+                  <button type="button" onclick="openDividendScheduleModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold leading-tight bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/25 transition-colors" title="Atur Estimasi DPS & Bulan Cair">Atur<br/>DPS</button>
+                  <button type="button" onclick="openDividendModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold leading-tight bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25 transition-colors" title="Catat Dividen Cair">+<br/>Cair</button>
                 </div>
               </td>
             </tr>
@@ -5024,520 +5162,109 @@
         })
         .join("");
 
-      const tfoot = document.getElementById("dividend-breakdown-foot");
-      tfoot.innerHTML = `
+      document.getElementById("dividend-breakdown-foot").innerHTML = `
         <tr>
-          <td colspan="4" class="py-3 px-4 text-slate-900 dark:text-white">TOTAL ESTIMASI & REALISASI DIVIDEN</td>
-          <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">${formatIDR(totalEstimatedAnnual)}</td>
-          <td class="py-3 px-3 text-right font-mono">${formatIDR(monthlyAvgTotal)}</td>
-          <td class="py-3 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">${formatIDR(actualYearTotal)}</td>
-          <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">${formatNum(portfolioYoC, 2)}%</td>
-          <td class="py-3 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">${formatNum(portfolioMktYield, 2)}%</td>
-          <td class="py-3 px-3 text-right font-mono">100,0%</td>
+          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-white uppercase">TOTAL ESTIMASI &amp; REALISASI DIVIDEN</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">${formatIDR(annualEstimate)}</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">${formatIDR(annualEstimate / 12)}</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">${formatIDR(actualYearTotal)}</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">${formatNum(overallYoC, 2)}%</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${formatNum(overallMktYield, 2)}%</td>
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">100,0%</td>
           <td></td>
         </tr>
       `;
 
-      // Render Stacked Monthly Chart & Emiten Contribution Donut
-      renderDividendStackedChart(emitenRows);
-      renderDividendDonutChart(emitenRows, totalEstimatedAnnual);
-
-      // Render Actual Dividend Chart & History Table
-      renderActualDividendChartAndHistory(selectedYrStr);
-
-      // Render 10-Year Projection Simulator
-      renderDividendProjectionSim();
+      renderDividendProjectionSim(annualEstimate, m.stockValTotal);
+      renderActualDividendsSection(selectedYear);
     }
 
-    function renderDividendStackedChart(emitenRows) {
-      const canvas = document.getElementById("chart-dividend-monthly-stacked");
-      if (!canvas) return;
-      destroyChart("divStacked");
-
-      const datasets = emitenRows
-        .filter((r) => r.annualEst > 0)
-        .map((r) => {
-          const sched = state.dividendSchedules[r.ticker] || { payouts: [] };
-          const monthlyArr = new Array(12).fill(0);
-          for (const p of sched.payouts || []) {
-            const mo = Math.max(0, Math.min(11, Number(p.month) || 0));
-            monthlyArr[mo] += r.shares * (Number(p.dps) || 0);
-          }
-          return {
-            label: r.ticker,
-            data: monthlyArr,
-            backgroundColor: getEmitenColor(r.ticker),
-            borderRadius: 4
-          };
-        });
-
-      charts.divStacked = new Chart(canvas, {
-        type: "bar",
-        data: { labels: MONTH_SHORT_ID, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-            y: {
-              stacked: true,
-              grid: { color: getChartGridColor() },
-              ticks: {
-                color: getChartTextColor(),
-                font: { family: "JetBrains Mono", size: 10 },
-                callback: (v) => formatCompactIDR(v)
-              }
-            }
-          },
-          plugins: {
-            legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}`
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function renderDividendDonutChart(emitenRows, totalEstimatedAnnual) {
-      const canvas = document.getElementById("chart-dividend-emiten-donut");
-      if (!canvas) return;
-      destroyChart("divDonut");
-
-      const active = emitenRows.filter((r) => r.annualEst > 0).sort((a, b) => b.annualEst - a.annualEst);
-      charts.divDonut = new Chart(canvas, {
-        type: "doughnut",
-        data: {
-          labels: active.map((r) => r.ticker),
-          datasets: [{
-            data: active.map((r) => r.annualEst),
-            backgroundColor: active.map((r) => getEmitenColor(r.ticker)),
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "64%",
-          plugins: {
-            legend: { position: "bottom", labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const pct = totalEstimatedAnnual > 0 ? (Number(ctx.raw) / totalEstimatedAnnual) * 100 : 0;
-                  return ` ${ctx.label}: ${formatIDR(ctx.raw)} (${formatNum(pct, 1)}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function renderActualDividendChartAndHistory(selectedYrStr) {
-      const mode = document.getElementById("div-actual-chart-mode")?.value || "MONTHLY";
-      const canvas = document.getElementById("chart-dividend-actual");
-      if (canvas) {
-        destroyChart("divActual");
-        let labels = [];
-        let values = [];
-
-        if (mode === "ANNUAL") {
-          const byYr = {};
-          for (const d of state.dividends) {
-            const y = String(d.date || "").slice(0, 4);
-            if (y.length === 4) byYr[y] = (byYr[y] || 0) + (Number(d.amount) || 0);
-          }
-          if (!byYr[selectedYrStr]) byYr[selectedYrStr] = 0;
-          labels = Object.keys(byYr).sort();
-          values = labels.map((y) => byYr[y]);
-        } else {
-          labels = MONTH_SHORT_ID;
-          values = new Array(12).fill(0);
-          for (const d of state.dividends) {
-            if (String(d.date || "").startsWith(selectedYrStr)) {
-              const moIdx = Math.max(0, Math.min(11, (parseInt(String(d.date).split("-")[1], 10) || 1) - 1));
-              values[moIdx] += Number(d.amount) || 0;
-            }
-          }
-        }
-
-        charts.divActual = new Chart(canvas, {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [{
-              label: "Dividen Tunai Cair (Rp)",
-              data: values,
-              backgroundColor: [
-                "#6366f1", "#8b5cf6", "#10b981", "#f59e0b", "#0ea5e9", "#ec4899",
-                "#14b8a6", "#f97316", "#3b82f6", "#84cc16", "#a855f7", "#06b6d4"
-              ],
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 } } },
-              y: {
-                grid: { color: getChartGridColor() },
-                ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: (ctx) => ` Cair: ${formatIDR(ctx.raw)}` } }
-            }
-          }
-        });
-      }
-
-      // Populate multi-year annual recap pills beneath the chart
-      const annualRecapEl = document.getElementById("div-annual-recap-container");
-      if (annualRecapEl) {
-        const totalsByYear = {};
-        for (const d of state.dividends) {
-          const y = String(d.date || "").slice(0, 4);
-          if (y.length === 4) totalsByYear[y] = (totalsByYear[y] || 0) + (Number(d.amount) || 0);
-        }
-        if (!totalsByYear[selectedYrStr]) totalsByYear[selectedYrStr] = 0;
-        const yrKeys = Object.keys(totalsByYear).sort();
-
-        annualRecapEl.innerHTML = `
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Rekap Realisasi per Tahun</span>
-            <span class="text-[11px] font-mono text-indigo-500 font-bold">Total: ${formatCompactIDR(Object.values(totalsByYear).reduce((a, b) => a + b, 0))}</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            ${yrKeys
-              .map((yr) => {
-                const isSelected = yr === selectedYrStr;
-                return `<span class="px-2.5 py-1 rounded-xl text-[11px] font-mono border ${
-                  isSelected
-                    ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-600 dark:text-indigo-300 font-bold"
-                    : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
-                }">${yr}: ${formatCompactIDR(totalsByYear[yr])}</span>`;
-              })
-              .join("")}
-          </div>
-        `;
-      }
-
-      const countBadge = document.getElementById("div-actual-count-badge");
-      if (countBadge) countBadge.textContent = `${state.dividends.length} catatan`;
-
-      const histBody = document.getElementById("dividend-history-body");
-      if (histBody) {
-        if (state.dividends.length === 0) {
-          histBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">Belum ada riwayat pencairan dividen tunai. Klik "+ Catat Dividen Tunai" di atas.</td></tr>`;
-        } else {
-          histBody.innerHTML = state.dividends
-            .map((d) => {
-              const hex = getEmitenColor(d.ticker);
-              return `
-              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-                <td class="py-2.5 px-4 font-mono text-slate-600 dark:text-slate-300">${escapeHTML(d.date)}</td>
-                <td class="py-2.5 px-3">
-                  <span style="background-color:${hex}22; border-color:${hex}55; color:${hex};" class="px-2 py-0.5 rounded-md font-mono font-bold text-[11px] border">${escapeHTML(d.ticker)}</span>
-                </td>
-                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">+${formatIDR(d.amount)}</td>
-                <td class="py-2.5 px-3 text-slate-500">${escapeHTML(d.note || "")}</td>
-                <td class="py-2.5 px-3 text-center">
-                  <button type="button" onclick="deleteDividend('${d.id}')" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                  </button>
-                </td>
-              </tr>
-            `;
-            })
-            .join("");
-        }
-      }
-    }
-
-    window.renderDividendProjectionSim = function () {
+    window.renderDividendProjectionSim = function (passedAnnualEst = null, passedStockVal = null) {
       const m = computeMetrics();
-      const growthRate = (Number(document.getElementById("div-proj-growth")?.value) || 0) / 100;
-      const monthlyTopup = Math.max(0, Number(document.getElementById("div-proj-topup")?.value) || 0);
-      const isDrip = document.getElementById("div-proj-drip")?.checked ?? true;
-
-      let baseAnnualDiv = 0;
-      for (const h of state.holdings) {
-        const sched = state.dividendSchedules[h.ticker];
-        if (sched?.payouts) {
-          const dps = sched.payouts.reduce((s, p) => s + (Number(p.dps) || 0), 0);
-          baseAnnualDiv += (Number(h.shares) || 0) * dps;
+      let baseAnnualDiv = passedAnnualEst;
+      if (baseAnnualDiv === null) {
+        baseAnnualDiv = 0;
+        for (const h of state.holdings) {
+          const shares = Number(h.shares) || 0;
+          const sched = state.dividendSchedules[h.ticker] || { payouts: [] };
+          (sched.payouts || []).forEach((p) => {
+            baseAnnualDiv += shares * (Math.max(0, Number(p.dps) || 0));
+          });
         }
       }
+      const stockVal = passedStockVal !== null ? passedStockVal : m.stockValTotal;
+      const baseYield = stockVal > 0 && baseAnnualDiv > 0 ? baseAnnualDiv / stockVal : 0.065;
+      const startYear = Number(state.meta.activeYear) || getJakartaTimeInfo().year;
 
-      const baseYield = m.stockValTotal > 0 ? baseAnnualDiv / m.stockValTotal : 0.05;
-      const startCap = Math.max(m.stockValTotal, 1000000);
-      const startYield = baseYield > 0 ? baseYield : 0.05;
+      const growthPct = Math.max(0, Number(document.getElementById("div-proj-growth")?.value) || 0) / 100;
+      const monthlyTopup = Math.max(0, Number(document.getElementById("div-proj-topup")?.value) || 0);
+      const useDrip = document.getElementById("div-proj-drip")?.checked !== false;
 
-      let capitalWithDrip = startCap;
-      let capitalNoDrip = startCap;
-      let currentYield = startYield;
+      let organicBaseDiv = baseAnnualDiv;
+      let addedCapitalFromTopupAndDrip = 0;
 
       const labels = [];
-      const annualDivSeries = [];
-      const noDripSeries = [];
+      const annualSeries = [];
+      const monthlySeries = [];
       let cumDiv10Y = 0;
       let y5Annual = 0;
       let y10Annual = 0;
 
       for (let yr = 1; yr <= 10; yr++) {
-        capitalWithDrip += monthlyTopup * 12;
-        capitalNoDrip += monthlyTopup * 12;
+        const yearNum = startYear + yr - 1;
+        if (yr > 1) {
+          organicBaseDiv = organicBaseDiv * (1 + growthPct);
+          addedCapitalFromTopupAndDrip += monthlyTopup * 12;
+        }
 
-        const annualDiv = capitalWithDrip * currentYield;
-        const annualNoDrip = capitalNoDrip * currentYield;
+        const annualDiv = organicBaseDiv + addedCapitalFromTopupAndDrip * baseYield;
+        if (useDrip) {
+          addedCapitalFromTopupAndDrip += annualDiv;
+        }
 
-        if (isDrip) capitalWithDrip += annualDiv;
-        currentYield = currentYield * (1 + growthRate);
         cumDiv10Y += annualDiv;
-
-        labels.push(`Thn ${yr}`);
-        annualDivSeries.push(Math.round(annualDiv));
-        noDripSeries.push(Math.round(annualNoDrip));
         if (yr === 5) y5Annual = annualDiv;
         if (yr === 10) y10Annual = annualDiv;
+
+        labels.push(String(yearNum));
+        annualSeries.push(Math.round(annualDiv));
+        monthlySeries.push(Math.round(annualDiv / 12));
       }
 
-      const y5MoEl = document.getElementById("div-proj-y5-monthly");
-      if (y5MoEl) y5MoEl.textContent = formatIDR(y5Annual / 12);
-      const y5YrEl = document.getElementById("div-proj-y5-annual");
-      if (y5YrEl) y5YrEl.textContent = `${formatIDR(y5Annual)} / thn`;
+      document.getElementById("div-proj-y5-monthly").textContent = formatIDR(y5Annual / 12);
+      document.getElementById("div-proj-y5-annual").textContent = `${formatIDR(y5Annual)} / thn`;
 
-      const y10MoEl = document.getElementById("div-proj-y10-monthly");
-      if (y10MoEl) y10MoEl.textContent = formatIDR(y10Annual / 12);
-      const y10YrEl = document.getElementById("div-proj-y10-annual");
-      if (y10YrEl) y10YrEl.textContent = `${formatIDR(y10Annual)} / thn`;
+      document.getElementById("div-proj-y10-monthly").textContent = formatIDR(y10Annual / 12);
+      document.getElementById("div-proj-y10-annual").textContent = `${formatIDR(y10Annual)} / thn`;
 
-      const cumEl = document.getElementById("div-proj-10y-cum");
-      if (cumEl) cumEl.textContent = formatIDR(cumDiv10Y);
+      document.getElementById("div-proj-10y-cum").textContent = formatIDR(cumDiv10Y);
 
       const canvas = document.getElementById("chart-dividend-projection");
       if (!canvas) return;
       destroyChart("divProj");
-
-      const datasets = [
-        {
-          type: "bar",
-          label: isDrip ? "Dividen / Thn (Dengan DRIP)" : "Dividen / Thn",
-          data: annualDivSeries,
-          backgroundColor: "#10b981",
-          borderRadius: 6
-        }
-      ];
-
-      if (isDrip) {
-        datasets.push({
-          type: "line",
-          label: "Tanpa Reinvestasi DRIP",
-          data: noDripSeries,
-          borderColor: "#f59e0b",
-          backgroundColor: "#f59e0b",
-          borderDash: [5, 5],
-          borderWidth: 2,
-          pointRadius: 3,
-          tension: 0.3
-        });
-      }
-
       charts.divProj = new Chart(canvas, {
-        data: { labels, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-            y: {
-              grid: { color: getChartGridColor() },
-              ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }
-            }
-          },
-          plugins: {
-            legend: {
-              display: isDrip,
-              labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 12 }
-            },
-            tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}/thn (${formatIDR(ctx.raw / 12)}/bln)` } }
-          }
-        }
-      });
-    };
-
-    // =========================================================================
-    // 12. TAB 3: MUTATIONS (TOP UP & WITHDRAW UNITIZATION) RENDERER
-    // =========================================================================
-    function renderMutationsTab() {
-      const m = computeMetrics();
-      const sorted = [...state.mutations].sort((a, b) => String(a.date).localeCompare(String(b.date)));
-
-      let totalTopUp = 0;
-      let topUpCount = 0;
-      let totalWithdraw = 0;
-      let withdrawCount = 0;
-
-      for (const mut of sorted) {
-        if (mut.type === "TOPUP") {
-          totalTopUp += Number(mut.amount) || 0;
-          topUpCount++;
-        } else {
-          totalWithdraw += Number(mut.amount) || 0;
-          withdrawCount++;
-        }
-      }
-
-      document.getElementById("mut-kpi-paidin").textContent = formatIDR(m.totalPaidInCapital);
-      document.getElementById("mut-kpi-paidin-sub").textContent = `Modal Awal: ${formatIDR(m.initCap)}`;
-      document.getElementById("mut-kpi-total-topup").textContent = `+${formatIDR(totalTopUp)}`;
-      document.getElementById("mut-kpi-topup-count").textContent = `${topUpCount}x transaksi masuk`;
-      document.getElementById("mut-kpi-total-withdraw").textContent = formatIDR(totalWithdraw);
-      document.getElementById("mut-kpi-withdraw-count").textContent = `${withdrawCount}x penarikan dana`;
-      document.getElementById("mut-kpi-total-units").textContent = formatNum(m.totalUnits, 4);
-      document.getElementById("mut-kpi-nav-sub").textContent = `NAV Saat Ini: ${formatNum(m.currentNav, 4)}`;
-
-      // Neutrality banner live simulation
-      const exampleUnits = m.currentNav > 0 ? 10000000 / m.currentNav : 0;
-      document.getElementById("mut-neutrality-nav").textContent = formatNum(m.currentNav, 2);
-      document.getElementById("mut-neutrality-units").textContent = `+${formatNum(exampleUnits, 2)} unit`;
-      document.getElementById("mut-neutrality-twr").textContent = formatPct(m.ytdReturnPct);
-
-      const sumBadge = document.getElementById("mut-summary-badge");
-      if (sumBadge) sumBadge.innerHTML = `Total Modal Disetor: <strong>${formatIDR(m.totalPaidInCapital)}</strong>`;
-
-      updateMutationPreview();
-
-      // Table rows with running capital & units
-      let runningCapital = m.initCap;
-      let runningUnits = m.initUnits;
-      const tbody = document.getElementById("mutations-table-body");
-
-      let rowsHTML = `
-        <tr class="bg-slate-50/60 dark:bg-slate-900/50 text-xs">
-          <td class="py-3 px-4 font-mono font-bold text-slate-600 dark:text-slate-300">SALDO AWAL</td>
-          <td class="py-3 px-3 text-slate-500">Modal & Unit Awal Tahun</td>
-          <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-300">INITIAL</span></td>
-          <td class="py-3 px-3 text-right font-mono">${formatIDR(m.initCap)}</td>
-          <td class="py-3 px-3 text-right font-mono">${formatNum(m.initNav, 4)}</td>
-          <td class="py-3 px-3 text-right font-mono">+${formatNum(m.initUnits, 4)}</td>
-          <td class="py-3 px-3 text-right font-mono font-semibold">${formatIDR(runningCapital)}</td>
-          <td class="py-3 px-3 text-right font-mono font-semibold">${formatNum(runningUnits, 4)}</td>
-          <td class="py-3 px-4 text-center text-slate-400">—</td>
-        </tr>
-      `;
-
-      for (const mut of sorted) {
-        const isTopup = mut.type === "TOPUP";
-        const amt = Number(mut.amount) || 0;
-        const delta = Number(mut.unitsDelta) || 0;
-        runningCapital += isTopup ? amt : -amt;
-        runningUnits += isTopup ? delta : -delta;
-
-        const moIdx = Math.max(0, Math.min(11, (parseInt(String(mut.date).split("-")[1], 10) || 1) - 1));
-        const monthTag = MONTH_SHORT_ID[moIdx];
-
-        rowsHTML += `
-          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-            <td class="py-3 px-4 font-mono">
-              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 mr-1.5">${monthTag}</span>
-              <span class="text-xs text-slate-600 dark:text-slate-300">${escapeHTML(mut.date)}</span>
-            </td>
-            <td class="py-3 px-3 text-slate-700 dark:text-slate-200">${escapeHTML(mut.note || "")}</td>
-            <td class="py-3 px-3">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isTopup ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"}">
-                ${isTopup ? "TOP UP" : "WITHDRAW"}
-              </span>
-            </td>
-            <td class="py-3 px-3 text-right font-mono font-bold ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
-              ${isTopup ? "+" : "-"}${formatIDR(amt)}
-            </td>
-            <td class="py-3 px-3 text-right font-mono">${formatNum(mut.navAtTime, 4)}</td>
-            <td class="py-3 px-3 text-right font-mono ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
-              ${isTopup ? "+" : "-"}${formatNum(delta, 4)}
-            </td>
-            <td class="py-3 px-3 text-right font-mono font-semibold">${formatIDR(runningCapital)}</td>
-            <td class="py-3 px-3 text-right font-mono font-semibold text-sky-600 dark:text-sky-400">${formatNum(runningUnits, 4)}</td>
-            <td class="py-3 px-4 text-center">
-              <button type="button" onclick="deleteMutation('${mut.id}')" class="p-1.5 rounded-lg hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus Mutasi">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-      }
-      tbody.innerHTML = rowsHTML;
-
-      const tfoot = document.getElementById("mutations-table-foot");
-      tfoot.innerHTML = `
-        <tr>
-          <td colspan="6" class="py-3.5 px-4 text-slate-900 dark:text-white">POSISI AKHIR MODAL DISETOR & UNIT PENYERTAAN</td>
-          <td class="py-3.5 px-3 text-right font-mono text-slate-900 dark:text-white">${formatIDR(m.totalPaidInCapital)}</td>
-          <td class="py-3.5 px-3 text-right font-mono text-sky-600 dark:text-sky-400">${formatNum(m.totalUnits, 4)} unit</td>
-          <td></td>
-        </tr>
-      `;
-
-      renderMutationsChart(sorted, m);
-    }
-
-    function renderMutationsChart(sortedMutations, m) {
-      const canvas = document.getElementById("chart-mutations");
-      if (!canvas) return;
-      destroyChart("mutations");
-
-      const topupByMonth = new Array(12).fill(0);
-      const withdrawByMonth = new Array(12).fill(0);
-      const unitCurve = new Array(12).fill(null);
-
-      let runningUnits = m.initUnits;
-      for (let mo = 0; mo < 12; mo++) {
-        const moMuts = sortedMutations.filter((mut) => (parseInt(String(mut.date).split("-")[1], 10) || 1) - 1 === mo);
-        for (const mut of moMuts) {
-          if (mut.type === "TOPUP") {
-            topupByMonth[mo] += Number(mut.amount) || 0;
-            runningUnits += Number(mut.unitsDelta) || 0;
-          } else {
-            withdrawByMonth[mo] += -(Number(mut.amount) || 0);
-            runningUnits -= Number(mut.unitsDelta) || 0;
-          }
-        }
-        unitCurve[mo] = Number(runningUnits.toFixed(2));
-      }
-
-      charts.mutations = new Chart(canvas, {
         data: {
-          labels: MONTH_SHORT_ID,
+          labels,
           datasets: [
             {
               type: "bar",
-              label: "Top Up (Rp)",
-              data: topupByMonth,
-              backgroundColor: "#10b981",
-              borderRadius: 5,
-              yAxisID: "y"
-            },
-            {
-              type: "bar",
-              label: "Withdraw (Rp)",
-              data: withdrawByMonth,
-              backgroundColor: "#f43f5e",
-              borderRadius: 5,
+              label: "Estimasi Dividen / Tahun (Rp)",
+              data: annualSeries,
+              backgroundColor: "rgba(16, 185, 129, 0.78)",
+              borderColor: "#10b981",
+              borderWidth: 1,
+              borderRadius: 6,
               yAxisID: "y"
             },
             {
               type: "line",
-              label: "Akumulasi Unit",
-              data: unitCurve,
-              borderColor: "#38bdf8",
-              backgroundColor: "#38bdf8",
+              label: "Rata-rata Dividen / Bulan (Rp)",
+              data: monthlySeries,
+              borderColor: "#f59e0b",
+              backgroundColor: "#f59e0b",
+              borderWidth: 2.5,
+              pointRadius: 3.5,
               tension: 0.3,
-              pointRadius: 3,
               yAxisID: "y1"
             }
           ]
@@ -5546,49 +5273,376 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
+            x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
             y: {
               position: "left",
-              grid: { color: getChartGridColor() },
-              ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }
+              ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) },
+              grid: { color: getChartGridColor() }
             },
             y1: {
               position: "right",
-              grid: { drawOnChartArea: false },
-              ticks: { color: "#38bdf8", font: { family: "JetBrains Mono", size: 10 } }
+              ticks: { color: "#f59e0b", font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) },
+              grid: { drawOnChartArea: false }
             }
           },
           plugins: {
-            legend: { display: false },
+            legend: {
+              labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 12 }
+            },
             tooltip: {
               callbacks: {
-                label: (ctx) =>
-                  ctx.dataset.yAxisID === "y1"
-                    ? ` Akumulasi Unit: ${formatNum(ctx.raw, 2)} unit`
-                    : ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}`
+                label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}`
               }
             }
           }
         }
       });
+    };
+
+    function renderActualDividendsSection(selectedYear) {
+      const mode = document.getElementById("div-actual-chart-mode")?.value || "MONTHLY";
+      const canvas = document.getElementById("chart-dividend-actual");
+      const subEl = document.getElementById("div-actual-chart-sub");
+      const recapEl = document.getElementById("div-annual-recap-container");
+
+      const byYear = {};
+      state.dividends.forEach((d) => {
+        const yr = String(d.date || "").slice(0, 4) || selectedYear;
+        byYear[yr] = (byYear[yr] || 0) + (Number(d.amount) || 0);
+      });
+
+      if (recapEl) {
+        const entries = Object.entries(byYear).sort((a, b) => Number(a[0]) - Number(b[0]));
+        recapEl.innerHTML =
+          entries.length === 0
+            ? `<span class="text-xs text-slate-400">Belum ada realisasi dividen yang dicatat.</span>`
+            : `<div class="flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-semibold text-slate-500 mr-1">Rekap per Tahun:</span>${entries
+                .map(
+                  ([yr, tot]) =>
+                    `<span class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">${yr}: ${formatIDR(tot)}</span>`
+                )
+                .join("")}</div>`;
+      }
+
+      if (canvas) {
+        destroyChart("divActual");
+        if (mode === "ANNUAL") {
+          if (subEl) subEl.textContent = "Akumulasi dividen cair per tahun (Multi-Tahun)";
+          const yrs = Object.keys(byYear).sort((a, b) => Number(a) - Number(b));
+          charts.divActual = new Chart(canvas, {
+            type: "bar",
+            data: {
+              labels: yrs.length > 0 ? yrs : [selectedYear],
+              datasets: [
+                {
+                  label: "Dividen Cair Tahunan (Rp)",
+                  data: yrs.length > 0 ? yrs.map((y) => byYear[y]) : [0],
+                  backgroundColor: "#6366f1",
+                  borderRadius: 6
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+                y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }, grid: { color: getChartGridColor() } }
+              },
+              plugins: {
+                legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
+                tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}` } }
+              }
+            }
+          });
+        } else {
+          if (subEl) subEl.textContent = `Realisasi aktual vs estimasi proyeksi bulanan (${selectedYear})`;
+          const moActual = new Array(12).fill(0);
+          state.dividends
+            .filter((d) => String(d.date || "").startsWith(selectedYear))
+            .forEach((d) => {
+              const mo = Math.max(0, Math.min(11, (parseInt(String(d.date).split("-")[1], 10) || 1) - 1));
+              moActual[mo] += Number(d.amount) || 0;
+            });
+
+          const moEst = new Array(12).fill(0);
+          for (const h of state.holdings) {
+            const shares = Number(h.shares) || 0;
+            const sched = state.dividendSchedules[h.ticker] || { payouts: [] };
+            (sched.payouts || []).forEach((p) => {
+              const mo = Math.max(0, Math.min(11, Number(p.month) || 0));
+              moEst[mo] += shares * (Math.max(0, Number(p.dps) || 0));
+            });
+          }
+
+          charts.divActual = new Chart(canvas, {
+            type: "bar",
+            data: {
+              labels: MONTH_SHORT_ID,
+              datasets: [
+                {
+                  label: `Aktual Cair (${selectedYear})`,
+                  data: moActual,
+                  backgroundColor: "#6366f1",
+                  borderRadius: 5
+                },
+                {
+                  label: "Estimasi Jadwal",
+                  data: moEst,
+                  backgroundColor: "rgba(245, 158, 11, 0.35)",
+                  borderColor: "#f59e0b",
+                  borderWidth: 1,
+                  borderRadius: 5
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 } }, grid: { display: false } },
+                y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }, grid: { color: getChartGridColor() } }
+              },
+              plugins: {
+                legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, boxWidth: 10 } },
+                tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}` } }
+              }
+            }
+          });
+        }
+      }
+
+      document.getElementById("div-actual-count-badge").textContent = `${state.dividends.length} catatan`;
+      const histBody = document.getElementById("dividend-history-body");
+      if (histBody) {
+        if (state.dividends.length === 0) {
+          histBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-400">Belum ada riwayat dividen tunai. Klik "+ Catat Dividen Tunai" untuk menambahkan.</td></tr>`;
+        } else {
+          histBody.innerHTML = state.dividends
+            .map(
+              (d) => `
+              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-2.5 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">${escapeHTML(d.date)}</td>
+                <td class="py-2.5 px-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md font-mono font-bold text-[11px] text-white" style="background:${getEmitenColor(d.ticker)}">
+                    ${escapeHTML(d.ticker)}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">${formatIDR(d.amount)}</td>
+                <td class="py-2.5 px-3 text-slate-500">${escapeHTML(d.note || "")}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <button type="button" onclick="deleteDividend('${d.id}')" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </td>
+              </tr>
+            `
+            )
+            .join("");
+        }
+      }
     }
 
     // =========================================================================
-    // 13. TAB 4: ANALYTICS & HISTORICAL CHARTS RENDERER
+    // 12. TAB 3 RENDERER: MUTATIONS (TOP UP & WITHDRAW)
+    // =========================================================================
+    function renderMutationsTab() {
+      const m = computeMetrics();
+      const dateInput = document.getElementById("mut-date");
+      if (dateInput && !dateInput.value) dateInput.value = getTodayISO();
+
+      let totalTopup = 0;
+      let topupCount = 0;
+      let totalWithdraw = 0;
+      let withdrawCount = 0;
+
+      for (const mut of state.mutations) {
+        const amt = Number(mut.amount) || 0;
+        if (mut.type === "TOPUP") {
+          totalTopup += amt;
+          topupCount++;
+        } else {
+          totalWithdraw += amt;
+          withdrawCount++;
+        }
+      }
+
+      document.getElementById("mut-kpi-paidin").textContent = formatIDR(m.totalPaidInCapital);
+      document.getElementById("mut-kpi-paidin-sub").textContent = `Modal Awal: ${formatIDR(m.initCap)}`;
+      document.getElementById("mut-kpi-total-topup").textContent = `+${formatIDR(totalTopup)}`;
+      document.getElementById("mut-kpi-topup-count").textContent = `${topupCount}x transaksi masuk`;
+      document.getElementById("mut-kpi-total-withdraw").textContent = formatIDR(totalWithdraw);
+      document.getElementById("mut-kpi-withdraw-count").textContent = `${withdrawCount}x penarikan dana`;
+      document.getElementById("mut-kpi-total-units").textContent = formatNum(m.totalUnits, 4);
+      document.getElementById("mut-kpi-nav-sub").textContent = `NAV Saat Ini: ${formatNum(m.currentNav, 4)}`;
+
+      const sampleUnits = m.currentNav > 0 ? 10000000 / m.currentNav : 0;
+      document.getElementById("mut-neutrality-nav").textContent = formatNum(m.currentNav, 2);
+      document.getElementById("mut-neutrality-units").textContent = `+${formatNum(sampleUnits, 2)} unit`;
+      document.getElementById("mut-neutrality-twr").textContent = formatPct(m.ytdReturnPct);
+
+      document.getElementById("mut-summary-badge").innerHTML = `Total Modal Disetor: <strong>${formatIDR(m.totalPaidInCapital)}</strong>`;
+      updateMutationPreview();
+
+      const sorted = [...state.mutations].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      let runningPaidIn = m.initCap;
+      let runningUnits = m.initUnits;
+
+      const tbody = document.getElementById("mutations-table-body");
+      let rowsHTML = `
+        <tr class="bg-slate-50/70 dark:bg-slate-950/50">
+          <td class="py-3 px-4 font-mono text-xs text-slate-500">SALDO AWAL</td>
+          <td class="py-3 px-3 text-slate-600 dark:text-slate-300">Modal Awal Dasar Unit</td>
+          <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">INITIAL</span></td>
+          <td class="py-3 px-3 text-right font-mono">${formatIDR(m.initCap)}</td>
+          <td class="py-3 px-3 text-right font-mono">${formatNum(m.initNav, 4)}</td>
+          <td class="py-3 px-3 text-right font-mono text-sky-500">+${formatNum(m.initUnits, 4)}</td>
+          <td class="py-3 px-3 text-right font-mono font-semibold">${formatIDR(runningPaidIn)}</td>
+          <td class="py-3 px-3 text-right font-mono font-semibold">${formatNum(runningUnits, 4)}</td>
+          <td class="py-3 px-4 text-center text-slate-400">—</td>
+        </tr>
+      `;
+
+      const chartLabels = ["AWAL"];
+      const chartTopupData = [0];
+      const chartWithdrawData = [0];
+      const chartUnitsData = [Number(runningUnits.toFixed(2))];
+
+      for (const mut of sorted) {
+        const amt = Number(mut.amount) || 0;
+        const delta = Number(mut.unitsDelta) || 0;
+        const isTopup = mut.type === "TOPUP";
+        runningPaidIn += isTopup ? amt : -amt;
+        runningUnits += isTopup ? delta : -delta;
+
+        const moIdx = Math.max(0, Math.min(11, (parseInt(String(mut.date).split("-")[1], 10) || 1) - 1));
+        chartLabels.push(`${MONTH_SHORT_ID[moIdx]} ${String(mut.date).slice(2, 4)}`);
+        chartTopupData.push(isTopup ? amt : 0);
+        chartWithdrawData.push(!isTopup ? -amt : 0);
+        chartUnitsData.push(Number(runningUnits.toFixed(2)));
+
+        rowsHTML += `
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+            <td class="py-3 px-4 font-mono">
+              <div class="font-bold text-slate-900 dark:text-white text-xs">${MONTH_NAMES_ID[moIdx]} ${String(mut.date).slice(0, 4)}</div>
+              <div class="text-[11px] text-slate-400">${escapeHTML(mut.date)}</div>
+            </td>
+            <td class="py-3 px-3 text-slate-700 dark:text-slate-300">${escapeHTML(mut.note || "")}</td>
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                isTopup ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+              }">${mut.type}</span>
+            </td>
+            <td class="py-3 px-3 text-right font-mono font-bold ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
+              ${isTopup ? "+" : "-"}${formatIDR(amt)}
+            </td>
+            <td class="py-3 px-3 text-right font-mono text-slate-600 dark:text-slate-300">${formatNum(mut.navAtTime, 4)}</td>
+            <td class="py-3 px-3 text-right font-mono ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
+              ${isTopup ? "+" : "-"}${formatNum(delta, 4)}
+            </td>
+            <td class="py-3 px-3 text-right font-mono font-semibold text-slate-900 dark:text-white">${formatIDR(runningPaidIn)}</td>
+            <td class="py-3 px-3 text-right font-mono font-semibold text-sky-600 dark:text-sky-400">${formatNum(runningUnits, 4)}</td>
+            <td class="py-3 px-4 text-center">
+              <button type="button" onclick="deleteMutation('${mut.id}')" class="p-1.5 rounded-lg hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus mutasi">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = rowsHTML;
+
+      document.getElementById("mutations-table-foot").innerHTML = `
+        <tr>
+          <td colspan="3" class="py-3 px-4">TOTAL AKUMULASI MODAL & UNIT PENYERTAAN</td>
+          <td class="py-3 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">${formatSignedIDR(totalTopup - totalWithdraw)}</td>
+          <td class="py-3 px-3 text-right font-mono text-slate-400">—</td>
+          <td class="py-3 px-3 text-right font-mono text-sky-500">${formatSignedIDR(m.totalUnits - m.initUnits).replace("Rp ", "")} unit</td>
+          <td class="py-3 px-3 text-right font-mono text-slate-900 dark:text-white">${formatIDR(m.totalPaidInCapital)}</td>
+          <td class="py-3 px-3 text-right font-mono text-sky-600 dark:text-sky-400">${formatNum(m.totalUnits, 4)}</td>
+          <td></td>
+        </tr>
+      `;
+
+      const canvas = document.getElementById("chart-mutations");
+      if (canvas) {
+        destroyChart("mutations");
+        charts.mutations = new Chart(canvas, {
+          data: {
+            labels: chartLabels,
+            datasets: [
+              {
+                type: "bar",
+                label: "Top Up",
+                data: chartTopupData,
+                backgroundColor: "rgba(16, 185, 129, 0.75)",
+                borderRadius: 4,
+                yAxisID: "y"
+              },
+              {
+                type: "bar",
+                label: "Withdraw",
+                data: chartWithdrawData,
+                backgroundColor: "rgba(244, 63, 94, 0.75)",
+                borderRadius: 4,
+                yAxisID: "y"
+              },
+              {
+                type: "line",
+                label: "Akumulasi Unit",
+                data: chartUnitsData,
+                borderColor: "#38bdf8",
+                backgroundColor: "#38bdf8",
+                tension: 0.3,
+                pointRadius: 3,
+                yAxisID: "y1"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 } }, grid: { display: false } },
+              y: {
+                position: "left",
+                ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) },
+                grid: { color: getChartGridColor() }
+              },
+              y1: {
+                position: "right",
+                ticks: { color: "#38bdf8", font: { family: "JetBrains Mono", size: 10 } },
+                grid: { drawOnChartArea: false }
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+    }
+
+    // =========================================================================
+    // 13. TAB 4 RENDERER: ANALYTICS & HISTORICAL TABLES
     // =========================================================================
     function renderAnalyticsTab() {
       const m = computeMetrics();
       const activeYr = Number(state.meta.activeYear) || getJakartaTimeInfo().year;
       ensureYearStructure(activeYr);
 
-      // Populate Year Selector
-      const yearSelect = document.getElementById("analytics-year-select");
-      const years = Array.from(new Set([...Object.keys(state.monthlyHistoryByYear).map(Number), activeYr])).sort((a, b) => b - a);
-      if (yearSelect) {
-        yearSelect.innerHTML = years.map((y) => `<option value="${y}" ${y === activeYr ? "selected" : ""}>${y}</option>`).join("");
+      const yearSel = document.getElementById("analytics-year-select");
+      const allYears = Array.from(
+        new Set([...state.annualHistory.map((a) => Number(a.year)), ...Object.keys(state.monthlyHistoryByYear).map(Number)])
+      )
+        .filter((y) => y >= 2000)
+        .sort((a, b) => b - a);
+
+      if (yearSel) {
+        yearSel.innerHTML = allYears.map((y) => `<option value="${y}">${y}</option>`).join("");
+        yearSel.value = String(activeYr);
       }
 
-      // Benchmark Inputs
       document.getElementById("bench-ihsg-start").value = state.benchmark.ihsgStart;
       document.getElementById("bench-ihsg-end").value = state.benchmark.ihsgEnd;
       document.getElementById("bench-lq45-start").value = state.benchmark.lq45Start;
@@ -5602,84 +5656,113 @@
       lqBadge.textContent = formatPct(m.lq45ReturnPct);
       lqBadge.className = `text-[10px] font-mono font-bold ${colorClass(m.lq45ReturnPct)}`;
 
-      // Update Year Labels & KPI Cards
       ["ana-kpi-year-1", "ana-kpi-year-2", "ana-kpi-year-3", "monthly-chart-year-label", "monthly-table-year-label"].forEach((id) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = activeYr;
+        if (el) el.textContent = String(activeYr);
       });
 
-      const portoYtdEl = document.getElementById("ana-kpi-porto-ytd");
-      portoYtdEl.textContent = formatPct(m.ytdReturnPct);
-      portoYtdEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(m.ytdReturnPct)}`;
+      const annActive = state.annualHistory.find((a) => Number(a.year) === activeYr);
+      const portoDisplay = annActive && annActive.portfolio !== null ? annActive.portfolio : m.ytdReturnPct;
+      const ihsgDisplay = annActive && annActive.ihsg !== null ? annActive.ihsg : m.ihsgReturnPct;
+      const lq45Display = annActive && annActive.lq45 !== null ? annActive.lq45 : m.lq45ReturnPct;
 
-      const ihsgYtdEl = document.getElementById("ana-kpi-ihsg-ytd");
-      ihsgYtdEl.textContent = formatPct(m.ihsgReturnPct);
-      ihsgYtdEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(m.ihsgReturnPct)}`;
-      const ihsgAlphaEl = document.getElementById("ana-kpi-ihsg-alpha");
-      ihsgAlphaEl.textContent = `Alpha: ${formatPct(m.alphaIhsg)}`;
-      ihsgAlphaEl.className = `text-[11px] mt-1 font-mono ${colorClass(m.alphaIhsg)}`;
+      const portoEl = document.getElementById("ana-kpi-porto-ytd");
+      portoEl.textContent = formatPct(portoDisplay);
+      portoEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(portoDisplay)}`;
 
-      const lq45YtdEl = document.getElementById("ana-kpi-lq45-ytd");
-      lq45YtdEl.textContent = formatPct(m.lq45ReturnPct);
-      lq45YtdEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(m.lq45ReturnPct)}`;
-      const lq45AlphaEl = document.getElementById("ana-kpi-lq45-alpha");
-      lq45AlphaEl.textContent = `Alpha: ${formatPct(m.alphaLq45)}`;
-      lq45AlphaEl.className = `text-[11px] mt-1 font-mono ${colorClass(m.alphaLq45)}`;
+      const ihsgEl = document.getElementById("ana-kpi-ihsg-ytd");
+      ihsgEl.textContent = formatPct(ihsgDisplay);
+      ihsgEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(ihsgDisplay)}`;
+      const aIhsg = portoDisplay - ihsgDisplay;
+      const aIhsgEl = document.getElementById("ana-kpi-ihsg-alpha");
+      aIhsgEl.textContent = `Alpha: ${formatPct(aIhsg)}`;
+      aIhsgEl.className = `text-[11px] mt-1 font-mono ${colorClass(aIhsg)}`;
 
-      const allTimeTopUp = state.annualHistory.reduce((s, a) => s + (Number(a.topUp) || 0), 0);
-      const curYrTopUp = state.annualHistory.find((a) => Number(a.year) === activeYr)?.topUp || 0;
-      document.getElementById("ana-kpi-total-topup").textContent = formatIDR(allTimeTopUp);
-      document.getElementById("ana-kpi-topup-year-sub").textContent = `Tahun ${activeYr}: ${formatIDR(curYrTopUp)}`;
-      document.getElementById("annual-topup-chart-badge").textContent = `Total: ${formatCompactIDR(allTimeTopUp)}`;
+      const lqEl = document.getElementById("ana-kpi-lq45-ytd");
+      lqEl.textContent = formatPct(lq45Display);
+      lqEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass(lq45Display)}`;
+      const aLq = portoDisplay - lq45Display;
+      const aLqEl = document.getElementById("ana-kpi-lq45-alpha");
+      aLqEl.textContent = `Alpha: ${formatPct(aLq)}`;
+      aLqEl.className = `text-[11px] mt-1 font-mono ${colorClass(aLq)}`;
 
-      // Render Monthly Table
-      const monthlyRows = state.monthlyHistoryByYear[activeYr] || [];
-      const mTbody = document.getElementById("monthly-history-table-body");
-      mTbody.innerHTML = monthlyRows
-        .map((r, idx) => {
-          const alphaI = r.portfolio !== null && r.ihsg !== null ? r.portfolio - r.ihsg : null;
-          const alphaL = r.portfolio !== null && r.lq45 !== null ? r.portfolio - r.lq45 : null;
+      const allTimeTopup = state.annualHistory.reduce((s, a) => s + (Number(a.topUp) || 0), 0);
+      const activeYrTopup = annActive ? Number(annActive.topUp) || 0 : 0;
+      document.getElementById("ana-kpi-total-topup").textContent = formatIDR(allTimeTopup);
+      document.getElementById("ana-kpi-topup-year-sub").textContent = `Tahun ${activeYr}: ${formatIDR(activeYrTopup)}`;
+      document.getElementById("annual-topup-chart-badge").textContent = `Total: ${formatIDR(allTimeTopup)}`;
+
+      // Monthly Chart & Editable Table
+      const monthRows = state.monthlyHistoryByYear[activeYr] || [];
+      const mBody = document.getElementById("monthly-history-table-body");
+      mBody.innerHTML = monthRows
+        .map((r) => {
+          const aI = r.portfolio !== null && r.ihsg !== null ? r.portfolio - r.ihsg : null;
+          const aL = r.portfolio !== null && r.lq45 !== null ? r.portfolio - r.lq45 : null;
           return `
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-              <td class="py-2.5 px-5 font-mono font-bold text-slate-900 dark:text-white">${MONTH_NAMES_ID[idx]}</td>
+              <td class="py-2.5 px-5 font-mono font-bold text-slate-900 dark:text-white">${MONTH_NAMES_ID[r.monthIndex]}</td>
               <td class="py-2 px-4 text-right">
-                <input type="text" value="${r.portfolio !== null ? formatNum(r.portfolio, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${idx}, 'portfolio', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono font-bold text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${r.portfolio !== null ? colorClass(r.portfolio) : ""}" />
+                <input type="text" value="${r.portfolio !== null ? formatNum(r.portfolio, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${r.monthIndex}, 'portfolio', this.value)" class="w-24 px-2 py-1 rounded text-right font-mono font-semibold bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent focus:border-emerald-500 focus:outline-none ${r.portfolio !== null ? colorClass(r.portfolio) : ""}" />
               </td>
               <td class="py-2 px-4 text-right">
-                <input type="text" value="${r.ihsg !== null ? formatNum(r.ihsg, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${idx}, 'ihsg', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${r.ihsg !== null ? colorClass(r.ihsg) : ""}" />
+                <input type="text" value="${r.ihsg !== null ? formatNum(r.ihsg, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${r.monthIndex}, 'ihsg', this.value)" class="w-24 px-2 py-1 rounded text-right font-mono bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent focus:border-sky-500 focus:outline-none ${r.ihsg !== null ? colorClass(r.ihsg) : ""}" />
               </td>
               <td class="py-2 px-4 text-right">
-                <input type="text" value="${r.lq45 !== null ? formatNum(r.lq45, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${idx}, 'lq45', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${r.lq45 !== null ? colorClass(r.lq45) : ""}" />
+                <input type="text" value="${r.lq45 !== null ? formatNum(r.lq45, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${activeYr}, ${r.monthIndex}, 'lq45', this.value)" class="w-24 px-2 py-1 rounded text-right font-mono bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent focus:border-amber-500 focus:outline-none ${r.lq45 !== null ? colorClass(r.lq45) : ""}" />
               </td>
-              <td class="py-2.5 px-4 text-right font-mono font-semibold ${alphaI !== null ? colorClass(alphaI) : "text-slate-400"}">${alphaI !== null ? formatPct(alphaI) : "—"}</td>
-              <td class="py-2.5 px-5 text-right font-mono font-semibold ${alphaL !== null ? colorClass(alphaL) : "text-slate-400"}">${alphaL !== null ? formatPct(alphaL) : "—"}</td>
+              <td class="py-2.5 px-4 text-right font-mono font-semibold ${aI !== null ? colorClass(aI) : "text-slate-400"}">${aI !== null ? formatPct(aI) : "—"}</td>
+              <td class="py-2.5 px-5 text-right font-mono font-semibold ${aL !== null ? colorClass(aL) : "text-slate-400"}">${aL !== null ? formatPct(aL) : "—"}</td>
             </tr>
           `;
         })
         .join("");
 
-      // Render Annual Table
+      const moCanvas = document.getElementById("chart-monthly-performance");
+      if (moCanvas) {
+        destroyChart("monthlyPerf");
+        charts.monthlyPerf = new Chart(moCanvas, {
+          type: "line",
+          data: {
+            labels: monthRows.map((r) => r.month),
+            datasets: [
+              { label: "Portofolio (%)", data: monthRows.map((r) => r.portfolio), borderColor: "#10b981", backgroundColor: "#10b981", tension: 0.25, spanGaps: true },
+              { label: "IHSG (%)", data: monthRows.map((r) => r.ihsg), borderColor: "#38bdf8", backgroundColor: "#38bdf8", tension: 0.25, spanGaps: true },
+              { label: "LQ45 (%)", data: monthRows.map((r) => r.lq45), borderColor: "#f59e0b", backgroundColor: "#f59e0b", tension: 0.25, spanGaps: true }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` }, grid: { color: getChartGridColor() } }
+            },
+            plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
+          }
+        });
+      }
+
+      // Annual Charts & Table
+      const annList = [...state.annualHistory].sort((a, b) => a.year - b.year);
       let cumTopUp = 0;
-      const annTbody = document.getElementById("annual-history-table-body");
-      annTbody.innerHTML = state.annualHistory
+      const cumSeries = [];
+      const aBody = document.getElementById("annual-history-table-body");
+      aBody.innerHTML = annList
         .map((a) => {
-          cumTopUp += Number(a.topUp) || 0;
+          const top = Number(a.topUp) || 0;
+          cumTopUp += top;
+          cumSeries.push(cumTopUp);
           const alphaI = a.portfolio !== null && a.ihsg !== null ? a.portfolio - a.ihsg : null;
           return `
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
               <td class="py-2.5 px-5 font-mono font-bold text-slate-900 dark:text-white">${a.year}</td>
-              <td class="py-2 px-4 text-right">
-                <input type="text" value="${a.portfolio !== null ? formatNum(a.portfolio, 2) : ""}" placeholder="—" onchange="updateAnnualHistoryCell(${a.year}, 'portfolio', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono font-bold text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${a.portfolio !== null ? colorClass(a.portfolio) : ""}" />
-              </td>
-              <td class="py-2 px-4 text-right">
-                <input type="text" value="${a.ihsg !== null ? formatNum(a.ihsg, 2) : ""}" placeholder="—" onchange="updateAnnualHistoryCell(${a.year}, 'ihsg', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${a.ihsg !== null ? colorClass(a.ihsg) : ""}" />
-              </td>
-              <td class="py-2 px-4 text-right">
-                <input type="text" value="${a.lq45 !== null ? formatNum(a.lq45, 2) : ""}" placeholder="—" onchange="updateAnnualHistoryCell(${a.year}, 'lq45', this.value)" class="w-20 px-2 py-1 rounded-lg text-right font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 ${a.lq45 !== null ? colorClass(a.lq45) : ""}" />
-              </td>
+              <td class="py-2.5 px-4 text-right font-mono font-bold ${a.portfolio !== null ? colorClass(a.portfolio) : "text-slate-400"}">${a.portfolio !== null ? formatPct(a.portfolio) : "—"}</td>
+              <td class="py-2.5 px-4 text-right font-mono ${a.ihsg !== null ? colorClass(a.ihsg) : "text-slate-400"}">${a.ihsg !== null ? formatPct(a.ihsg) : "—"}</td>
+              <td class="py-2.5 px-4 text-right font-mono ${a.lq45 !== null ? colorClass(a.lq45) : "text-slate-400"}">${a.lq45 !== null ? formatPct(a.lq45) : "—"}</td>
               <td class="py-2.5 px-4 text-right font-mono font-semibold ${alphaI !== null ? colorClass(alphaI) : "text-slate-400"}">${alphaI !== null ? formatPct(alphaI) : "—"}</td>
               <td class="py-2 px-4 text-right">
-                <input type="number" value="${Math.round(Number(a.topUp) || 0)}" onchange="updateAnnualHistoryCell(${a.year}, 'topUp', this.value)" class="w-32 px-2 py-1 rounded-lg text-right font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+                <input type="number" value="${Math.round(top)}" onchange="updateAnnualHistoryCell(${a.year}, 'topUp', this.value)" class="w-32 px-2 py-1 rounded text-right font-mono bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent focus:border-indigo-500 focus:outline-none" />
               </td>
               <td class="py-2.5 px-5 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">${formatIDR(cumTopUp)}</td>
             </tr>
@@ -5687,114 +5770,81 @@
         })
         .join("");
 
-      const annFoot = document.getElementById("annual-history-table-foot");
-      annFoot.innerHTML = `
+      document.getElementById("annual-history-table-foot").innerHTML = `
         <tr>
-          <td colspan="5" class="py-3 px-5 text-slate-900 dark:text-white">AKUMULASI SETORAN TOP UP KESELURUHAN</td>
-          <td class="py-3 px-4 text-right font-mono text-slate-900 dark:text-white">${formatIDR(allTimeTopUp)}</td>
+          <td colspan="5" class="py-3 px-5">TOTAL AKUMULASI SETORAN MODAL BERSIH</td>
+          <td class="py-3 px-4 text-right font-mono">${formatIDR(allTimeTopup)}</td>
           <td class="py-3 px-5 text-right font-mono text-indigo-600 dark:text-indigo-400">${formatIDR(cumTopUp)}</td>
         </tr>
       `;
 
-      renderAnalyticsCharts(monthlyRows);
-    }
-
-    function renderAnalyticsCharts(monthlyRows) {
-      // 1. Monthly Performance Line Chart
-      const mCanvas = document.getElementById("chart-monthly-performance");
-      if (mCanvas) {
-        destroyChart("monthlyPerf");
-        charts.monthlyPerf = new Chart(mCanvas, {
-          type: "line",
-          data: {
-            labels: MONTH_SHORT_ID,
-            datasets: [
-              { label: "Portofolio (%)", data: monthlyRows.map((r) => r.portfolio), borderColor: "#10b981", backgroundColor: "#10b981", tension: 0.3, borderWidth: 2.5, pointRadius: 4 },
-              { label: "IHSG (%)", data: monthlyRows.map((r) => r.ihsg), borderColor: "#0ea5e9", backgroundColor: "#0ea5e9", tension: 0.3, borderWidth: 2, pointRadius: 3 },
-              { label: "LQ45 (%)", data: monthlyRows.map((r) => r.lq45), borderColor: "#f59e0b", backgroundColor: "#f59e0b", tension: 0.3, borderWidth: 2, pointRadius: 3 }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              y: { grid: { color: getChartGridColor() }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` } }
-            },
-            plugins: {
-              legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatPct(ctx.raw)}` } }
-            }
-          }
-        });
-      }
-
-      // 2. Annual Performance Grouped Bar Chart
-      const aCanvas = document.getElementById("chart-annual-performance");
-      if (aCanvas) {
+      const annPerfCanvas = document.getElementById("chart-annual-performance");
+      if (annPerfCanvas) {
         destroyChart("annualPerf");
-        const activeAnnual = state.annualHistory.filter((a) => a.portfolio !== null || a.ihsg !== null || a.lq45 !== null);
-        charts.annualPerf = new Chart(aCanvas, {
+        const perfYears = annList.filter((a) => a.portfolio !== null || a.ihsg !== null);
+        charts.annualPerf = new Chart(annPerfCanvas, {
           type: "bar",
           data: {
-            labels: activeAnnual.map((a) => a.year),
+            labels: perfYears.map((a) => String(a.year)),
             datasets: [
-              { label: "Portofolio (%)", data: activeAnnual.map((a) => a.portfolio), backgroundColor: "#10b981", borderRadius: 5 },
-              { label: "IHSG (%)", data: activeAnnual.map((a) => a.ihsg), backgroundColor: "#0ea5e9", borderRadius: 5 },
-              { label: "LQ45 (%)", data: activeAnnual.map((a) => a.lq45), backgroundColor: "#f59e0b", borderRadius: 5 }
+              { label: "Portofolio", data: perfYears.map((a) => a.portfolio), backgroundColor: "#10b981", borderRadius: 4 },
+              { label: "IHSG", data: perfYears.map((a) => a.ihsg), backgroundColor: "#38bdf8", borderRadius: 4 },
+              { label: "LQ45", data: perfYears.map((a) => a.lq45), backgroundColor: "#f59e0b", borderRadius: 4 }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              y: { grid: { color: getChartGridColor() }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` } }
+              x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` }, grid: { color: getChartGridColor() } }
             },
-            plugins: {
-              legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatPct(ctx.raw)}` } }
-            }
+            plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
           }
         });
       }
 
-      // 3. Annual Top Up Combo Chart
-      const tCanvas = document.getElementById("chart-annual-topup");
-      if (tCanvas) {
+      const annTopCanvas = document.getElementById("chart-annual-topup");
+      if (annTopCanvas) {
         destroyChart("annualTopup");
-        let cum = 0;
-        const cumSeries = state.annualHistory.map((a) => {
-          cum += Number(a.topUp) || 0;
-          return cum;
-        });
-
-        charts.annualTopup = new Chart(tCanvas, {
+        charts.annualTopup = new Chart(annTopCanvas, {
           data: {
-            labels: state.annualHistory.map((a) => a.year),
+            labels: annList.map((a) => String(a.year)),
             datasets: [
-              { type: "bar", label: "Top Up Tahun Ini", data: state.annualHistory.map((a) => Number(a.topUp) || 0), backgroundColor: "#6366f1", borderRadius: 5 },
-              { type: "line", label: "Akumulasi Top Up", data: cumSeries, borderColor: "#10b981", backgroundColor: "#10b981", tension: 0.3, pointRadius: 4 }
+              {
+                type: "bar",
+                label: "Top Up Tahunan",
+                data: annList.map((a) => Number(a.topUp) || 0),
+                backgroundColor: "rgba(99, 102, 241, 0.75)",
+                borderRadius: 5,
+                yAxisID: "y"
+              },
+              {
+                type: "line",
+                label: "Akumulasi Kumulatif",
+                data: cumSeries,
+                borderColor: "#10b981",
+                backgroundColor: "#10b981",
+                tension: 0.25,
+                yAxisID: "y"
+              }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              y: { grid: { color: getChartGridColor() }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) } }
+              x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }, grid: { color: getChartGridColor() } }
             },
-            plugins: {
-              legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-              tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.raw)}` } }
-            }
+            plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
           }
         });
       }
     }
 
     // =========================================================================
-    // 14. TAB 5 & TAB 6: JOURNAL & CALCULATOR RENDERERS
+    // 14. TAB 5 & TAB 6 RENDERERS: JOURNAL & CALCULATOR
     // =========================================================================
     function renderJournalTab() {
       const totalPL = state.journal.reduce((s, j) => s + (Number(j.realizedPL) || 0), 0);
@@ -5804,46 +5854,48 @@
       const plEl = document.getElementById("journal-kpi-total-pl");
       plEl.textContent = formatSignedIDR(totalPL);
       plEl.className = `text-xl font-bold font-mono mt-1 ${colorClass(totalPL)}`;
-
       document.getElementById("journal-kpi-winrate").textContent = `${formatNum(winRate, 1)}%`;
       document.getElementById("journal-kpi-count").textContent = `${state.journal.length} transaksi`;
 
       const tbody = document.getElementById("journal-table-body");
       if (state.journal.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-slate-400">Belum ada transaksi penjualan saham (Take Profit / Cut Loss) yang tercatat.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">Belum ada transaksi TP / CL yang tercatat.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = state.journal
-        .map(
-          (j) => `
-          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-            <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">${escapeHTML(j.date)}</td>
-            <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHTML(j.ticker)}</td>
-            <td class="py-3 px-3 text-right font-mono">${Number(j.shares).toLocaleString("id-ID")} <span class="text-[10px] text-slate-400">(${formatNum(j.shares / 100, 1)} lot)</span></td>
-            <td class="py-3 px-3 text-right font-mono">${formatNum(j.avgCost, 2)}</td>
-            <td class="py-3 px-3 text-right font-mono">${formatNum(j.sellPrice, 2)}</td>
-            <td class="py-3 px-3 text-right font-mono font-bold ${colorClass(j.realizedPL)}">${formatSignedIDR(j.realizedPL)}</td>
-            <td class="py-3 px-3 text-right font-mono font-bold ${colorClass(j.realizedPLPct)}">${formatPct(j.realizedPLPct)}</td>
-            <td class="py-3 px-3 text-slate-500">${escapeHTML(j.note || "")}</td>
-            <td class="py-3 px-4 text-center">
-              <button type="button" onclick="deleteJournalEntry('${j.id}')" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </td>
-          </tr>
-        `
-        )
+        .map((j) => {
+          const pl = Number(j.realizedPL) || 0;
+          const pct = Number(j.realizedPLPct) || 0;
+          return `
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+              <td class="py-3 px-4 font-mono text-xs text-slate-600 dark:text-slate-300">${escapeHTML(j.date)}</td>
+              <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${escapeHTML(j.ticker)}</td>
+              <td class="py-3 px-3 text-right font-mono">${Number(j.shares).toLocaleString("id-ID")} <span class="text-[10px] text-slate-400">(${formatNum(j.shares / 100, 1)} lot)</span></td>
+              <td class="py-3 px-3 text-right font-mono">${formatNum(j.avgCost, 2)}</td>
+              <td class="py-3 px-3 text-right font-mono">${formatNum(j.sellPrice, 2)}</td>
+              <td class="py-3 px-3 text-right font-mono font-bold ${colorClass(pl)}">${formatSignedIDR(pl)}</td>
+              <td class="py-3 px-3 text-right font-mono font-bold ${colorClass(pct)}">${formatPct(pct)}</td>
+              <td class="py-3 px-3 text-slate-500">${escapeHTML(j.note || "")}</td>
+              <td class="py-3 px-4 text-center">
+                <button type="button" onclick="deleteJournalEntry('${j.id}')" class="p-1.5 rounded-lg hover:bg-rose-500/15 text-slate-400 hover:text-rose-500" title="Hapus">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        })
         .join("");
     }
 
     function renderCalculatorTab() {
       const sel = document.getElementById("calc-load-ticker");
       if (sel) {
-        const currentVal = sel.value;
+        const prev = sel.value;
         sel.innerHTML =
           `<option value="">-- Muat dari Portofolio --</option>` +
-          state.holdings.map((h) => `<option value="${escapeHTML(h.ticker)}" ${h.ticker === currentVal ? "selected" : ""}>${escapeHTML(h.ticker)} (${Number(h.shares).toLocaleString("id-ID")} lbr)</option>`).join("");
+          state.holdings.map((h) => `<option value="${escapeHTML(h.ticker)}">${escapeHTML(h.ticker)} (${Number(h.shares).toLocaleString("id-ID")} lbr @ ${formatNum(h.avgPrice, 0)})</option>`).join("");
+        if (prev && state.holdings.some((h) => h.ticker === prev)) sel.value = prev;
       }
       recalculateAverageSim();
     }
@@ -5852,24 +5904,25 @@
       const canvas = document.getElementById("chart-calculator-bars");
       if (!canvas) return;
       destroyChart("calcBars");
-
       charts.calcBars = new Chart(canvas, {
         type: "bar",
         data: {
-          labels: ["Avg. Lama", "Harga Beli Baru", "Avg. Baru", "Target Jual"],
-          datasets: [{
-            label: "Harga per Lembar (Rp)",
-            data: [curAvg, buyPrice, newAvg, targetPrice],
-            backgroundColor: ["#64748b", "#0ea5e9", "#10b981", "#6366f1"],
-            borderRadius: 6
-          }]
+          labels: ["Avg. Lama", "Harga Beli", "Avg. Baru", "Target Jual"],
+          datasets: [
+            {
+              label: "Harga (Rp)",
+              data: [curAvg, buyPrice, newAvg, targetPrice],
+              backgroundColor: ["#64748b", "#38bdf8", "#10b981", "#8b5cf6"],
+              borderRadius: 6
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { grid: { display: false }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
-            y: { grid: { color: getChartGridColor() }, ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 } } }
+            x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
+            y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { color: getChartGridColor() } }
           },
           plugins: {
             legend: { display: false },
@@ -5896,23 +5949,16 @@
       }
     };
 
-    (function initApp() {
-      const savedTheme = localStorage.getItem("portfolio_nav_theme");
-      if (savedTheme === "light") {
-        document.documentElement.classList.remove("dark");
-      } else {
-        document.documentElement.classList.add("dark");
-      }
-
+    function initApp() {
       const today = getTodayISO();
-      ["mut-date", "div-date", "sell-date", "mj-date"].forEach((id) => {
+      ["mut-date", "sell-date", "div-date", "mj-date"].forEach((id) => {
         const el = document.getElementById(id);
         if (el && !el.value) el.value = today;
       });
 
       renderAll();
-      initCloudStorage();
       scheduleDailyMarketCloseSync();
+      initCloudStorage();
 
       const jkt = getJakartaTimeInfo();
       if (
@@ -5923,7 +5969,13 @@
       ) {
         syncMarketData({ silent: true });
       }
-    })();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
   </script>
 </body>
 </html>
