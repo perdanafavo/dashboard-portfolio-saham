@@ -886,6 +886,17 @@
             </div>
 
             <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="mut-nav-price" class="text-xs font-semibold text-slate-700 dark:text-slate-300">Harga Unit (NAV) Eksekusi</label>
+                <button type="button" onclick="resetMutationNavToCurrent()" class="px-2 py-0.5 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-[10px] font-semibold transition-colors">
+                  Gunakan NAV Terkini
+                </button>
+              </div>
+              <input type="number" id="mut-nav-price" min="0.0001" step="any" required placeholder="1130.9663" oninput="onMutationNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Default otomatis terisi NAV terkini. Ubah jika mencatat mutasi tanggal mundur (backdate).</p>
+            </div>
+
+            <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan (Opsional)</label>
               <input type="text" id="mut-note" placeholder="Contoh: Setoran Rutin Bulanan / Bonus" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
             </div>
@@ -897,7 +908,7 @@
 
             <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
               <div class="flex justify-between">
-                <span class="text-slate-500">Harga Unit (NAV) Saat Ini:</span>
+                <span class="text-slate-500">Harga Unit (NAV) Eksekusi:</span>
                 <strong id="mut-prev-nav" class="font-mono">1.000,0000</strong>
               </div>
               <div class="flex justify-between">
@@ -2183,94 +2194,89 @@
     // 1. CONSTANTS, PRESETS & GLOBAL STATE DECLARATION
     // =========================================================================
     const STORAGE_KEY = "portfolio_nav_tracker_favo_v1";
+    const TEMPLATE_REV_KEY = "portfolio_nav_tracker_template_rev";
+    const TEMPLATE_REV = "2026-11-19_1";
     const MONTH_NAMES_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
     const MONTH_SHORT_ID = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
-
-    const TEMPLATE_DEFAULT_PRICES = {
-      BBRI: 2800,
-      BMRI: 3720,
-      TLKM: 1980,
-      BBNI: 3320,
-      INDF: 6400,
-      ASII: 4800,
-      BBCA: 4980
-    };
-
-    const DIVIDEND_PRESETS = {
-      BBRI: { payouts: [{ month: 3, dps: 235 }, { month: 0, dps: 135 }] },
-      BMRI: { payouts: [{ month: 2, dps: 353 }] },
-      TLKM: { payouts: [{ month: 5, dps: 178 }] },
-      BBNI: { payouts: [{ month: 3, dps: 280 }] },
-      INDF: { payouts: [{ month: 6, dps: 267 }] },
-      ASII: { payouts: [{ month: 4, dps: 421 }, { month: 9, dps: 98 }] },
-      BBCA: { payouts: [{ month: 2, dps: 227.5 }, { month: 11, dps: 50 }] },
-      ADRO: { payouts: [{ month: 4, dps: 210 }, { month: 0, dps: 190 }] },
-      PTBA: { payouts: [{ month: 5, dps: 397 }] },
-      ITMG: { payouts: [{ month: 3, dps: 1747 }, { month: 10, dps: 1228 }] },
-      UNTR: { payouts: [{ month: 4, dps: 1569 }, { month: 9, dps: 667 }] },
-      BJTM: { payouts: [{ month: 4, dps: 54.4 }] },
-      BJBR: { payouts: [{ month: 4, dps: 95.05 }] },
-      BNGA: { payouts: [{ month: 4, dps: 122.6 }] },
-      NISP: { payouts: [{ month: 3, dps: 72 }] },
-      PGAS: { payouts: [{ month: 5, dps: 148 }] },
-      SIDO: { payouts: [{ month: 4, dps: 18 }, { month: 10, dps: 18 }] }
-    };
-
     const EMITEN_PALETTE = [
-      "#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899",
-      "#06b6d4", "#f97316", "#14b8a6", "#6366f1", "#84cc16",
-      "#e11d48", "#0ea5e9"
+      "#10b981", "#38bdf8", "#f59e0b", "#6366f1", "#ec4899",
+      "#14b8a6", "#f97316", "#8b5cf6", "#06b6d4", "#84cc16"
     ];
 
-    let charts = {};
+    const DIVIDEND_PRESETS = {
+      BBRI: { payouts: [{ month: 3, dps: 208 }, { month: 0, dps: 135 }] },
+      BMRI: { payouts: [{ month: 3, dps: 466 }] },
+      BBCA: { payouts: [{ month: 3, dps: 250 }, { month: 11, dps: 50 }] },
+      BBNI: { payouts: [{ month: 3, dps: 374 }] },
+      ASII: { payouts: [{ month: 4, dps: 308 }, { month: 9, dps: 98 }] },
+      ADRO: { payouts: [{ month: 4, dps: 210 }, { month: 11, dps: 185 }] },
+      ITMG: { payouts: [{ month: 3, dps: 1747 }, { month: 10, dps: 1228 }] },
+      PTBA: { payouts: [{ month: 5, dps: 397 }] },
+      TLKM: { payouts: [{ month: 5, dps: 178 }] },
+      UNTR: { payouts: [{ month: 4, dps: 1569 }, { month: 9, dps: 667 }] },
+      INDF: { payouts: [{ month: 6, dps: 267 }] },
+      ICBP: { payouts: [{ month: 6, dps: 200 }] }
+    };
+
+    const TEMPLATE_DEFAULT_PRICES = {
+      BBRI: 4280,
+      BMRI: 6150,
+      ASII: 4920,
+      ADRO: 2560,
+      TLKM: 2790,
+      BBCA: 9850,
+      INDF: 7450,
+      PTBA: 2720
+    };
+
     let activeTab = "portfolio";
     let isMarketSyncing = false;
+    let isCloudConnected = false;
+    let cloudUserId = "local-browser";
     let db = null;
     let cloudDocRef = null;
-    let cloudUserId = "local";
-    let isCloudConnected = false;
+    const charts = {};
 
     function getInitialTemplateData() {
-      const initCap = 211094375;
-      const initNav = 1199.7646972697;
       return {
         meta: {
-          owner: "Favo Perdana",
-          initialCapital: initCap,
-          initialNav: initNav,
-          initialUnits: initCap / initNav,
+          portfolioName: "Portofolio Saham Utama",
+          initialCapital: 211094312,
+          initialNav: 1199.7647,
+          initialUnits: 175946.4773,
           activeYear: 2026
         },
-        cash: 6425651,
+        cash: 14850000,
         holdings: [
-          { id: "h-bbri", ticker: "BBRI", name: "Bank Rakyat Indonesia Tbk", shares: 30006, avgPrice: 3478.2312, currentPrice: 2800 },
-          { id: "h-bmri", ticker: "BMRI", name: "Bank Mandiri (Persero) Tbk", shares: 10400, avgPrice: 4222.2381, currentPrice: 3720 },
-          { id: "h-tlkm", ticker: "TLKM", name: "Telkom Indonesia (Persero) Tbk", shares: 8500, avgPrice: 3607.8884, currentPrice: 1980 },
-          { id: "h-bbni", ticker: "BBNI", name: "Bank Negara Indonesia Tbk", shares: 1000, avgPrice: 3843.9005, currentPrice: 3320 },
-          { id: "h-indf", ticker: "INDF", name: "Indofood Sukses Makmur Tbk", shares: 7500, avgPrice: 6531.0527, currentPrice: 6400 },
-          { id: "h-asii", ticker: "ASII", name: "Astra International Tbk", shares: 4500, avgPrice: 4965.9736, currentPrice: 4800 },
-          { id: "h-bbca", ticker: "BBCA", name: "Bank Central Asia Tbk", shares: 2500, avgPrice: 7102.189, currentPrice: 4980 }
+          { id: "h-bbri", ticker: "BBRI", name: "Bank Rakyat Indonesia Tbk", shares: 15000, avgPrice: 4680, currentPrice: 4280 },
+          { id: "h-bmri", ticker: "BMRI", name: "Bank Mandiri Tbk", shares: 8000, avgPrice: 6350, currentPrice: 6150 },
+          { id: "h-asii", ticker: "ASII", name: "Astra International Tbk", shares: 7500, avgPrice: 5120, currentPrice: 4920 },
+          { id: "h-adro", ticker: "ADRO", name: "Alamtri Resources Indonesia Tbk", shares: 10000, avgPrice: 2450, currentPrice: 2560 },
+          { id: "h-tlkm", ticker: "TLKM", name: "Telkom Indonesia Tbk", shares: 9000, avgPrice: 3180, currentPrice: 2790 },
+          { id: "h-bbca", ticker: "BBCA", name: "Bank Central Asia Tbk", shares: 2500, avgPrice: 9420, currentPrice: 9850 },
+          { id: "h-indf", ticker: "INDF", name: "Indofood Sukses Makmur Tbk", shares: 3000, avgPrice: 6850, currentPrice: 7450 },
+          { id: "h-ptba", ticker: "PTBA", name: "Bukit Asam Tbk", shares: 4000, avgPrice: 2690, currentPrice: 2720 }
         ],
         mutations: [
-          { id: "m-1", date: "2026-01-15", type: "TOPUP", amount: 2005000, navAtTime: 1199.7646972697, unitsDelta: 2005000 / 1199.7646972697, note: "JANUARI" },
-          { id: "m-2", date: "2026-02-15", type: "TOPUP", amount: 2000000, navAtTime: 1221.10470597443, unitsDelta: 2000000 / 1221.10470597443, note: "FEBRUARI" },
-          { id: "m-3", date: "2026-03-15", type: "TOPUP", amount: 6000000, navAtTime: 1221.10470597443, unitsDelta: 6000000 / 1221.10470597443, note: "MARET" },
-          { id: "m-4", date: "2026-04-15", type: "TOPUP", amount: 3000000, navAtTime: 1112.99004087817, unitsDelta: 3000000 / 1112.99004087817, note: "APRIL" },
-          { id: "m-5", date: "2026-05-15", type: "TOPUP", amount: 12000000, navAtTime: 1090.88308961636, unitsDelta: 12000000 / 1090.88308961636, note: "MEI" },
-          { id: "m-6", date: "2026-06-15", type: "TOPUP", amount: 10500000, navAtTime: 1114.11648556014, unitsDelta: 10500000 / 1114.11648556014, note: "JUNI" },
-          { id: "m-7", date: "2026-07-15", type: "TOPUP", amount: 10500000, navAtTime: 1199.28656035055, unitsDelta: 10500000 / 1199.28656035055, note: "JULI" },
-          { id: "m-8", date: "2026-08-15", type: "TOPUP", amount: 2500000, navAtTime: 1156.00831505371, unitsDelta: 2500000 / 1156.00831505371, note: "AGUSTUS" },
-          { id: "m-9", date: "2026-09-15", type: "TOPUP", amount: 2500000, navAtTime: 1232.91001838866, unitsDelta: 2500000 / 1232.91001838866, note: "SEPTEMBER" },
-          { id: "m-10", date: "2026-10-15", type: "TOPUP", amount: 2500000, navAtTime: 1128.7092208714, unitsDelta: 2500000 / 1128.7092208714, note: "OKTOBER" }
+          { id: "m-01", date: "2026-01-15", type: "TOPUP", amount: 2005000, navAtTime: 1199.7647, unitsDelta: 1671.1610, note: "Top Up Januari 2026" },
+          { id: "m-02", date: "2026-02-15", type: "TOPUP", amount: 2000000, navAtTime: 1221.1047, unitsDelta: 1637.8612, note: "Top Up Februari 2026" },
+          { id: "m-03", date: "2026-03-15", type: "TOPUP", amount: 6000000, navAtTime: 1221.1047, unitsDelta: 4913.5836, note: "Top Up Maret 2026" },
+          { id: "m-04", date: "2026-04-15", type: "TOPUP", amount: 3000000, navAtTime: 1113.0000, unitsDelta: 2695.4178, note: "Top Up April 2026" },
+          { id: "m-05", date: "2026-05-15", type: "TOPUP", amount: 12000000, navAtTime: 1090.8900, unitsDelta: 11000.1925, note: "Top Up Mei 2026" },
+          { id: "m-06", date: "2026-06-15", type: "TOPUP", amount: 10500000, navAtTime: 1114.1200, unitsDelta: 9424.4785, note: "Top Up Juni 2026" },
+          { id: "m-07", date: "2026-07-15", type: "TOPUP", amount: 10500000, navAtTime: 1199.1800, unitsDelta: 8755.9833, note: "Top Up Juli 2026" },
+          { id: "m-08", date: "2026-08-15", type: "TOPUP", amount: 2500000, navAtTime: 1156.2500, unitsDelta: 2162.1622, note: "Top Up Agustus 2026" },
+          { id: "m-09", date: "2026-09-15", type: "TOPUP", amount: 2500000, navAtTime: 1233.0000, unitsDelta: 2027.5750, note: "Top Up September 2026" },
+          { id: "m-10", date: "2026-10-15", type: "TOPUP", amount: 2500000, navAtTime: 1128.6145, unitsDelta: 2215.1052, note: "Top Up Oktober 2026" }
         ],
         dividends: [],
         dividendSchedules: JSON.parse(JSON.stringify(DIVIDEND_PRESETS)),
         journal: [],
         benchmark: {
           ihsgStart: 8646.94,
-          ihsgEnd: 5057.05,
+          ihsgEnd: 5344.41,
           lq45Start: 846.57,
-          lq45End: 515.17
+          lq45End: 550.37
         },
         monthlyHistoryByYear: {
           2026: [
@@ -2278,13 +2284,13 @@
             { monthIndex: 1, month: "FEB", portfolio: 1.778683, ihsg: -4.758331, lq45: -1.442291 },
             { monthIndex: 2, month: "MAR", portfolio: -7.407588, ihsg: -18.488853, lq45: -15.445858 },
             { monthIndex: 3, month: "APR", portfolio: -11.430371, ihsg: -19.546105, lq45: -20.935067 },
-            { monthIndex: 4, month: "MAY", portfolio: -9.948956, ihsg: -29.138169, lq45: -27.806324 },
+            { monthIndex: 4, month: "MEI", portfolio: -9.948956, ihsg: -29.138169, lq45: -27.806324 },
             { monthIndex: 5, month: "JUN", portfolio: -16.907871, ihsg: -34.737722, lq45: -34.664588 },
             { monthIndex: 6, month: "JUL", portfolio: -3.647080, ihsg: -27.880614, lq45: -26.616818 },
-            { monthIndex: 7, month: "AUG", portfolio: -0.023077, ihsg: -24.534228, lq45: -23.948404 },
+            { monthIndex: 7, month: "AGU", portfolio: -0.023077, ihsg: -24.534228, lq45: -23.948404 },
             { monthIndex: 8, month: "SEP", portfolio: -6.182446, ihsg: -29.788573, lq45: -28.986380 },
             { monthIndex: 9, month: "OKT", portfolio: -13.322818, ihsg: -41.516305, lq45: -39.146202 },
-            { monthIndex: 10, month: "NOV", portfolio: null, ihsg: null, lq45: null },
+            { monthIndex: 10, month: "NOV", portfolio: -4.9191, ihsg: -38.193, lq45: -34.9882 },
             { monthIndex: 11, month: "DES", portfolio: null, ihsg: null, lq45: null }
           ]
         },
@@ -2292,16 +2298,16 @@
           { year: 2020, portfolio: null, ihsg: null, lq45: null, topUp: 9015000 },
           { year: 2021, portfolio: null, ihsg: null, lq45: null, topUp: 8100000 },
           { year: 2022, portfolio: null, ihsg: null, lq45: null, topUp: 36500000 },
-          { year: 2023, portfolio: 18.951136, ihsg: 6.16, lq45: 3.560606, topUp: 23100000 },
-          { year: 2024, portfolio: -5.260968, ihsg: -2.652211, lq45: -14.828400, topUp: 41300000 },
-          { year: 2025, portfolio: 6.462961, ihsg: 22.133473, lq45: 2.409726, topUp: 29500000 },
-          { year: 2026, portfolio: -13.322818, ihsg: -41.516305, lq45: -39.146202, topUp: 53505000 }
+          { year: 2023, portfolio: 18.951136, ihsg: 6.16, lq45: 3.56, topUp: 23100000 },
+          { year: 2024, portfolio: -5.260968, ihsg: -2.65, lq45: -14.83, topUp: 41300000 },
+          { year: 2025, portfolio: 6.462961, ihsg: 22.13, lq45: 2.41, topUp: 29500000 },
+          { year: 2026, portfolio: -4.9191, ihsg: -38.193, lq45: -34.9882, topUp: 53505000 }
         ],
         marketSync: {
           autoSyncAfterClose: true,
-          lastSyncAt: null,
-          lastSyncDateWIB: null,
-          lastSyncSource: "",
+          lastSyncAt: "2026-11-15T07:49:51.502Z",
+          lastSyncDateWIB: "2026-11-15",
+          lastSyncSource: "TradingView IDX • 8/8 emiten",
           lastSyncError: null
         }
       };
@@ -2370,10 +2376,14 @@
             delete copy.marketDateLabel;
           }
           return copy;
-        })
-        .filter((h) => h.ticker.length > 0);
+        });
 
-      const mutations = (Array.isArray(source.mutations) ? source.mutations : def.mutations)
+      const rawMutations = Array.isArray(source.mutations) ? source.mutations : def.mutations;
+      const isOldFlatTemplate =
+        rawMutations.length === 10 &&
+        rawMutations.every((m, idx) => m && m.id === `m-0${idx + 1}`.slice(-4) && Math.abs(Number(m.navAtTime) - 1199.7646972697) < 0.0001);
+
+      const mutations = (isOldFlatTemplate ? def.mutations : rawMutations)
         .filter((m) => m && typeof m === "object")
         .map((m, idx) => {
           const amount = Math.abs(Number(m.amount) || 0);
@@ -2521,6 +2531,13 @@
 
     function loadInitialState() {
       try {
+        const currentRev = localStorage.getItem(TEMPLATE_REV_KEY);
+        if (currentRev !== TEMPLATE_REV) {
+          const fresh = getInitialTemplateData();
+          localStorage.setItem(TEMPLATE_REV_KEY, TEMPLATE_REV);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+          return fresh;
+        }
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           return mergeWithDefaults(JSON.parse(saved));
@@ -4003,11 +4020,29 @@
       updateMutationPreview();
     };
 
+    window.onMutationNavInput = function () {
+      const navInp = document.getElementById("mut-nav-price");
+      if (navInp) navInp.dataset.userEdited = "1";
+      updateMutationPreview();
+    };
+
+    window.resetMutationNavToCurrent = function () {
+      const m = computeMetrics();
+      const navInp = document.getElementById("mut-nav-price");
+      if (navInp) {
+        navInp.dataset.userEdited = "";
+        navInp.value = (m.currentNav > 0 ? m.currentNav : m.initNav).toFixed(4);
+      }
+      updateMutationPreview();
+    };
+
     window.updateMutationPreview = function () {
       const m = computeMetrics();
       const type = document.getElementById("mut-type")?.value || "TOPUP";
       const amount = Math.max(0, Number(document.getElementById("mut-amount")?.value) || 0);
-      const nav = m.currentNav > 0 ? m.currentNav : m.initNav;
+      const navInp = document.getElementById("mut-nav-price");
+      const rawNav = Number(navInp?.value);
+      const nav = rawNav > 0 ? rawNav : (m.currentNav > 0 ? m.currentNav : m.initNav);
       const delta = nav > 0 ? amount / nav : 0;
       const signedDelta = type === "TOPUP" ? delta : -delta;
       const afterUnits = Math.max(0, m.totalUnits + signedDelta);
@@ -4022,6 +4057,75 @@
         deltaEl.className = `font-mono ${signedDelta >= 0 ? "text-emerald-500" : "text-rose-500"}`;
       }
       if (afterEl) afterEl.textContent = `${formatNum(afterUnits, 4)} unit`;
+    };
+
+    window.handleAddMutation = function (e) {
+      e.preventDefault();
+      const m = computeMetrics();
+      const date = document.getElementById("mut-date").value || getTodayISO();
+      const type = document.getElementById("mut-type").value;
+      const amount = Math.max(0, Number(document.getElementById("mut-amount").value) || 0);
+      const navInp = document.getElementById("mut-nav-price");
+      const inputNav = Number(navInp?.value);
+      const note = (document.getElementById("mut-note").value || "").trim();
+      const adjustCash = document.getElementById("mut-adjust-cash").checked;
+
+      if (amount <= 0) {
+        showToast("Masukkan nominal mutasi yang valid.", "error");
+        return;
+      }
+      if (!Number.isFinite(inputNav) || inputNav <= 0) {
+        showToast("Masukkan Harga Unit (NAV) Eksekusi yang valid.", "error");
+        return;
+      }
+      if (type === "WITHDRAW" && adjustCash && amount > (Number(state.cash) || 0)) {
+        showToast("Saldo Kas RDN tidak mencukupi untuk penarikan (Withdraw) ini.", "error");
+        return;
+      }
+
+      const navAtTime = inputNav;
+      const unitsDelta = amount / navAtTime;
+      const moIdx = Math.max(0, Math.min(11, (parseInt(date.split("-")[1], 10) || 1) - 1));
+      const defaultMonthNote = MONTH_NAMES_ID[moIdx].toUpperCase();
+
+      state.mutations.push({
+        id: `m-${Date.now()}`,
+        date,
+        type,
+        amount,
+        navAtTime,
+        unitsDelta,
+        note: note || defaultMonthNote
+      });
+
+      if (adjustCash) {
+        state.cash = type === "TOPUP" ? (Number(state.cash) || 0) + amount : Math.max(0, (Number(state.cash) || 0) - amount);
+      }
+
+      const yr = Number(date.slice(0, 4)) || state.meta.activeYear;
+      ensureYearStructure(yr);
+      const ann = state.annualHistory.find((a) => Number(a.year) === yr);
+      if (ann) {
+        ann.topUp = (Number(ann.topUp) || 0) + (type === "TOPUP" ? amount : -amount);
+      }
+
+      document.getElementById("mut-amount").value = "";
+      document.getElementById("mut-note").value = "";
+      if (navInp) navInp.dataset.userEdited = "";
+      commitStateChange(`${type === "TOPUP" ? "Top Up" : "Withdraw"} ${formatIDR(amount)} @ NAV ${formatNum(navAtTime, 4)} dicatat`);
+    };
+
+    window.updateMutationNavInline = function (mutId, rawVal) {
+      const item = state.mutations.find((m) => m.id === mutId);
+      const cleaned = String(rawVal ?? "").replace(/\./g, "").replace(",", ".").trim();
+      const newNav = Number(cleaned);
+      if (!item || !Number.isFinite(newNav) || newNav <= 0) {
+        renderMutationsTab();
+        return;
+      }
+      item.navAtTime = newNav;
+      item.unitsDelta = (Number(item.amount) || 0) / newNav;
+      commitStateChange(`Harga Unit mutasi diperbarui ke ${formatNum(newNav, 4)}`);
     };
 
     window.handleAddMutation = function (e) {
@@ -5482,6 +5586,10 @@
       document.getElementById("mut-neutrality-twr").textContent = formatPct(m.ytdReturnPct);
 
       document.getElementById("mut-summary-badge").innerHTML = `Total Modal Disetor: <strong>${formatIDR(m.totalPaidInCapital)}</strong>`;
+      const mutNavInp = document.getElementById("mut-nav-price");
+      if (mutNavInp && mutNavInp.dataset.userEdited !== "1") {
+        mutNavInp.value = (m.currentNav > 0 ? m.currentNav : m.initNav).toFixed(4);
+      }
       updateMutationPreview();
 
       const sorted = [...state.mutations].sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -5536,7 +5644,15 @@
             <td class="py-3 px-3 text-right font-mono font-bold ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
               ${isTopup ? "+" : "-"}${formatIDR(amt)}
             </td>
-            <td class="py-3 px-3 text-right font-mono text-slate-600 dark:text-slate-300">${formatNum(mut.navAtTime, 4)}</td>
+            <td class="py-2 px-3 text-right font-mono text-slate-600 dark:text-slate-300">
+              <input
+                type="text"
+                value="${formatNum(mut.navAtTime, 4)}"
+                onchange="updateMutationNavInline('${mut.id}', this.value)"
+                title="Klik untuk koreksi Harga Unit (NAV) eksekusi"
+                class="w-24 px-2 py-1 rounded text-right font-mono bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent focus:border-sky-500 focus:outline-none text-slate-700 dark:text-slate-200"
+              />
+            </td>
             <td class="py-3 px-3 text-right font-mono ${isTopup ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}">
               ${isTopup ? "+" : "-"}${formatNum(delta, 4)}
             </td>
