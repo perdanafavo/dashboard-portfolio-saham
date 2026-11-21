@@ -48,67 +48,8 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <style>
-    :root {
-      --bg-canvas: #0C1117;
-      --bg-surface: #141C24;
-      --text-primary: #EEF2F6;
-      --text-muted: #8E9BA8;
-      --accent-primary: #10B981;
-      --border-hairline: rgba(238, 242, 246, 0.08);
-    }
-    html.dark {
-      color-scheme: dark;
-    }
-    html:not(.dark) {
-      color-scheme: light;
-    }
-    .tabular-nums {
-      font-variant-numeric: tabular-nums;
-    }
-    input[type="date"] {
-      cursor: pointer;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      opacity: 0.85;
-      padding: 3px;
-      border-radius: 6px;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator:hover {
-      opacity: 1;
-      background-color: rgba(148, 163, 184, 0.2);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(142, 155, 168, 0.28);
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(142, 155, 168, 0.45);
-    }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    input.no-spin::-webkit-inner-spin-button,
-    input.no-spin::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input.no-spin {
-      -moz-appearance: textfield;
-    }
-  </style>
+  <!-- Custom Theme & Utility Styles -->
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0C1117] dark:text-[#EEF2F6] font-sans antialiased min-h-screen transition-colors duration-200 selection:bg-[#10B981]/30">
 
@@ -2291,6 +2232,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import {
+      computeMetrics as computeMetricsEngine,
+      calculateIPOTBuyFee,
+      calculateIPOTSellFee
+    } from "./js/nav-engine.js";
 
     // =========================================================================
     // 1. CONSTANTS, PRESETS & GLOBAL STATE DECLARATION
@@ -2653,127 +2599,9 @@
     let state = loadInitialState();
 
     // =========================================================================
-    // 2. CORE FINANCIAL CALCULATION ENGINE (UNITIZATION / NAV & IPOT FEES)
+    // 2. CORE FINANCIAL CALCULATION ENGINE (DELEGATED TO ./js/nav-engine.js)
     // =========================================================================
-    function computeMetrics() {
-      const initCap = Number(state.meta.initialCapital) || 0;
-      const initNav = Number(state.meta.initialNav) || 1000;
-      const initUnits = Number(state.meta.initialUnits) || (initCap / initNav);
-
-      let totalUnits = initUnits;
-      let totalPaidInCapital = initCap;
-
-      for (const mut of state.mutations) {
-        const delta = Number(mut.unitsDelta) || 0;
-        const amt = Number(mut.amount) || 0;
-        if (mut.type === "TOPUP") {
-          totalUnits += delta;
-          totalPaidInCapital += amt;
-        } else {
-          totalUnits -= Math.abs(delta);
-          totalPaidInCapital -= Math.abs(amt);
-        }
-      }
-      if (totalUnits <= 0) totalUnits = 1;
-
-      let stockCostTotal = 0;
-      let stockValTotal = 0;
-      for (const h of state.holdings) {
-        const sh = Number(h.shares) || 0;
-        const avg = Number(h.avgPrice) || 0;
-        const cur = Number(h.currentPrice) || 0;
-        stockCostTotal += sh * avg;
-        stockValTotal += sh * cur;
-      }
-
-      const cashBalance = Number(state.cash) || 0;
-      const totalCost = stockCostTotal + cashBalance;
-      const totalValuation = stockValTotal + cashBalance;
-      const currentNav = totalValuation / totalUnits;
-      const ytdReturnPct = initNav > 0 ? ((currentNav - initNav) / initNav) * 100 : 0;
-
-      const ihsgStart = Number(state.benchmark.ihsgStart) || 1;
-      const ihsgEnd = Number(state.benchmark.ihsgEnd) || ihsgStart;
-      const lq45Start = Number(state.benchmark.lq45Start) || 1;
-      const lq45End = Number(state.benchmark.lq45End) || lq45Start;
-
-      const ihsgReturnPct = ((ihsgEnd - ihsgStart) / ihsgStart) * 100;
-      const lq45ReturnPct = ((lq45End - lq45Start) / lq45Start) * 100;
-
-      const alphaIhsg = ytdReturnPct - ihsgReturnPct;
-      const alphaLq45 = ytdReturnPct - lq45ReturnPct;
-
-      const totalDividendsReceived = state.dividends.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-
-      return {
-        initCap,
-        initNav,
-        initUnits,
-        totalUnits,
-        totalPaidInCapital,
-        stockCostTotal,
-        stockValTotal,
-        cashBalance,
-        totalCost,
-        totalValuation,
-        currentNav,
-        ytdReturnPct,
-        ihsgReturnPct,
-        lq45ReturnPct,
-        alphaIhsg,
-        alphaLq45,
-        totalDividendsReceived
-      };
-    }
-
-    function calculateIPOTBuyFee(tradeAmount, allInPct = 0.19) {
-      const gross = Math.max(0, Number(tradeAmount) || 0);
-      if (gross <= 0 || allInPct <= 0) {
-        return { tradeAmount: gross, brokerFee: 0, levyFee: 0, kpeiFee: 0, dpp: 0, vat12: 0, totalFee: 0, netAmount: gross };
-      }
-      const levyFee = gross * 0.0003;
-      const kpeiFee = gross * 0.0001;
-      const totalFee = gross * (allInPct / 100);
-      const brokerPlusVat = Math.max(0, totalFee - levyFee - kpeiFee);
-      const brokerFee = brokerPlusVat / 1.11;
-      const dpp = brokerFee * (11 / 12);
-      const vat12 = dpp * 0.12;
-      return {
-        tradeAmount: gross,
-        brokerFee,
-        levyFee,
-        kpeiFee,
-        dpp,
-        vat12,
-        totalFee,
-        netAmount: gross + totalFee
-      };
-    }
-
-    function calculateIPOTSellFee(tradeAmount, allInPct = 0.29) {
-      const gross = Math.max(0, Number(tradeAmount) || 0);
-      if (gross <= 0 || allInPct <= 0) {
-        return { tradeAmount: gross, brokerFee: 0, levyFee: 0, kpeiFee: 0, vat12: 0, salesTax: 0, totalFee: 0, netProceeds: gross };
-      }
-      const levyFee = gross * 0.0003;
-      const kpeiFee = gross * 0.0001;
-      const salesTax = gross * 0.001;
-      const totalFee = gross * (allInPct / 100);
-      const brokerPlusVat = Math.max(0, totalFee - levyFee - kpeiFee - salesTax);
-      const brokerFee = brokerPlusVat / 1.11;
-      const dpp = brokerFee * (11 / 12);
-      const vat12 = dpp * 0.12;
-      return {
-        tradeAmount: gross,
-        brokerFee,
-        levyFee,
-        kpeiFee,
-        vat12,
-        salesTax,
-        totalFee,
-        netProceeds: Math.max(0, gross - totalFee)
-      };
-    }
+    const computeMetrics = () => computeMetricsEngine(state);
 
     // =========================================================================
     // 3. FORMATTING, TIMEZONE (WIB) & STORAGE HELPERS
