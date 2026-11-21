@@ -1,48 +1,48 @@
 # ARCHITECTURE.md — Peta Kode & Blueprint Modularisasi
 
-Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau melakukan pemecahan modul. Jangan baca `index.html` secara utuh (6.162 baris) — lompat langsung ke rentang baris di bawah ini.
+Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau melakukan pemecahan modul. Jangan baca `index.html` secara utuh (5.286 baris) — lompat langsung ke rentang baris di bawah ini.
 
 ---
 
-## 1. Peta Lokasi `index.html` (6.162 Baris)
+## 1. Peta Lokasi `index.html` (5.286 Baris — Pasca Modularisasi Tahap 1 & 2)
 
 ### A. Head, Styling & Navigasi
 | Bagian | Rentang Baris | Isi Utama |
 | :--- | :---: | :--- |
 | Head & CDN Libraries | `1–50` | Tailwind CSS CDN + config, Chart.js v4.4.4, Lucide Icons |
-| Custom CSS | `51–111` | Style custom, scrollbar, transisi, utilitas tema |
-| Header & Tab Navigation | `113–260` | Navbar, tombol tema Dark/Light, tombol 6 tab (`#tab-btn-*`) |
+| External Stylesheet | `51–52` | `<link rel="stylesheet" href="./css/styles.css" />` *(ekstraksi Tahap 1)* |
+| Header & Tab Navigation | `53–200` | Navbar, tombol tema Dark/Light, tombol 6 tab (`#tab-btn-*`) |
 
 ### B. Konten 6 Tab & Modals (HTML)
 | Bagian | Rentang Baris | Elemen Utama |
 | :--- | :---: | :--- |
-| Tab 1: Portfolio & Kinerja | `261–537` | `#tab-panel-portfolio` — ringkasan NAV, unit penyertaan, tabel holdings, alokasi |
-| Tab 2: Dividen & Proyeksi | `538–805` | `#tab-panel-dividends` — jadwal dividen, proyeksi tahunan, realisasi dividen |
-| Tab 3: Mutasi Dana | `806–1025` | `#tab-panel-mutations` — top up & withdraw unitization |
-| Tab 4: Grafik & Historis | `1026–1232` | `#tab-panel-analytics` — performa bulanan/tahunan, benchmark IHSG/LQ45 |
-| Tab 5: Jurnal TP / CL | `1233–1328` | `#tab-panel-journal` — catatan realized profit/loss |
-| Tab 6: Kalkulator Average | `1329–1459` | `#tab-panel-calculator` — simulasi average down/up & chart target |
-| Modals (Custom UI) | `1460–2286` | `#modal-buy`, `#modal-sell`, `#modal-dividend`, `#modal-dividend-schedule`, `#modal-bulk-price`, `#modal-cash`, `#modal-edit-holding`, `#modal-manual-journal`, `#modal-cloud`, `#modal-confirm`, `#modal-year-rollover`, `#modal-baseline`, `#modal-import` |
+| Tab 1: Portfolio & Kinerja | `201–477` | `#tab-panel-portfolio` — ringkasan NAV, unit penyertaan, tabel holdings, alokasi |
+| Tab 2: Dividen & Proyeksi | `478–745` | `#tab-panel-dividends` — jadwal dividen, proyeksi tahunan, realisasi dividen |
+| Tab 3: Mutasi Dana | `746–965` | `#tab-panel-mutations` — top up & withdraw unitization |
+| Tab 4: Grafik & Historis | `966–1172` | `#tab-panel-analytics` — performa bulanan/tahunan, benchmark IHSG/LQ45 |
+| Tab 5: Jurnal TP / CL | `1173–1268` | `#tab-panel-journal` — catatan realized profit/loss |
+| Tab 6: Kalkulator Average | `1269–1399` | `#tab-panel-calculator` — simulasi average down/up & chart target |
+| Modals (Custom UI) | `1400–2226` | `#modal-buy`, `#modal-sell`, `#modal-dividend`, `#modal-dividend-schedule`, `#modal-bulk-price`, `#modal-cash`, `#modal-edit-holding`, `#modal-manual-journal`, `#modal-cloud`, `#modal-confirm`, `#modal-year-rollover`, `#modal-baseline`, `#modal-import` |
 
-### C. Logika Aplikasi (`<script type="module">`, Baris `2290–6160`)
-| # | Bagian | Rentang Baris | Fungsi / Simbol Kunci |
+### C. Logika Aplikasi (`<script type="module">`, Baris `2231–5284`)
+| # | Bagian | Rentang Baris | Fungsi / Simbol Kunci & Modul Eksternal |
 | :---: | :--- | :---: | :--- |
-| 1 | Constants, Presets & Global State | `2296–2654` | `STORAGE_KEY = "portfolio_nav_tracker_favo_v1"`, `loadInitialState()` |
-| 2 | Core Financial Engine (NAV & Fee) | `2656–2777` | `computeMetrics()`, `calculateIPOTBuyFee()`, `calculateIPOTSellFee()` |
-| 3 | Formatting, WIB & Storage Helpers | `2779–3030` | `formatNum()`, `saveToLocalStorage()`, `saveToCloudIfAvailable()`, `initCloudStorage()` |
-| 5 | Market Auto-Sync Engine | `3032–3389` | `fetchTradingViewIDX()`, `fetchGoogleFinanceQuote()`, `fetchYahooChart()`, `fetchStooqQuote()`, `updateMarketSyncStatusUI()` |
-| 6 | Tab Navigation, Modals & Portfolio CRUD | `3391–3953` | `window.switchTab`, aksi beli/jual/edit holding/cash/rollover/baseline |
-| 7 | Dividend Actions | `3955–4114` | `window.setDividendQuickDate`, CRUD dividen & jadwal |
-| 8 | Mutations, Analytics & Journal Actions | `4116–4400` | `window.setMutationQuickAmount`, CRUD mutasi & jurnal |
-| 9 | Calculator & JSON Export/Import/Reset | `4402–4589` | `window.loadTickerIntoCalculator`, backup JSON export/import/reset |
-| 10 | Chart Helpers & Tab 1 Renderer | `4591–5003` | `getChartTextColor()`, `renderPortfolioTab()`, `renderAllocationChart()`, `renderBenchmarkBars()`, `renderPortfolioDividendRecap()` |
-| 11 | Tab 2 Renderer (Dividends) | `5005–5602` | `renderDividendsTab()`, `renderActualDividendsSection()` |
-| 12 | Tab 3 Renderer (Mutations) | `5604–5794` | `renderMutationsTab()` |
-| 13 | Tab 4 Renderer (Analytics) | `5796–6014` | `renderAnalyticsTab()` |
-| 14 | Tab 5 & 6 Renderers (Journal & Calc) | `6016–6115` | `renderJournalTab()`, `renderCalculatorTab()`, `renderCalculatorChart()` |
-| 15 | Master Render & Init | `6117–6160` | `window.renderAll`, `initApp()` |
+| 1 | Imports & Runtime State | `2231–2280` | Import `./js/nav-engine.js`, `./js/state.js`, `./js/storage.js`, `./js/market.js`; `let state = loadInitialState()` |
+| 2 | Core Financial Engine (Wrapper) | `2282–2285` | Delegasi ke `./js/nav-engine.js` (`computeMetrics`, `calculateIPOTBuyFee`, `calculateIPOTSellFee`) |
+| 3 | Formatting, WIB & Storage (Wrappers) | `2287–2336` | Delegasi ke `./js/storage.js` + `showToast()`, `commitStateChange()` |
+| 5 | Market Auto-Sync UI & Scheduler | `2338–2513` | Delegasi fetcher ke `./js/market.js` (`fetchMarketQuotes`); UI status & `scheduleDailyMarketCloseSync()` |
+| 6 | Tab Navigation, Modals & Portfolio CRUD | `2515–3077` | `window.switchTab`, aksi beli/jual/edit holding/cash/rollover/baseline |
+| 7 | Dividend Actions | `3079–3238` | `window.setDividendQuickDate`, CRUD dividen & jadwal |
+| 8 | Mutations, Analytics & Journal Actions | `3240–3524` | `window.setMutationQuickAmount`, CRUD mutasi & jurnal |
+| 9 | Calculator & JSON Export/Import/Reset | `3526–3713` | `window.loadTickerIntoCalculator`, backup JSON export/import/reset |
+| 10 | Chart Helpers & Tab 1 Renderer | `3715–4127` | `getChartTextColor()`, `renderPortfolioTab()`, `renderAllocationChart()`, `renderBenchmarkBars()`, `renderPortfolioDividendRecap()` |
+| 11 | Tab 2 Renderer (Dividends) | `4129–4726` | `renderDividendsTab()`, `renderActualDividendsSection()` |
+| 12 | Tab 3 Renderer (Mutations) | `4728–4918` | `renderMutationsTab()` |
+| 13 | Tab 4 Renderer (Analytics) | `4920–5138` | `renderAnalyticsTab()` |
+| 14 | Tab 5 & 6 Renderers (Journal & Calc) | `5140–5239` | `renderJournalTab()`, `renderCalculatorTab()`, `renderCalculatorChart()` |
+| 15 | Master Render & Init | `5241–5284` | `window.renderAll`, `initApp()` |
 
-*(Catatan: Penomoran komentar asli di `index.html` melompat dari 3 ke 5; rentang baris di atas sudah diverifikasi langsung dari file sumber.)*
+*(Catatan: Penomoran komentar asli di `index.html` melompat dari 3 ke 5; rentang baris di atas sudah diperbarui pasca Modularisasi Tahap 1 & Tahap 2.)*
 
 ---
 
