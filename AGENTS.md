@@ -50,25 +50,36 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 
 ---
 
-## 4. Rekomendasi Model per Peran & Task
+## 4. Rekomendasi Model per Peran & Task (Hydrogen / Argon / Neon)
 
-| Peran / Jenis Task | Rekomendasi Tier Model | Alasan |
-| :--- | :--- | :--- |
-| **Orchestrator / Coordinator (`/teamwork`)** | **Medium / Pro Standar** *(Pro/High untuk refactor besar)* | Tajam memecah dependensi & menjaga invarian tanpa boros kuota saat koordinasi; hindari Flash/Flash Lite |
-| **PM (Spec & Breakdown Tiket)** | **Medium** (mis. Gemini Pro/Medium) | Cukup kuat untuk strukturisasi produk & edge case tanpa boros kuota |
-| **UI/UX Designer (Layout & Visual FinTech)** | **Medium → Pro** | Butuh selera visual, konsistensi desain, dan kepekaan UX |
-| **Developer — Logika Inti (NAV, Math, State, Refactor)** | **Pro / High** | Nol toleransi bug pada perhitungan finansial & arsitektur |
-| **Developer — Tugas Rutin (CSS, Copy, Edit Kecil)** | **Flash** | Cepat, hemat token, presisi untuk diff terarah |
-| **QA — Review Arsitektur, Security & Bug Kompleks** | **Medium / Pro** | Menangkap celah logika, race condition, dan edge case halus |
-| **QA — Audit Linter / A11y (`web-design-guidelines`)** | **Flash** | Cek checklist mekanis secara cepat dan murah |
-| **Research / Verifikasi Browser (`/browser`)** | **Flash / Flash Lite** | Navigasi, screenshot, dan inspeksi DOM tidak butuh model berat |
+| Peran / Jenis Task | Rekomendasi Model (UI) | Tier Subagent | Alasan & Strategi Cost-to-Performance |
+| :--- | :--- | :--- | :--- |
+| **Micro-Tasks (Typo, Copy, Tweak CSS 1–5 baris, Tanya Singkat)** | **Hydrogen** / **Argon (Low)** | `flash_lite` | **Paling irit kuota** untuk perubahan kosmetik yang tidak menyentuh logika |
+| **PM (Brainstorming, Spec & Breakdown Tiket)** | **Argon (Medium)** | `inherit` | **Best value:** cukup cerdas menyusun spec & edge case tanpa boros kuota Neon |
+| **Orchestrator / Coordinator (`/teamwork`)** | **Argon (Medium)** *(Neon saat refactor besar)* | `inherit` / `pro` | Hemat kuota koordinasi; naik ke Neon hanya saat bedah file monolitik |
+| **UI/UX Designer (Layout & Visual FinTech)** | **Argon (Medium)** → **Neon (Medium)** | `inherit` | Argon Medium untuk komponen/chart; Neon untuk rombak desain penuh |
+| **Developer — Modul Terpisah & Fitur Standar** | **Argon (Medium)** | `flash` / `inherit` | Setelah modularisasi selesai, tiap file kecil (<500 baris) sangat aman dikerjakan Argon |
+| **Developer — Logika Inti (NAV, Math, Refactor Monolitik)** | **Neon (Medium / High)** | `pro` | Nol toleransi bug pada perhitungan finansial & pemecahan ribuan baris kode |
+| **QA — Audit Linter / A11y (`web-design-guidelines`)** | **Hydrogen** / **Argon (Low)** | `flash_lite` / `flash` | Cek checklist mekanis secara cepat dan sangat murah |
+| **QA — Review Arsitektur, Security & Bug Kompleks** | **Argon (Medium)** / **Neon (Medium)** | `inherit` / `pro` | Menangkap celah logika, XSS, dan edge case halus |
+| **Research / Verifikasi Browser (`/browser`)** | **Otomatis `flash`** | `flash` / `flash_lite` | Subagent browser otomatis memakai model ringan agar hemat kuota utama |
 
 ---
 
-## 5. Protokol Eksekusi & Handoff
+## 5. Protokol Eksekusi, Pengingat Hemat Kuota & Handoff
 
 - **Fitur Kecil–Sedang:** Jalankan berurutan (PM → UI/UX → Dev → QA) dalam satu sesi, lalu `/compact` di tiap pergantian fase.
 - **Fitur Besar / Paralel:** Gunakan `/teamwork` (Swarm) dengan koordinator membagi tiket sesuai peran & batas *single-writer* pada `index.html`.
+- **Otomatis Mode `caveman` di Fase Dev & QA:**
+  - Saat mengeksekusi tiket coding (Developer) dan pemeriksaan kode (QA), agent **wajib otomatis menggunakan gaya bahasa ringkas (`caveman` lite)** — langsung hasil, tanpa basa-basi panjang — meskipun user tidak mengetik `/caveman`.
+  - Kembali ke bahasa penjelasan normal yang ramah saat fase PM / diskusi desain / menjawab pertanyaan user.
+- **Pengingat Otomatis Pergantian Fase (Wajib Ditampilkan Agent di Akhir Pesan):**
+  1. **Saat Transisi PM → Dev (Spec Disetujui, Siap Coding):** Tampilkan kotak pengingat singkat:
+     - *Switch Model:* Ingatkan apakah tahap ini cukup memakai **Argon (Medium)** atau perlu naik ke **Neon (Medium)**.
+     - *Compact:* Ingatkan user untuk mengetik `/compact` jika diskusi perencanaan sudah >10 pesan.
+  2. **Saat Transisi Dev/QA → Selesai (Semua Tiket Beres):** Tampilkan kotak pengingat singkat:
+     - *Turunkan Model:* Ingatkan user untuk segera **menurunkan model dari Neon kembali ke Argon (Medium) / Hydrogen** agar kuota mingguan Neon tidak terbuang untuk obrolan ringan.
+     - *Compact / Commit:* Ingatkan `/compact` sebelum mulai topik berikutnya.
 - **Format Handoff Ringkas** (jangan teruskan seluruh riwayat chat):
   1. **Tiket / Tujuan:** 1–3 kalimat ruang lingkup & kriteria selesai (atau link ke `docs/specs/...`).
   2. **Target File & Lokasi:** Path file + rentang baris / nama fungsi dari `docs/ARCHITECTURE.md`.

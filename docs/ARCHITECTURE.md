@@ -1,10 +1,10 @@
 # ARCHITECTURE.md — Peta Kode & Blueprint Modularisasi
 
-Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau melakukan pemecahan modul. Jangan baca `index.html` secara utuh (5.286 baris) — lompat langsung ke rentang baris di bawah ini.
+Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau melakukan pemecahan modul. Jangan baca `index.html` secara utuh (4.630 baris) — lompat langsung ke rentang baris di bawah ini.
 
 ---
 
-## 1. Peta Lokasi `index.html` (5.286 Baris — Pasca Modularisasi Tahap 1 & 2)
+## 1. Peta Lokasi `index.html` (4.630 Baris — Pasca Modularisasi Tahap 1, 2 & 3A)
 
 ### A. Head, Styling & Navigasi
 | Bagian | Rentang Baris | Isi Utama |
@@ -24,25 +24,23 @@ Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum me
 | Tab 6: Kalkulator Average | `1269–1399` | `#tab-panel-calculator` — simulasi average down/up & chart target |
 | Modals (Custom UI) | `1400–2226` | `#modal-buy`, `#modal-sell`, `#modal-dividend`, `#modal-dividend-schedule`, `#modal-bulk-price`, `#modal-cash`, `#modal-edit-holding`, `#modal-manual-journal`, `#modal-cloud`, `#modal-confirm`, `#modal-year-rollover`, `#modal-baseline`, `#modal-import` |
 
-### C. Logika Aplikasi (`<script type="module">`, Baris `2231–5284`)
+### C. Logika Aplikasi (`<script type="module">`, Baris `2231–4628`)
 | # | Bagian | Rentang Baris | Fungsi / Simbol Kunci & Modul Eksternal |
 | :---: | :--- | :---: | :--- |
-| 1 | Imports & Runtime State | `2231–2280` | Import `./js/nav-engine.js`, `./js/state.js`, `./js/storage.js`, `./js/market.js`; `let state = loadInitialState()` |
-| 2 | Core Financial Engine (Wrapper) | `2282–2285` | Delegasi ke `./js/nav-engine.js` (`computeMetrics`, `calculateIPOTBuyFee`, `calculateIPOTSellFee`) |
-| 3 | Formatting, WIB & Storage (Wrappers) | `2287–2336` | Delegasi ke `./js/storage.js` + `showToast()`, `commitStateChange()` |
-| 5 | Market Auto-Sync UI & Scheduler | `2338–2513` | Delegasi fetcher ke `./js/market.js` (`fetchMarketQuotes`); UI status & `scheduleDailyMarketCloseSync()` |
-| 6 | Tab Navigation, Modals & Portfolio CRUD | `2515–3077` | `window.switchTab`, aksi beli/jual/edit holding/cash/rollover/baseline |
-| 7 | Dividend Actions | `3079–3238` | `window.setDividendQuickDate`, CRUD dividen & jadwal |
-| 8 | Mutations, Analytics & Journal Actions | `3240–3524` | `window.setMutationQuickAmount`, CRUD mutasi & jurnal |
-| 9 | Calculator & JSON Export/Import/Reset | `3526–3713` | `window.loadTickerIntoCalculator`, backup JSON export/import/reset |
-| 10 | Chart Helpers & Tab 1 Renderer | `3715–4127` | `getChartTextColor()`, `renderPortfolioTab()`, `renderAllocationChart()`, `renderBenchmarkBars()`, `renderPortfolioDividendRecap()` |
-| 11 | Tab 2 Renderer (Dividends) | `4129–4726` | `renderDividendsTab()`, `renderActualDividendsSection()` |
-| 12 | Tab 3 Renderer (Mutations) | `4728–4918` | `renderMutationsTab()` |
-| 13 | Tab 4 Renderer (Analytics) | `4920–5138` | `renderAnalyticsTab()` |
-| 14 | Tab 5 & 6 Renderers (Journal & Calc) | `5140–5239` | `renderJournalTab()`, `renderCalculatorTab()`, `renderCalculatorChart()` |
-| 15 | Master Render & Init | `5241–5284` | `window.renderAll`, `initApp()` |
+| 1 | Imports & Runtime State | `2231–2290` | Import `./js/nav-engine.js`, `./js/state.js`, `./js/storage.js`, `./js/market.js`, `./js/charts.js`, `./js/ui/journal.js`, `./js/ui/calculator.js`, `./js/ui/mutations.js`; `let state = loadInitialState()` |
+| 2 | Core Financial Engine (Wrapper) | `2292–2295` | Delegasi ke `./js/nav-engine.js` (`computeMetrics`, `calculateIPOTBuyFee`, `calculateIPOTSellFee`) |
+| 3 | Formatting, WIB & Storage (Wrappers) | `2297–2346` | Delegasi ke `./js/storage.js` + `showToast()`, `commitStateChange()` |
+| 5 | Market Auto-Sync UI & Scheduler | `2348–2522` | Delegasi fetcher ke `./js/market.js` (`fetchMarketQuotes`); UI status & `scheduleDailyMarketCloseSync()` |
+| 6 | Tab Navigation, Modals, `appContext` & Portfolio CRUD | `2524–3103` | `window.switchTab`, `appContext`, inisialisasi `createJournalUI` / `createCalculatorUI` / `createMutationsUI`, aksi beli/jual/edit holding/cash/baseline |
+| 7 | Dividend Actions | `3105–3265` | `window.setDividendQuickDate`, CRUD dividen & jadwal |
+| 8 | Analytics Actions | `3267–3364` | `window.onAnalyticsYearChange`, benchmark inputs, snapshot bulanan, rollover tahun *(Mutations & Journal didelegasikan ke `./js/ui/*`)* |
+| 9 | JSON Export/Import/Reset | `3366–3493` | Backup JSON export/import/reset & cloud modal *(Calculator didelegasikan ke `./js/ui/calculator.js`)* |
+| 10 | Chart Wrappers & Tab 1 Renderer | `3495–3763` | Wrapper `./js/charts.js` (`destroyChart`, `renderAllocationChart`, `renderBenchmarkBars`), `renderPortfolioTab()`, `renderPortfolioDividendRecap()` |
+| 11 | Tab 2 Renderer (Dividends) | `3765–4362` | `renderDividendsTab()`, `renderActualDividendsSection()` |
+| 13 | Tab 4 Renderer (Analytics) | `4364–4582` | `renderAnalyticsTab()` *(Tab 3 Renderer didelegasikan ke `./js/ui/mutations.js`)* |
+| 15 | Master Render & Init | `4584–4628` | `window.renderAll`, `initApp()` *(Tab 5 & 6 Renderers didelegasikan ke `./js/ui/journal.js` & `./js/ui/calculator.js`)* |
 
-*(Catatan: Penomoran komentar asli di `index.html` melompat dari 3 ke 5; rentang baris di atas sudah diperbarui pasca Modularisasi Tahap 1 & Tahap 2.)*
+*(Catatan: Penomoran komentar asli di `index.html` dipertahankan; rentang baris di atas sudah diperbarui pasca Modularisasi Tahap 1, Tahap 2 & Tahap 3A.)*
 
 ---
 
