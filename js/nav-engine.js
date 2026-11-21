@@ -190,3 +190,161 @@ export function calculateIPOTSellFee(tradeAmount, allInPct = 0.29) {
     netProceeds: Math.max(0, gross - totalFee)
   };
 }
+
+/**
+ * Compute All-Time Capital Gain, Total Return (incl. Dividends), and Multi-Year CAGR.
+ * Safe against empty history, zero capital, and negative compounding wipeouts.
+ * @param {object} portfolioState
+ * @param {object|null} [precomputedMetrics=null]
+ */
+export function computeAllTimeMetrics(portfolioState, precomputedMetrics = null) {
+  const safeState = portfolioState && typeof portfolioState === "object" ? portfolioState : {};
+  const metrics = precomputedMetrics || computeMetrics(safeState);
+  const annualHistory = Array.isArray(safeState.annualHistory)
+    ? [...safeState.annualHistory].filter((a) => a && typeof a === "object").sort((a, b) => Number(a.year) - Number(b.year))
+    : [];
+  const activeYear = Number(safeState.meta?.activeYear) || 0;
+
+  const annualTopupSum = annualHistory.reduce((sum, a) => sum + safeFinite(a.topUp, 0), 0);
+  const allTimePaidIn = annualTopupSum > 0 ? annualTopupSum : Math.max(0, safeFinite(metrics.totalPaidInCapital, 0));
+  const totalValuation = Math.max(0, safeFinite(metrics.totalValuation, 0));
+  const totalDividends = Math.max(0, safeFinite(metrics.totalDividendsReceived, 0));
+
+  const allTimeCapitalGain = totalValuation - allTimePaidIn;
+  const allTimeCapitalGainPct = allTimePaidIn > 0 ? (allTimeCapitalGain / allTimePaidIn) * 100 : 0;
+  const allTimeTotalReturn = allTimeCapitalGain + totalDividends;
+  const allTimeTotalReturnPct = allTimePaidIn > 0 ? (allTimeTotalReturn / allTimePaidIn) * 100 : 0;
+
+  let portoFactor = 1;
+  let yearsCount = 0;
+  let startYear = null;
+  let endYear = null;
+
+  let ihsgFactor = 1;
+  let ihsgYears = 0;
+
+  for (const row of annualHistory) {
+    const yr = Number(row.year);
+    if (!Number.isFinite(yr) || yr < 1900) continue;
+
+    let portoRet = row.portfolio !== null && row.portfolio !== undefined && row.portfolio !== ""
+      ? Number(row.portfolio)
+      : null;
+    if (portoRet === null && yr === activeYear && Number.isFinite(metrics.ytdReturnPct)) {
+      portoRet = metrics.ytdReturnPct;
+    }
+
+    if (portoRet !== null && Number.isFinite(portoRet)) {
+      portoFactor *= Math.max(0, 1 + portoRet / 100);
+      yearsCount += 1;
+      if (startYear === null) startYear = yr;
+      endYear = yr;
+    }
+
+    let ihsgRet = row.ihsg !== null && row.ihsg !== undefined && row.ihsg !== ""
+      ? Number(row.ihsg)
+      : null;
+    if (ihsgRet === null && yr === activeYear && Number.isFinite(metrics.ihsgReturnPct)) {
+      ihsgRet = metrics.ihsgReturnPct;
+    }
+    if (ihsgRet !== null && Number.isFinite(ihsgRet)) {
+      ihsgFactor *= Math.max(0, 1 + ihsgRet / 100);
+      ihsgYears += 1;
+    }
+  }
+
+  const cumulativeTwrPct = yearsCount > 0 ? (portoFactor - 1) * 100 : 0;
+  const cagrPct = yearsCount > 0 && portoFactor > 0
+    ? (Math.pow(portoFactor, 1 / yearsCount) - 1) * 100
+    : (yearsCount > 0 && portoFactor <= 0 ? -100 : 0);
+
+  const ihsgCumulativePct = ihsgYears > 0 ? (ihsgFactor - 1) * 100 : 0;
+  const ihsgCagrPct = ihsgYears > 0 && ihsgFactor > 0
+    ? (Math.pow(ihsgFactor, 1 / ihsgYears) - 1) * 100
+    : (ihsgYears > 0 && ihsgFactor <= 0 ? -100 : 0);
+
+  return {
+    allTimePaidIn,
+    allTimeCapitalGain,
+    allTimeCapitalGainPct,
+    allTimeTotalReturn,
+    allTimeTotalReturnPct,
+    cumulativeTwrPct,
+    cagrPct,
+    yearsCount,
+    startYear,
+    endYear,
+    ihsgCumulativePct,
+    ihsgCagrPct,
+    allTimeAlphaIhsg: cumulativeTwrPct - ihsgCumulativePct,
+    cagrAlphaIhsg: cagrPct - ihsgCagrPct
+  };
+}
+
+/**
+ * Compute Target Allocation & Rebalancing Lot Plan.
+ * Rounds trade recommendations to IDX lot size (1 lot = 100 shares).
+ * @param {Array} holdings
+ * @param {object} metrics
+ */
+export function computeRebalancePlan(holdings, metrics) {
+  const safeHoldings = Array.isArray(holdings) ? holdings : [];
+  const totalValuation = Math.max(0, safeFinite(metrics?.totalValuation, 0));
+
+  let totalTargetWeight = 0;
+  const items = [];
+
+  for (const h of safeHoldings) {
+    if (!h || typeof h !== "object") continue;
+    const shares = Math.max(0, safeFinite(h.shares, 0));
+    const currentPrice = Math.max(0, safeFinite(h.currentPrice, 0));
+    const currentVal = shares * currentPrice;
+    const actualWeight = totalValuation > 0 ? (currentVal / totalValuation) * 100 : 0;
+    const targetWeight = Math.min(100, Math.max(0, safeFinite(h.targetWeight, 0)));
+    totalTargetWeight += targetWeight;
+
+    const driftPct = actualWeight - targetWeight;
+    const targetVal = totalValuation > 0 ? (targetWeight / 100) * totalValuation : 0;
+    const diffIDR = targetVal - currentVal;
+    const lotPrice = currentPrice * 100;
+    const ownedLots = Math.floor(shares / 100);
+
+    let suggestedLots = 0;
+    if (lotPrice > 0 && totalValuation > 0) {
+      suggestedLots = Math.round(diffIDR / lotPrice);
+      if (suggestedLots < -ownedLots) {
+        suggestedLots = -ownedLots;
+      }
+    }
+    if (suggestedLots === 0) suggestedLots = 0; // avoid -0
+
+    let action = "HOLD";
+    if (suggestedLots > 0) action = "BUY";
+    else if (suggestedLots < 0) action = "SELL";
+
+    items.push({
+      id: h.id || "",
+      ticker: String(h.ticker || "").toUpperCase(),
+      name: String(h.name || ""),
+      shares,
+      currentPrice,
+      currentVal,
+      actualWeight,
+      targetWeight,
+      driftPct,
+      targetVal,
+      diffIDR,
+      suggestedLots,
+      action,
+      estTradeValue: Math.abs(suggestedLots) * lotPrice
+    });
+  }
+
+  return {
+    items,
+    totalTargetWeight,
+    impliedCashTargetPct: Math.max(0, 100 - totalTargetWeight),
+    isOverAllocated: totalTargetWeight > 100.0001,
+    totalValuation
+  };
+}

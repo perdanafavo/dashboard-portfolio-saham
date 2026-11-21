@@ -9,7 +9,7 @@ Panduan operasional, invarian, alur PM → UI/UX → Developer → QA, routing s
 ## 1. Konteks Proyek, Deploy & Invarian Kritis
 
 - **Aplikasi:** Portfolio NAV Tracker — Sistem Unit Penyertaan Saham Indonesia (6 tab: Portfolio, Dividends, Mutations, Analytics, Journal, Calculator).
-- **Stack:** Static web app (`index.html`, ~6.162 baris), Vanilla JS (native ES Modules), Tailwind CSS, Chart.js, Lucide Icons, `localStorage` (`portfolio_nav_tracker_favo_v1`) + opsional Firebase sync, live market sync (TradingView IDX / Yahoo / Google Finance / Stooq).
+- **Stack:** Static web app (`index.html` + `./js/*.js`), Vanilla JS (native ES Modules), Tailwind CSS, Chart.js, Lucide Icons, `localStorage` (`portfolio_nav_tracker_favo_v1`) + opsional Firebase sync, live market sync (TradingView IDX / Yahoo / Google Finance / Stooq).
 - **Deploy Target:** **GitHub Pages & Vercel** (statis, **tanpa build step wajib**).
 - **Bahasa & Format UI:** Bahasa Indonesia, format Rupiah (`IDR`) konsisten, angka finansial wajib `tabular-nums`, mendukung Dark & Light mode.
 
@@ -43,10 +43,10 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 | :--- | :--- | :--- | :--- |
 | **1. PM (Product Manager)** | Klarifikasi masalah, batas ruang lingkup, edge case finansial, prioritas | `brainstorming` → `to-spec` → `to-tickets` (opsional `/grill-me`) | Design doc, spec & tiket *vertical-slice* di `docs/specs/` |
 | **2. UI/UX & Frontend Designer** | Hirarki visual dashboard FinTech, chart, layout responsif, komponen modern | `ui-ux-pro-max`, `frontend-design` / `taste-skill`, `modern-web-guidance` | Keputusan layout, palet/tipografi, spesifikasi komponen & interaksi |
-| **3. Developer** | Implementasi fitur, logika NAV/state, refactor modul, integrasi library | `ponytail`, `codebase-design`, `Context7`, `caveman` | Perubahan kode bersih dengan diff minimal & aman |
-| **4. QA & Code Reviewer** | Polish UI, audit a11y/form/focus, review kualitas 5-axis, investigasi bug, cek visual | `impeccable` (`polish`, `harden`), `web-design-guidelines`, `code-review-and-quality`, `systematic-debugging`, `/browser` | Temuan berlabel (`Critical`/`Required`/`Optional`/`Nit`) & bukti visual |
+| **3. Developer** | Implementasi fitur, logika NAV/state, unit test (TDD), refactor modul, integrasi library | `tdd`, `ponytail`, `codebase-design`, `Context7`, `caveman` | Perubahan kode bersih dengan diff minimal & test terverifikasi |
+| **4. QA & Code Reviewer** | Polish UI, audit a11y/form/focus, security review, review kualitas 5-axis, investigasi bug, cek visual | `impeccable` (`polish`, `harden`), `web-design-guidelines`, `code-review-and-quality`, `security-review`, `systematic-debugging`, `/browser` | Temuan berlabel (`Critical`/`Required`/`Optional`/`Nit`), audit security *high-confidence*, & bukti visual |
 
-> **Catatan Debugging:** Saat menemukan bug atau perilaku tak terduga, wajib ikuti Iron Law `systematic-debugging` — temukan *root cause* sebelum menulis perbaikan.
+> **Catatan TDD, Debugging & Security:** Gunakan `tdd` (*red → green* pada *seam* yang disepakati) saat mengubah/menambah logika NAV, state, atau modul inti. Saat menemukan bug atau perilaku tak terduga, wajib ikuti Iron Law `systematic-debugging` — temukan *root cause* sebelum menulis perbaikan. Jalankan `security-review` untuk audit celah keamanan *high-confidence* (XSS, import JSON, Firebase, supply chain) sebelum rilis.
 
 ---
 
@@ -61,7 +61,7 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 | **Developer — Modul Terpisah & Fitur Standar** | **Argon (Medium)** | `flash` / `inherit` | Setelah modularisasi selesai, tiap file kecil (<500 baris) sangat aman dikerjakan Argon |
 | **Developer — Logika Inti (NAV, Math, Refactor Monolitik)** | **Neon (Medium / High)** | `pro` | Nol toleransi bug pada perhitungan finansial & pemecahan ribuan baris kode |
 | **QA — Audit Linter / A11y (`web-design-guidelines`)** | **Hydrogen** / **Argon (Low)** | `flash_lite` / `flash` | Cek checklist mekanis secara cepat dan sangat murah |
-| **QA — Review Arsitektur, Security & Bug Kompleks** | **Argon (Medium)** / **Neon (Medium)** | `inherit` / `pro` | Menangkap celah logika, XSS, dan edge case halus |
+| **QA — Review Arsitektur, Security (`security-review`) & Bug Kompleks** | **Argon (Medium)** / **Neon (Medium)** | `inherit` / `pro` | Menangkap celah logika, XSS/taint flow, dan edge case halus |
 | **Research / Verifikasi Browser (`/browser`)** | **Otomatis `flash`** | `flash` / `flash_lite` | Subagent browser otomatis memakai model ringan agar hemat kuota utama |
 
 ---
@@ -90,7 +90,7 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 
 ## 6. Definition of Done (Sebelum Deploy GitHub Pages / Vercel)
 
-- [ ] **Fungsional & Matematika:** Kalkulasi NAV, unit penyertaan, fee, mutasi, dan dividen terverifikasi termasuk kasus `0`, negatif, dan data kosong.
+- [ ] **Fungsional & Matematika:** Kalkulasi NAV, unit penyertaan, fee, mutasi, dan dividen terverifikasi (termasuk via unit test `tdd` bila relevan) untuk kasus `0`, negatif, dan data kosong.
 - [ ] **Kompatibilitas Data & Deploy:** Load/save `localStorage` & Export/Import JSON aman; semua path bersifat relatif (`./`) dan berjalan tanpa error di GitHub Pages & Vercel.
-- [ ] **UI, Aksesibilitas & Keamanan:** Rapi di desktop & mobile, Dark/Light mode konsisten, angka memakai `tabular-nums`, input ter-sanitasi (bebas XSS), lolos `web-design-guidelines` & `impeccable harden`.
+- [ ] **UI, Aksesibilitas & Keamanan:** Rapi di desktop & mobile, Dark/Light mode konsisten, angka memakai `tabular-nums`, input ter-sanitasi (bebas XSS), lolos `web-design-guidelines`, `impeccable harden`, dan `security-review` tanpa temuan *high-confidence*.
 - [ ] **Kualitas Kode & Runtime:** Lolos `code-review-and-quality` tanpa temuan `Critical`/`Required`, dan nol error console saat diuji lewat `/browser`.

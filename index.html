@@ -381,6 +381,17 @@
             <p class="text-xs text-slate-500 dark:text-[#8E9BA8] mt-0.5">Valuasi terkini, unrealized P/L, serta perbandingan alokasi modal dan bobot valuasi</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input
+                type="search"
+                id="portfolio-search-input"
+                oninput="onPortfolioSearchInput(this.value)"
+                placeholder="Cari ticker / emiten..."
+                aria-label="Cari emiten di tabel portofolio"
+                class="w-44 sm:w-52 pl-8 pr-2.5 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] text-slate-800 dark:text-[#EEF2F6] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+              />
+            </div>
             <div id="table-price-freshness-badge" class="inline-flex items-center gap-1.5 text-xs font-sans tabular-nums bg-slate-100 dark:bg-[#0C1117] border border-slate-200/70 dark:border-white/[0.07] px-3 py-1.5 rounded-lg text-slate-600 dark:text-[#8E9BA8]">
               Terverifikasi Real: <strong>0/0</strong>
             </div>
@@ -394,20 +405,77 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
-                <th class="py-3 px-4">Emiten</th>
+                <th class="py-3 px-4">
+                  <button type="button" onclick="togglePortfolioSort('ticker')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                    <span>Emiten</span><span id="sort-ind-ticker" class="text-[10px] opacity-60">↕</span>
+                  </button>
+                </th>
                 <th class="py-3 px-3 text-right">Lot / Lembar</th>
                 <th class="py-3 px-3 text-right">Avg. Price</th>
                 <th class="py-3 px-3 text-right">Current Price</th>
                 <th class="py-3 px-3 text-right">Cost / Modal</th>
-                <th class="py-3 px-3 text-right">Valuation</th>
-                <th class="py-3 px-3 text-right">Unrealized P/L</th>
+                <th class="py-3 px-3 text-right">
+                  <button type="button" onclick="togglePortfolioSort('valuation')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                    <span>Valuation</span><span id="sort-ind-valuation" class="text-[10px] opacity-60">↕</span>
+                  </button>
+                </th>
+                <th class="py-3 px-3 text-right">
+                  <button type="button" onclick="togglePortfolioSort('pl')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                    <span>Unrealized P/L</span><span id="sort-ind-pl" class="text-[10px] opacity-60">↕</span>
+                  </button>
+                </th>
                 <th class="py-3 px-3 text-right">Fund Alloc</th>
-                <th class="py-3 px-3 text-right">Value Effect</th>
+                <th class="py-3 px-3 text-right">
+                  <button type="button" onclick="togglePortfolioSort('weight')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                    <span>Value Effect</span><span id="sort-ind-weight" class="text-[10px] opacity-60">↕</span>
+                  </button>
+                </th>
                 <th class="py-3 px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody id="portfolio-table-body" class="divide-y divide-slate-200/60 dark:divide-white/[0.06] text-xs sm:text-sm"></tbody>
             <tfoot id="portfolio-table-foot" class="bg-slate-50 dark:bg-[#0C1117]/80 border-t border-slate-200/80 dark:border-white/[0.1] text-xs sm:text-sm font-bold"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Target Alokasi & Rebalancing Assistant (Opsi A — Panel Terpisah) -->
+      <div class="rounded-xl bg-white dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.08] overflow-hidden text-left">
+        <div class="px-5 py-4 border-b border-slate-200/80 dark:border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-500 dark:text-sky-400 flex items-center justify-center shrink-0">
+              <i data-lucide="scale" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-[#EEF2F6]">Target Alokasi &amp; Rebalancing Assistant</h3>
+              <p class="text-xs text-slate-500 dark:text-[#8E9BA8]">Atur bobot target (%) per emiten untuk melihat rekomendasi aksi Beli / Jual dalam satuan Lot (1 lot = 100 lbr)</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div id="rebalance-allocation-badge" class="inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#0C1117] border border-slate-200/70 dark:border-white/[0.07] text-slate-600 dark:text-[#8E9BA8]">
+              Target Saham: <strong>0,0%</strong> &bull; Sisa Kas: <strong>100,0%</strong>
+            </div>
+            <button type="button" onclick="syncTargetsToCurrentWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors">
+              Samakan dgn Bobot Saat Ini
+            </button>
+            <button type="button" onclick="resetAllTargetWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-[#8E9BA8] hover:text-rose-500 transition-colors">
+              Reset
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+                <th class="py-2.5 px-4">Emiten</th>
+                <th class="py-2.5 px-3 text-right">Bobot Aktual</th>
+                <th class="py-2.5 px-3 text-right">Target (%)</th>
+                <th class="py-2.5 px-3 text-right">Drift (%)</th>
+                <th class="py-2.5 px-3 text-right">Selisih Nilai (Rp)</th>
+                <th class="py-2.5 px-4 text-right">Rekomendasi Aksi (Lot)</th>
+              </tr>
+            </thead>
+            <tbody id="rebalance-table-body" class="divide-y divide-slate-200/60 dark:divide-white/[0.06] text-xs sm:text-sm"></tbody>
           </table>
         </div>
       </div>
@@ -1044,6 +1112,30 @@
             </div>
             <input type="number" id="bench-lq45-end" step="any" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
+        </div>
+      </div>
+
+      <!-- All-Time Gain & Multi-Year CAGR Summary Strip -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="rounded-xl bg-white dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.08] p-4 sm:p-5">
+          <div class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">All-Time Capital Gain</div>
+          <div id="ana-alltime-capgain" class="text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 text-slate-900 dark:text-[#EEF2F6]">Rp 0</div>
+          <div id="ana-alltime-capgain-sub" class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8] mt-1">0,00% dari Total Setoran</div>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.08] p-4 sm:p-5">
+          <div class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">All-Time Total Return (+Dividen)</div>
+          <div id="ana-alltime-totalret" class="text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 text-slate-900 dark:text-[#EEF2F6]">Rp 0</div>
+          <div id="ana-alltime-totalret-sub" class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8] mt-1">Termasuk Dividen: Rp 0</div>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.08] p-4 sm:p-5">
+          <div class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">Multi-Year CAGR (TWR)</div>
+          <div id="ana-alltime-cagr" class="text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 text-slate-900 dark:text-[#EEF2F6]">0,00% / thn</div>
+          <div id="ana-alltime-cagr-sub" class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8] mt-1">Kumulatif: 0,00%</div>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.08] p-4 sm:p-5">
+          <div class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">CAGR Alpha vs IHSG</div>
+          <div id="ana-alltime-alpha" class="text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 text-slate-900 dark:text-[#EEF2F6]">0,00%</div>
+          <div id="ana-alltime-alpha-sub" class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8] mt-1">IHSG CAGR: 0,00% / thn</div>
         </div>
       </div>
 
@@ -1902,6 +1994,11 @@
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Price (Rp)</label>
             <input type="number" id="edit-holding-current" min="1" step="any" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Alokasi Portofolio (%) <span class="font-normal text-slate-400">(opsional, 0–100%)</span></label>
+          <input type="number" id="edit-holding-target-weight" min="0" max="100" step="0.1" placeholder="0" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
 
         <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-0.5">

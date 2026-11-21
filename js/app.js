@@ -191,6 +191,7 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
   let updatedStocks = 0;
   let updatedIndices = 0;
   let sourceProviderLabel = "IDX Real";
+  const failedTickers = [];
 
   try {
     const jktNow = getJakartaTimeInfo();
@@ -216,7 +217,11 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
         h.marketDateWIB = mktDateInfo?.dateWIB || latestSessionWIB;
         h.marketDateLabel = mktDateInfo?.labelWIB || latestSessionLabel;
         h.priceSource = "SYNC";
+        h.lastSyncStatus = "LIVE";
         updatedStocks++;
+      } else {
+        h.lastSyncStatus = "CACHE";
+        failedTickers.push(ticker);
       }
     }
 
@@ -230,11 +235,17 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
       updatedIndices++;
     }
 
+    const totalHoldings = state.holdings.length;
+    state.marketSync.lastSyncFailedTickers = failedTickers;
+
     if (updatedStocks > 0 || updatedIndices > 0) {
       state.marketSync.lastSyncAt = isoNow;
       state.marketSync.lastSyncDateWIB = jktNow.dateStr;
       state.marketSync.lastSyncError = null;
-      state.marketSync.lastSyncSource = `${sourceProviderLabel} • ${updatedStocks}/${state.holdings.length} emiten`;
+      const cacheNote = failedTickers.length > 0
+        ? ` • Cache: ${failedTickers.slice(0, 4).join(", ")}${failedTickers.length > 4 ? "…" : ""}`
+        : "";
+      state.marketSync.lastSyncSource = `${sourceProviderLabel} • ${updatedStocks}/${totalHoldings} live${cacheNote}`;
 
       const activeYr = Number(state.meta.activeYear) || jktNow.year;
       ensureYearStructure(activeYr);
@@ -256,12 +267,18 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
       saveToLocalStorage();
       saveToCloudIfAvailable();
       if (!silent) {
-        showToast(`Sync berhasil: ${updatedStocks}/${state.holdings.length} saham terverifikasi`);
+        if (failedTickers.length === 0) {
+          showToast(`Harga pasar diperbarui (${updatedStocks}/${totalHoldings} emiten live)`, "success");
+        } else if (updatedStocks > 0) {
+          showToast(`${updatedStocks}/${totalHoldings} emiten live • Harga terakhir (cache): ${failedTickers.join(", ")}`, "warning");
+        } else {
+          showToast(`Indeks diperbarui • ${failedTickers.length} emiten memakai harga terakhir (cache)`, "warning");
+        }
       }
     } else {
-      state.marketSync.lastSyncError = "Gagal menjangkau server data bursa — periksa koneksi internet Anda";
+      state.marketSync.lastSyncError = `Gagal sync live — memakai harga terakhir (${totalHoldings} emiten cache)`;
       if (!silent) {
-        showToast("Gagal mengambil data harga bursa. Coba lagi beberapa saat.", "error");
+        showToast(`Gagal memperbarui harga live • Memakai harga terakhir (${totalHoldings} emiten)`, "error");
       }
     }
   } catch (err) {

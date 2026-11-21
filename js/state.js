@@ -95,7 +95,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-bmri",
@@ -109,7 +110,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-tlkm",
@@ -123,7 +125,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-bbni",
@@ -137,7 +140,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-indf",
@@ -151,7 +155,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-asii",
@@ -165,7 +170,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-bbca",
@@ -179,7 +185,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       },
       {
         id: "h-1794653926420",
@@ -193,7 +200,8 @@ export function getInitialTemplateData() {
         priceUpdatedDateWIB: "2026-11-19",
         marketDateWIB: "2026-11-19",
         marketDateLabel: "19 Nov",
-        priceSource: "SYNC"
+        priceSource: "SYNC",
+        targetWeight: 0
       }
     ],
     mutations: [
@@ -252,6 +260,17 @@ export function getInitialTemplateData() {
   };
 }
 
+function sanitizeId(rawId, fallback) {
+  const cleaned = String(rawId || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+  return cleaned || fallback;
+}
+
+function sanitizeTicker(rawTicker) {
+  return String(rawTicker || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
+}
+
+const FORBIDDEN_KEYS = new Set(["__PROTO__", "CONSTRUCTOR", "PROTOTYPE"]);
+
 export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   const def = getInitialTemplateData();
   if (!raw || typeof raw !== "object") return def;
@@ -295,21 +314,26 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   const sanitizedHoldings = rawHoldings
     .filter((h) => h && typeof h === "object")
     .map((h, idx) => {
-      const ticker = String(h.ticker || h.code || h.symbol || "").toUpperCase().trim();
+      const ticker = sanitizeTicker(h.ticker || h.code || h.symbol || "");
       const shares = h.shares != null
         ? Number(h.shares) || 0
         : (h.lots != null ? (Number(h.lots) || 0) * 100 : 0);
       const avgPrice = Number(h.avgPrice ?? h.averagePrice ?? h.avg ?? 0) || 0;
       const currentPrice = Number(h.currentPrice ?? h.price ?? h.lastPrice ?? avgPrice) || 0;
+      const rawTargetWeight = Number(h.targetWeight);
+      const targetWeight = Number.isFinite(rawTargetWeight)
+        ? Math.min(100, Math.max(0, rawTargetWeight))
+        : 0;
 
       const copy = {
         ...h,
-        id: h.id || `h-${ticker || "item"}-${idx}-${Date.now()}`,
+        id: sanitizeId(h.id, `h-${ticker || "item"}-${idx}-${Date.now()}`),
         ticker,
         name: String(h.name || h.companyName || (ticker ? `${ticker} Tbk` : "Emiten")),
         shares,
         avgPrice,
-        currentPrice
+        currentPrice,
+        targetWeight
       };
 
       if (copy.priceSource !== "SYNC" && TEMPLATE_DEFAULT_PRICES[ticker] === currentPrice) {
@@ -334,7 +358,7 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
       const type = String(m.type || "TOPUP").toUpperCase() === "WITHDRAW" ? "WITHDRAW" : "TOPUP";
       const unitsDelta = Number(m.unitsDelta) || (navAtTime > 0 ? amount / navAtTime : 0);
       return {
-        id: m.id || `m-${idx}-${Date.now()}`,
+        id: sanitizeId(m.id, `m-${idx}-${Date.now()}`),
         date: String(m.date || fallbackDate),
         type,
         amount,
@@ -347,8 +371,8 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   const dividends = (Array.isArray(source.dividends) ? source.dividends : def.dividends)
     .filter((d) => d && typeof d === "object")
     .map((d, idx) => ({
-      id: d.id || `div-${idx}-${Date.now()}`,
-      ticker: String(d.ticker || "").toUpperCase().trim(),
+      id: sanitizeId(d.id, `div-${idx}-${Date.now()}`),
+      ticker: sanitizeTicker(d.ticker || ""),
       date: String(d.date || fallbackDate),
       amount: Number(d.amount) || 0,
       note: String(d.note || "Dividen Tunai")
@@ -359,8 +383,8 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
     : {};
   const dividendSchedules = { ...def.dividendSchedules };
   for (const [k, v] of Object.entries(rawSchedules)) {
-    const key = String(k).toUpperCase().trim();
-    if (!key || !v || typeof v !== "object") continue;
+    const key = sanitizeTicker(k);
+    if (!key || FORBIDDEN_KEYS.has(key) || !v || typeof v !== "object") continue;
     if (Array.isArray(v.payouts)) {
       dividendSchedules[key] = {
         payouts: v.payouts.map((p) => ({
@@ -378,9 +402,9 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   const journal = (Array.isArray(source.journal) ? source.journal : def.journal)
     .filter((j) => j && typeof j === "object")
     .map((j, idx) => ({
-      id: j.id || `j-${idx}-${Date.now()}`,
+      id: sanitizeId(j.id, `j-${idx}-${Date.now()}`),
       date: String(j.date || fallbackDate),
-      ticker: String(j.ticker || "").toUpperCase().trim(),
+      ticker: sanitizeTicker(j.ticker || ""),
       shares: Number(j.shares) || 0,
       avgCost: Number(j.avgCost) || 0,
       sellPrice: Number(j.sellPrice) || 0,

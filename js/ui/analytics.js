@@ -1,7 +1,9 @@
+import { computeAllTimeMetrics } from "../nav-engine.js";
 import { MONTH_NAMES_ID } from "../state.js";
 import {
   formatNum,
   formatIDR,
+  formatSignedIDR,
   formatCompactIDR,
   formatPct,
   colorClass,
@@ -244,6 +246,49 @@ export function createAnalyticsUI(ctx) {
     document.getElementById("ana-kpi-total-topup").textContent = formatIDR(allTimeTopup);
     document.getElementById("ana-kpi-topup-year-sub").textContent = `Tahun ${viewYr}: ${formatIDR(activeYrTopup)}`;
     document.getElementById("annual-topup-chart-badge").textContent = `Total: ${formatIDR(allTimeTopup)}`;
+
+    // All-Time Gain & Multi-Year CAGR Cards
+    const allTime = computeAllTimeMetrics(state, m);
+    const capGainEl = document.getElementById("ana-alltime-capgain");
+    if (capGainEl) {
+      capGainEl.textContent = formatSignedIDR(allTime.allTimeCapitalGain);
+      capGainEl.className = `text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 ${colorClass(allTime.allTimeCapitalGain)}`;
+    }
+    const capGainSub = document.getElementById("ana-alltime-capgain-sub");
+    if (capGainSub) {
+      capGainSub.textContent = `${formatPct(allTime.allTimeCapitalGainPct)} dari Modal ${formatCompactIDR(allTime.allTimePaidIn)}`;
+    }
+
+    const totRetEl = document.getElementById("ana-alltime-totalret");
+    if (totRetEl) {
+      totRetEl.textContent = formatSignedIDR(allTime.allTimeTotalReturn);
+      totRetEl.className = `text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 ${colorClass(allTime.allTimeTotalReturn)}`;
+    }
+    const totRetSub = document.getElementById("ana-alltime-totalret-sub");
+    if (totRetSub) {
+      totRetSub.textContent = `${formatPct(allTime.allTimeTotalReturnPct)} • Dividen: ${formatCompactIDR(m.totalDividendsReceived)}`;
+    }
+
+    const cagrEl = document.getElementById("ana-alltime-cagr");
+    if (cagrEl) {
+      cagrEl.textContent = `${formatPct(allTime.cagrPct)} / thn`;
+      cagrEl.className = `text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 ${colorClass(allTime.cagrPct)}`;
+    }
+    const cagrSub = document.getElementById("ana-alltime-cagr-sub");
+    if (cagrSub) {
+      const spanTxt = allTime.startYear && allTime.endYear ? `${allTime.startYear}–${allTime.endYear} (${allTime.yearsCount} thn)` : "Belum ada data";
+      cagrSub.textContent = `Kumulatif: ${formatPct(allTime.cumulativeTwrPct)} • ${spanTxt}`;
+    }
+
+    const alphaEl = document.getElementById("ana-alltime-alpha");
+    if (alphaEl) {
+      alphaEl.textContent = formatPct(allTime.cagrAlphaIhsg);
+      alphaEl.className = `text-lg sm:text-xl font-extrabold font-sans tabular-nums tracking-tight mt-1.5 ${colorClass(allTime.cagrAlphaIhsg)}`;
+    }
+    const alphaSub = document.getElementById("ana-alltime-alpha-sub");
+    if (alphaSub) {
+      alphaSub.textContent = `IHSG CAGR: ${formatPct(allTime.ihsgCagrPct)} / thn`;
+    }
 
     // Monthly Chart & Editable Table
     const monthRows = state.monthlyHistoryByYear[viewYr] || [];

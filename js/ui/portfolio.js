@@ -1,4 +1,4 @@
-import { calculateIPOTBuyFee, calculateIPOTSellFee } from "../nav-engine.js";
+import { calculateIPOTBuyFee, calculateIPOTSellFee, computeRebalancePlan } from "../nav-engine.js";
 import {
   formatNum,
   formatIDR,
@@ -32,6 +32,66 @@ export function createPortfolioUI(ctx) {
     askConfirm,
     getEmitenColor
   } = ctx;
+
+  // Ephemeral UI state for Portfolio Table Search & Sort (does not mutate localStorage order)
+  let searchQuery = "";
+  let sortField = null;
+  let sortDir = "desc";
+
+  window.onPortfolioSearchInput = function (val) {
+    searchQuery = String(val || "").trim().toLowerCase();
+    renderPortfolioTab();
+  };
+
+  window.togglePortfolioSort = function (field) {
+    if (sortField !== field) {
+      sortField = field;
+      sortDir = field === "ticker" ? "asc" : "desc";
+    } else if ((field === "ticker" && sortDir === "asc") || (field !== "ticker" && sortDir === "desc")) {
+      sortDir = field === "ticker" ? "desc" : "asc";
+    } else {
+      sortField = null;
+      sortDir = "desc";
+    }
+    renderPortfolioTab();
+  };
+
+  window.updateHoldingTargetWeight = function (holdingId, rawVal) {
+    const state = getState();
+    const h = state.holdings.find((item) => item.id === holdingId);
+    if (!h) return;
+    const parsed = Number(rawVal);
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+      showToast("Target alokasi harus antara 0% sampai 100%.", "warning");
+      renderPortfolioTab();
+      return;
+    }
+    h.targetWeight = Number(parsed.toFixed(2));
+    commitStateChange();
+  };
+
+  window.syncTargetsToCurrentWeights = function () {
+    const state = getState();
+    const m = computeMetrics();
+    if (m.totalValuation <= 0) {
+      showToast("Valuasi portofolio masih Rp 0.", "warning");
+      return;
+    }
+    for (const h of state.holdings) {
+      const val = (Number(h.shares) || 0) * (Number(h.currentPrice) || 0);
+      const w = (val / m.totalValuation) * 100;
+      h.targetWeight = Number(w.toFixed(1));
+    }
+    commitStateChange("Target alokasi disamakan dengan bobot valuasi saat ini");
+  };
+
+  window.resetAllTargetWeights = function () {
+    const state = getState();
+    for (const h of state.holdings) {
+      h.targetWeight = 0;
+    }
+    commitStateChange("Target alokasi seluruh emiten direset ke 0%");
+  };
 
   // --- BUY STOCK MODAL ---
   window.openBuyModal = function (holdingId = null) {
@@ -86,7 +146,7 @@ export function createPortfolioUI(ctx) {
 
   window.updateBuyPreview = function () {
     const state = getState();
-    const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().trim();
+    const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const mode = document.getElementById("buy-unit-mode").value;
     const qty = Math.max(0, Number(document.getElementById("buy-qty").value) || 0);
     const price = Math.max(0, Number(document.getElementById("buy-price").value) || 0);
@@ -123,7 +183,7 @@ export function createPortfolioUI(ctx) {
   window.handleBuyStock = function (e) {
     e.preventDefault();
     const state = getState();
-    const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().trim();
+    const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const name = (document.getElementById("buy-name").value || "").trim();
     const mode = document.getElementById("buy-unit-mode").value;
     const qty = Math.max(0, Number(document.getElementById("buy-qty").value) || 0);
@@ -323,6 +383,8 @@ export function createPortfolioUI(ctx) {
     document.getElementById("edit-holding-shares").value = h.shares;
     document.getElementById("edit-holding-avg").value = h.avgPrice;
     document.getElementById("edit-holding-current").value = h.currentPrice;
+    const targetEl = document.getElementById("edit-holding-target-weight");
+    if (targetEl) targetEl.value = Number(h.targetWeight) || 0;
     document.getElementById("edit-holding-adjust-cash").checked = false;
 
     window.updateEditHoldingPreview();
@@ -372,11 +434,13 @@ export function createPortfolioUI(ctx) {
     const h = state.holdings.find((item) => item.id === id);
     if (!h) return;
 
-    const ticker = (document.getElementById("edit-holding-ticker").value || "").toUpperCase().trim();
+    const ticker = (document.getElementById("edit-holding-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const name = (document.getElementById("edit-holding-name").value || "").trim();
     const shares = Math.max(1, Number(document.getElementById("edit-holding-shares").value) || 0);
     const avgPrice = Math.max(0, Number(document.getElementById("edit-holding-avg").value) || 0);
     const currentPrice = Math.max(1, Number(document.getElementById("edit-holding-current").value) || 0);
+    const rawTarget = Number(document.getElementById("edit-holding-target-weight")?.value);
+    const targetWeight = Number.isFinite(rawTarget) ? Math.min(100, Math.max(0, Number(rawTarget.toFixed(2)))) : (Number(h.targetWeight) || 0);
     const adjustCash = document.getElementById("edit-holding-adjust-cash").checked;
 
     if (!ticker) {
@@ -410,6 +474,7 @@ export function createPortfolioUI(ctx) {
     h.shares = shares;
     h.avgPrice = avgPrice;
     h.currentPrice = currentPrice;
+    h.targetWeight = targetWeight;
     if (oldTicker && oldTicker !== ticker && state.dividendSchedules && state.dividendSchedules[oldTicker]) {
       if (!state.dividendSchedules[ticker]) {
         state.dividendSchedules[ticker] = state.dividendSchedules[oldTicker];
@@ -716,7 +781,54 @@ export function createPortfolioUI(ctx) {
       </tr>
     `;
 
-    for (const h of state.holdings) {
+    const sortFields = ["ticker", "valuation", "pl", "weight"];
+    for (const f of sortFields) {
+      const ind = document.getElementById(`sort-ind-${f}`);
+      if (!ind) continue;
+      if (sortField === f) {
+        ind.textContent = sortDir === "asc" ? "↑" : "↓";
+        ind.className = "text-[10px] text-[#10B981] font-bold opacity-100";
+      } else {
+        ind.textContent = "↕";
+        ind.className = "text-[10px] opacity-60";
+      }
+    }
+
+    let displayedHoldings = state.holdings.filter((h) => {
+      if (!searchQuery) return true;
+      const haystack = `${h.ticker || ""} ${h.name || ""} ${h.sector || ""}`.toLowerCase();
+      return haystack.includes(searchQuery);
+    });
+
+    if (sortField) {
+      displayedHoldings = [...displayedHoldings].sort((a, b) => {
+        const aVal = (Number(a.shares) || 0) * (Number(a.currentPrice) || 0);
+        const bVal = (Number(b.shares) || 0) * (Number(b.currentPrice) || 0);
+        const aCost = (Number(a.shares) || 0) * (Number(a.avgPrice) || 0);
+        const bCost = (Number(b.shares) || 0) * (Number(b.avgPrice) || 0);
+        let cmp = 0;
+        if (sortField === "ticker") {
+          cmp = String(a.ticker || "").localeCompare(String(b.ticker || ""));
+        } else if (sortField === "valuation" || sortField === "weight") {
+          cmp = aVal - bVal;
+        } else if (sortField === "pl") {
+          cmp = (aVal - aCost) - (bVal - bCost);
+        }
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    if (searchQuery && displayedHoldings.length === 0) {
+      rowsHTML += `
+        <tr>
+          <td colspan="10" class="py-6 px-4 text-center text-xs text-slate-500 dark:text-[#8E9BA8]">
+            Tidak ada emiten yang cocok dengan pencarian "<strong>${escapeHTML(searchQuery)}</strong>".
+          </td>
+        </tr>
+      `;
+    }
+
+    for (const h of displayedHoldings) {
       const shares = Number(h.shares) || 0;
       const avg = Number(h.avgPrice) || 0;
       const cur = Number(h.currentPrice) || 0;
@@ -729,10 +841,13 @@ export function createPortfolioUI(ctx) {
       const valEffect = valWeight - fundAlloc;
 
       const freshness = getPriceFreshnessInfo(h);
-      const priceInputStyle =
-        freshness.status === "VERIFIED_SYNC"
-          ? "border-[#10B981]/40 bg-[#10B981]/5 text-emerald-700 dark:text-[#10B981]"
-          : "border-slate-200 dark:border-white/[0.1] bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6]";
+      const isSyncCache = h.lastSyncStatus === "CACHE";
+      const isSyncLive = h.lastSyncStatus === "LIVE";
+      const priceInputStyle = isSyncCache
+        ? "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-300"
+        : freshness.status === "VERIFIED_SYNC"
+        ? "border-[#10B981]/40 bg-[#10B981]/5 text-emerald-700 dark:text-[#10B981]"
+        : "border-slate-200 dark:border-white/[0.1] bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6]";
 
       const dailyChgHTML =
         freshness.changePct !== null
@@ -741,26 +856,30 @@ export function createPortfolioUI(ctx) {
 
       const shortDateLabel = String(freshness.label || "").replace(/\s+20\d{2}$/, "");
 
-      const priceBadgeHTML =
-        freshness.status === "VERIFIED_SYNC"
-          ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-emerald-600 dark:text-[#10B981]">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#10B981] shrink-0"></span>
-              <span>${escapeHTML(shortDateLabel)}</span>${dailyChgHTML}
-            </div>`
-          : freshness.status === "STALE_SYNC"
-          ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-amber-600 dark:text-amber-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              <span>${escapeHTML(shortDateLabel)}</span>${dailyChgHTML}
-            </div>`
-          : freshness.status === "MANUAL"
-          ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-sky-600 dark:text-sky-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
-              <span>${escapeHTML(shortDateLabel)}</span>
-            </div>`
-          : `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] text-amber-500/90">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
-              <span>Belum Sync</span>
-            </div>`;
+      const priceBadgeHTML = isSyncCache
+        ? `<div title="Sinkronisasi terakhir gagal untuk ${escapeHTML(h.ticker)} — memakai harga tersimpan (cache)" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-amber-600 dark:text-amber-400">
+            <span class="px-1 py-0.2 rounded bg-amber-500/15 text-[9px] font-bold">CACHE</span>
+            <span>${escapeHTML(shortDateLabel || "Terakhir")}</span>
+          </div>`
+        : freshness.status === "VERIFIED_SYNC" || isSyncLive
+        ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-emerald-600 dark:text-[#10B981]">
+            <span class="px-1 py-0.2 rounded bg-[#10B981]/15 text-[9px] font-bold">LIVE</span>
+            <span>${escapeHTML(shortDateLabel)}</span>${dailyChgHTML}
+          </div>`
+        : freshness.status === "STALE_SYNC"
+        ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-amber-600 dark:text-amber-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+            <span>${escapeHTML(shortDateLabel)}</span>${dailyChgHTML}
+          </div>`
+        : freshness.status === "MANUAL"
+        ? `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] font-medium text-sky-600 dark:text-sky-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
+            <span>${escapeHTML(shortDateLabel)}</span>
+          </div>`
+        : `<div title="${escapeHTML(freshness.tooltip)}" class="mt-1 inline-flex items-center justify-end gap-1 whitespace-nowrap text-[10px] text-amber-500/90">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+            <span>Belum Sync</span>
+          </div>`;
 
       const safeId = escapeHTML(h.id);
       rowsHTML += `
@@ -849,6 +968,95 @@ export function createPortfolioUI(ctx) {
     renderAllocationChartShared({ charts, state, getEmitenColor }, m);
     renderBenchmarkBarsShared({ state }, m);
     renderPortfolioDividendRecap(m);
+    renderRebalancingPanel(m);
+  }
+
+  function renderRebalancingPanel(m) {
+    const state = getState();
+    const tbody = document.getElementById("rebalance-table-body");
+    const badge = document.getElementById("rebalance-allocation-badge");
+    if (!tbody) return;
+
+    const plan = computeRebalancePlan(state.holdings, m);
+
+    if (badge) {
+      if (plan.isOverAllocated) {
+        badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400";
+        badge.innerHTML = `Total Target Melebihi 100%: <strong>${formatNum(plan.totalTargetWeight, 1)}%</strong>`;
+      } else if (plan.totalTargetWeight > 0) {
+        badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-[#10B981]/10 border border-[#10B981]/25 text-emerald-700 dark:text-[#10B981]";
+        badge.innerHTML = `Target Saham: <strong>${formatNum(plan.totalTargetWeight, 1)}%</strong> &bull; Target Kas: <strong>${formatNum(plan.impliedCashTargetPct, 1)}%</strong>`;
+      } else {
+        badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#0C1117] border border-slate-200/70 dark:border-white/[0.07] text-slate-600 dark:text-[#8E9BA8]";
+        badge.innerHTML = `Target Saham: <strong>0,0%</strong> &bull; Sisa Kas: <strong>100,0%</strong>`;
+      }
+    }
+
+    if (plan.items.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-5 px-4 text-center text-xs text-slate-500 dark:text-[#8E9BA8]">
+            Belum ada saham di portofolio untuk disimulasikan rebalancing.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = plan.items
+      .map((item) => {
+        const safeId = escapeHTML(item.id);
+        const actionBadge =
+          item.action === "BUY"
+            ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-sans tabular-nums font-bold bg-[#10B981]/15 text-emerald-700 dark:text-[#10B981] border border-[#10B981]/25">Beli +${item.suggestedLots.toLocaleString("id-ID")} Lot</span>`
+            : item.action === "SELL"
+            ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-sans tabular-nums font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">Jual ${item.suggestedLots.toLocaleString("id-ID")} Lot</span>`
+            : `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-500 dark:text-[#8E9BA8]">On Target</span>`;
+
+        const driftClass =
+          Math.abs(item.driftPct) < 0.5
+            ? "text-slate-500 dark:text-[#8E9BA8]"
+            : item.driftPct > 0
+            ? "text-amber-600 dark:text-amber-400"
+            : "text-sky-600 dark:text-sky-400";
+
+        return `
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors">
+            <td class="py-2.5 px-4">
+              <div class="font-bold text-slate-900 dark:text-[#EEF2F6]">${escapeHTML(item.ticker)}</div>
+              <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8] truncate max-w-[160px]">${escapeHTML(item.name)}</div>
+            </td>
+            <td class="py-2.5 px-3 text-right font-sans tabular-nums font-semibold text-slate-800 dark:text-[#EEF2F6]">
+              ${formatNum(item.actualWeight, 2)}%
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <div class="inline-flex items-center gap-1 justify-end">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value="${item.targetWeight}"
+                  aria-label="Target bobot ${escapeHTML(item.ticker)}"
+                  onchange="updateHoldingTargetWeight('${safeId}', this.value)"
+                  class="w-20 px-2 py-1 rounded-lg text-right font-sans tabular-nums font-bold text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200 dark:border-white/[0.1] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+                />
+                <span class="text-xs text-slate-400">%</span>
+              </div>
+            </td>
+            <td class="py-2.5 px-3 text-right font-sans tabular-nums font-semibold ${driftClass}">
+              ${formatPct(item.driftPct)}
+            </td>
+            <td class="py-2.5 px-3 text-right font-sans tabular-nums ${colorClass(item.diffIDR)}">
+              ${formatSignedIDR(item.diffIDR)}
+            </td>
+            <td class="py-2.5 px-4 text-right">
+              ${actionBadge}
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
   }
 
   return {
