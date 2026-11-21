@@ -1,19 +1,19 @@
 # ARCHITECTURE.md — Peta Kode & Blueprint Modularisasi
 
-Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau melakukan pemecahan modul. Jangan baca `index.html` secara utuh (4.630 baris) — lompat langsung ke rentang baris di bawah ini.
+Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum mengedit `index.html` atau modul `./js/*`. Seluruh modularisasi Tahap 1, 2, 3A, dan 3B telah **selesai** — `index.html` kini murni shell HTML (2.233 baris) dan seluruh logika JS berada di `./js/*.js`.
 
 ---
 
-## 1. Peta Lokasi `index.html` (4.630 Baris — Pasca Modularisasi Tahap 1, 2 & 3A)
+## 1. Peta Lokasi `index.html` (2.233 Baris — Pure HTML Shell Pasca Tahap 3B)
 
 ### A. Head, Styling & Navigasi
 | Bagian | Rentang Baris | Isi Utama |
 | :--- | :---: | :--- |
 | Head & CDN Libraries | `1–50` | Tailwind CSS CDN + config, Chart.js v4.4.4, Lucide Icons |
-| External Stylesheet | `51–52` | `<link rel="stylesheet" href="./css/styles.css" />` *(ekstraksi Tahap 1)* |
+| External Stylesheet | `51–52` | `<link rel="stylesheet" href="./css/styles.css" />` *(Tahap 1)* |
 | Header & Tab Navigation | `53–200` | Navbar, tombol tema Dark/Light, tombol 6 tab (`#tab-btn-*`) |
 
-### B. Konten 6 Tab & Modals (HTML)
+### B. Konten 6 Tab, Modals & Entry Point
 | Bagian | Rentang Baris | Elemen Utama |
 | :--- | :---: | :--- |
 | Tab 1: Portfolio & Kinerja | `201–477` | `#tab-panel-portfolio` — ringkasan NAV, unit penyertaan, tabel holdings, alokasi |
@@ -22,25 +22,24 @@ Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum me
 | Tab 4: Grafik & Historis | `966–1172` | `#tab-panel-analytics` — performa bulanan/tahunan, benchmark IHSG/LQ45 |
 | Tab 5: Jurnal TP / CL | `1173–1268` | `#tab-panel-journal` — catatan realized profit/loss |
 | Tab 6: Kalkulator Average | `1269–1399` | `#tab-panel-calculator` — simulasi average down/up & chart target |
-| Modals (Custom UI) | `1400–2226` | `#modal-buy`, `#modal-sell`, `#modal-dividend`, `#modal-dividend-schedule`, `#modal-bulk-price`, `#modal-cash`, `#modal-edit-holding`, `#modal-manual-journal`, `#modal-cloud`, `#modal-confirm`, `#modal-year-rollover`, `#modal-baseline`, `#modal-import` |
+| Modals & Toast Container | `1400–2226` | `#modal-buy`, `#modal-sell`, `#modal-dividend`, `#modal-dividend-schedule`, `#modal-bulk-price`, `#modal-cash`, `#modal-edit-holding`, `#modal-manual-journal`, `#modal-cloud`, `#modal-confirm`, `#modal-year-rollover`, `#modal-baseline`, `#modal-import`, `#toast-container` |
+| ES Module Entry Point | `2231` | `<script type="module" src="./js/app.js"></script>` *(Tahap 3B)* |
 
-### C. Logika Aplikasi (`<script type="module">`, Baris `2231–4628`)
-| # | Bagian | Rentang Baris | Fungsi / Simbol Kunci & Modul Eksternal |
-| :---: | :--- | :---: | :--- |
-| 1 | Imports & Runtime State | `2231–2290` | Import `./js/nav-engine.js`, `./js/state.js`, `./js/storage.js`, `./js/market.js`, `./js/charts.js`, `./js/ui/journal.js`, `./js/ui/calculator.js`, `./js/ui/mutations.js`; `let state = loadInitialState()` |
-| 2 | Core Financial Engine (Wrapper) | `2292–2295` | Delegasi ke `./js/nav-engine.js` (`computeMetrics`, `calculateIPOTBuyFee`, `calculateIPOTSellFee`) |
-| 3 | Formatting, WIB & Storage (Wrappers) | `2297–2346` | Delegasi ke `./js/storage.js` + `showToast()`, `commitStateChange()` |
-| 5 | Market Auto-Sync UI & Scheduler | `2348–2522` | Delegasi fetcher ke `./js/market.js` (`fetchMarketQuotes`); UI status & `scheduleDailyMarketCloseSync()` |
-| 6 | Tab Navigation, Modals, `appContext` & Portfolio CRUD | `2524–3103` | `window.switchTab`, `appContext`, inisialisasi `createJournalUI` / `createCalculatorUI` / `createMutationsUI`, aksi beli/jual/edit holding/cash/baseline |
-| 7 | Dividend Actions | `3105–3265` | `window.setDividendQuickDate`, CRUD dividen & jadwal |
-| 8 | Analytics Actions | `3267–3364` | `window.onAnalyticsYearChange`, benchmark inputs, snapshot bulanan, rollover tahun *(Mutations & Journal didelegasikan ke `./js/ui/*`)* |
-| 9 | JSON Export/Import/Reset | `3366–3493` | Backup JSON export/import/reset & cloud modal *(Calculator didelegasikan ke `./js/ui/calculator.js`)* |
-| 10 | Chart Wrappers & Tab 1 Renderer | `3495–3763` | Wrapper `./js/charts.js` (`destroyChart`, `renderAllocationChart`, `renderBenchmarkBars`), `renderPortfolioTab()`, `renderPortfolioDividendRecap()` |
-| 11 | Tab 2 Renderer (Dividends) | `3765–4362` | `renderDividendsTab()`, `renderActualDividendsSection()` |
-| 13 | Tab 4 Renderer (Analytics) | `4364–4582` | `renderAnalyticsTab()` *(Tab 3 Renderer didelegasikan ke `./js/ui/mutations.js`)* |
-| 15 | Master Render & Init | `4584–4628` | `window.renderAll`, `initApp()` *(Tab 5 & 6 Renderers didelegasikan ke `./js/ui/journal.js` & `./js/ui/calculator.js`)* |
-
-*(Catatan: Penomoran komentar asli di `index.html` dipertahankan; rentang baris di atas sudah diperbarui pasca Modularisasi Tahap 1, Tahap 2 & Tahap 3A.)*
+### C. Peta Modul JavaScript (`./js/**`, 12 Modul ES6 Aktif)
+| Modul | Peran Utama | Tahap |
+| :--- | :--- | :---: |
+| `./js/nav-engine.js` | Pure functions: `computeMetrics`, `calculateIPOTBuyFee`, `calculateIPOTSellFee` | Tahap 1 |
+| `./js/state.js` | Konstanta (`STORAGE_KEY`, `MONTH_*`, preset dividen), template awal, normalizer & `ensureYearStructureForState` | Tahap 2 |
+| `./js/storage.js` | Format IDR/persen, `escapeHTML`, timezone WIB, `localStorage` load/save, `createCloudSyncController` | Tahap 2 |
+| `./js/market.js` | Fetcher live harga saham BEI, IHSG & LQ45 (`fetchMarketQuotes`) | Tahap 2 |
+| `./js/charts.js` | Helper warna tema chart, `destroyChart`, `renderAllocationChart`, `renderBenchmarkBars` | Tahap 3A |
+| `./js/ui/journal.js` | Tab 5: CRUD & renderer Jurnal Realized P/L | Tahap 3A |
+| `./js/ui/calculator.js` | Tab 6: Simulasi Average Down/Up & chart proyeksi | Tahap 3A |
+| `./js/ui/mutations.js` | Tab 3: Top Up / Withdraw Unit Penyertaan & chart arus kas | Tahap 3A |
+| `./js/ui/analytics.js` | Tab 4: Benchmark IHSG/LQ45, tabel bulanan/tahunan, rollover tahun & 3 chart | Tahap 3B |
+| `./js/ui/dividends.js` | Tab 2: Kalender 12 bulan, jadwal DPS, simulasi DRIP 10Y, realisasi & 4 chart | Tahap 3B |
+| `./js/ui/portfolio.js` | Tab 1: Buy/Sell/Edit/Bulk/Cash/Baseline CRUD & renderer portofolio + rekap dividen | Tahap 3B |
+| `./js/app.js` | Master orchestrator: state runtime, `appContext`, Market Auto-Sync scheduler, navigasi tab, theme, Export/Import JSON, `window.renderAll` & `initApp()` | Tahap 3B |
 
 ---
 
