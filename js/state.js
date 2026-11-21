@@ -5,7 +5,7 @@
 
 export const STORAGE_KEY = "portfolio_nav_tracker_favo_v1";
 export const TEMPLATE_REV_KEY = "portfolio_nav_tracker_template_rev";
-export const TEMPLATE_REV = "2026-11-19_1";
+export const TEMPLATE_REV = "2026-11-22_1";
 
 export const MONTH_NAMES_ID = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -23,29 +23,35 @@ export const EMITEN_PALETTE = [
 ];
 
 export const DIVIDEND_PRESETS = {
-  BBRI: { payouts: [{ month: 3, dps: 208 }, { month: 0, dps: 135 }] },
-  BMRI: { payouts: [{ month: 3, dps: 466 }] },
-  BBCA: { payouts: [{ month: 3, dps: 250 }, { month: 11, dps: 50 }] },
-  BBNI: { payouts: [{ month: 3, dps: 374 }] },
-  ASII: { payouts: [{ month: 4, dps: 308 }, { month: 9, dps: 98 }] },
-  ADRO: { payouts: [{ month: 4, dps: 210 }, { month: 11, dps: 185 }] },
+  BBRI: { payouts: [{ month: 3, dps: 209 }, { month: 11, dps: 137 }] },
+  BMRI: { payouts: [{ month: 4, dps: 376.96 }, { month: 0, dps: 100 }] },
+  BBCA: { payouts: [{ month: 2, dps: 281 }, { month: 11, dps: 55 }] },
+  BBNI: { payouts: [{ month: 2, dps: 349.41 }] },
+  ASII: { payouts: [{ month: 4, dps: 292 }, { month: 9, dps: 98 }] },
+  ADRO: { payouts: [{ month: 3, dps: 118.26 }, { month: 11, dps: 145.14 }] },
   ITMG: { payouts: [{ month: 3, dps: 1747 }, { month: 10, dps: 1228 }] },
   PTBA: { payouts: [{ month: 5, dps: 397 }] },
-  TLKM: { payouts: [{ month: 5, dps: 178 }] },
+  TLKM: { payouts: [{ month: 5, dps: 223.17 }] },
   UNTR: { payouts: [{ month: 4, dps: 1569 }, { month: 9, dps: 667 }] },
-  INDF: { payouts: [{ month: 6, dps: 267 }] },
-  ICBP: { payouts: [{ month: 6, dps: 200 }] }
+  INDF: { payouts: [{ month: 6, dps: 290 }] },
+  ICBP: { payouts: [{ month: 6, dps: 200 }] },
+  BJTM: { payouts: [{ month: 4, dps: 54.4 }] },
+  BJBR: { payouts: [{ month: 4, dps: 95.05 }] },
+  BNGA: { payouts: [{ month: 4, dps: 122.6 }] },
+  NISP: { payouts: [{ month: 3, dps: 72 }] },
+  PGAS: { payouts: [{ month: 5, dps: 148 }] },
+  SIDO: { payouts: [{ month: 4, dps: 18 }, { month: 10, dps: 18 }] }
 };
 
 export const TEMPLATE_DEFAULT_PRICES = {
-  BBRI: 4280,
-  BMRI: 6150,
-  ASII: 4920,
-  ADRO: 2560,
-  TLKM: 2790,
-  BBCA: 9850,
-  INDF: 7450,
-  PTBA: 2720
+  BBRI: 3050,
+  BMRI: 3900,
+  TLKM: 2120,
+  BBNI: 3560,
+  INDF: 7175,
+  ASII: 5375,
+  BBCA: 5625,
+  ADRO: 2330
 };
 
 function getDefaultTodayWIB() {
@@ -60,43 +66,156 @@ function getDefaultTodayWIB() {
 export function getInitialTemplateData() {
   return {
     meta: {
-      portfolioName: "Portofolio Saham Utama",
-      initialCapital: 211094312,
-      initialNav: 1199.7647,
-      initialUnits: 175946.4773,
-      activeYear: 2026
+      portfolioName: "Portofolio Saham — Favo Perdana (Unit System)",
+      initialCapital: 211094375,
+      initialNav: 1199.7646972697,
+      initialUnits: 175946.4797,
+      activeYear: 2026,
+      owner: "Favo Perdana",
+      currentUnits: 222450,
+      currentNav: 1130.9663,
+      initialUnitPrice: 1199.7647,
+      ihsgStart: 8646.94,
+      ihsgEnd: 5344.41,
+      lq45Start: 846.57,
+      lq45End: 550.37,
+      reconciledWithSheet: true
     },
-    cash: 14850000,
+    cash: 219473,
     holdings: [
-      { id: "h-bbri", ticker: "BBRI", name: "Bank Rakyat Indonesia Tbk", shares: 15000, avgPrice: 4680, currentPrice: 4280 },
-      { id: "h-bmri", ticker: "BMRI", name: "Bank Mandiri Tbk", shares: 8000, avgPrice: 6350, currentPrice: 6150 },
-      { id: "h-asii", ticker: "ASII", name: "Astra International Tbk", shares: 7500, avgPrice: 5120, currentPrice: 4920 },
-      { id: "h-adro", ticker: "ADRO", name: "Alamtri Resources Indonesia Tbk", shares: 10000, avgPrice: 2450, currentPrice: 2560 },
-      { id: "h-tlkm", ticker: "TLKM", name: "Telkom Indonesia Tbk", shares: 9000, avgPrice: 3180, currentPrice: 2790 },
-      { id: "h-bbca", ticker: "BBCA", name: "Bank Central Asia Tbk", shares: 2500, avgPrice: 9420, currentPrice: 9850 },
-      { id: "h-indf", ticker: "INDF", name: "Indofood Sukses Makmur Tbk", shares: 3000, avgPrice: 6850, currentPrice: 7450 },
-      { id: "h-ptba", ticker: "PTBA", name: "Bukit Asam Tbk", shares: 4000, avgPrice: 2690, currentPrice: 2720 }
+      {
+        id: "h-bbri",
+        ticker: "BBRI",
+        name: "Bank Rakyat Indonesia Tbk",
+        shares: 30006,
+        avgPrice: 3478.2312,
+        currentPrice: 3050,
+        prevClose: 3040,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-bmri",
+        ticker: "BMRI",
+        name: "Bank Mandiri (Persero) Tbk",
+        shares: 10400,
+        avgPrice: 4222.2381,
+        currentPrice: 3900,
+        prevClose: 3920,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-tlkm",
+        ticker: "TLKM",
+        name: "Telkom Indonesia (Persero) Tbk",
+        shares: 8500,
+        avgPrice: 3607.8884,
+        currentPrice: 2120,
+        prevClose: 2150,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-bbni",
+        ticker: "BBNI",
+        name: "Bank Negara Indonesia Tbk",
+        shares: 1000,
+        avgPrice: 3843.9005,
+        currentPrice: 3560,
+        prevClose: 3570,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-indf",
+        ticker: "INDF",
+        name: "Indofood Sukses Makmur Tbk",
+        shares: 7500,
+        avgPrice: 6531.0527,
+        currentPrice: 7175,
+        prevClose: 7150,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-asii",
+        ticker: "ASII",
+        name: "Astra International Tbk",
+        shares: 4500,
+        avgPrice: 4965.9736,
+        currentPrice: 5375,
+        prevClose: 5500,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-bbca",
+        ticker: "BBCA",
+        name: "Bank Central Asia Tbk",
+        shares: 2500,
+        avgPrice: 7102.189,
+        currentPrice: 5625,
+        prevClose: 5750,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      },
+      {
+        id: "h-1794653926420",
+        ticker: "ADRO",
+        name: "Alamtri Resources Indonesia Tbk.",
+        shares: 2500,
+        avgPrice: 2484.712,
+        currentPrice: 2330,
+        prevClose: 2360,
+        priceUpdatedAt: "2026-11-19T09:06:19.090Z",
+        priceUpdatedDateWIB: "2026-11-19",
+        marketDateWIB: "2026-11-19",
+        marketDateLabel: "19 Nov",
+        priceSource: "SYNC"
+      }
     ],
     mutations: [
-      { id: "m-01", date: "2026-01-15", type: "TOPUP", amount: 2005000, navAtTime: 1199.7647, unitsDelta: 1671.1610, note: "Top Up Januari 2026" },
-      { id: "m-02", date: "2026-02-15", type: "TOPUP", amount: 2000000, navAtTime: 1221.1047, unitsDelta: 1637.8612, note: "Top Up Februari 2026" },
-      { id: "m-03", date: "2026-03-15", type: "TOPUP", amount: 6000000, navAtTime: 1221.1047, unitsDelta: 4913.5836, note: "Top Up Maret 2026" },
-      { id: "m-04", date: "2026-04-15", type: "TOPUP", amount: 3000000, navAtTime: 1113.0000, unitsDelta: 2695.4178, note: "Top Up April 2026" },
-      { id: "m-05", date: "2026-05-15", type: "TOPUP", amount: 12000000, navAtTime: 1090.8900, unitsDelta: 11000.1925, note: "Top Up Mei 2026" },
-      { id: "m-06", date: "2026-06-15", type: "TOPUP", amount: 10500000, navAtTime: 1114.1200, unitsDelta: 9424.4785, note: "Top Up Juni 2026" },
-      { id: "m-07", date: "2026-07-15", type: "TOPUP", amount: 10500000, navAtTime: 1199.1800, unitsDelta: 8755.9833, note: "Top Up Juli 2026" },
-      { id: "m-08", date: "2026-08-15", type: "TOPUP", amount: 2500000, navAtTime: 1156.2500, unitsDelta: 2162.1622, note: "Top Up Agustus 2026" },
-      { id: "m-09", date: "2026-09-15", type: "TOPUP", amount: 2500000, navAtTime: 1233.0000, unitsDelta: 2027.5750, note: "Top Up September 2026" },
-      { id: "m-10", date: "2026-10-15", type: "TOPUP", amount: 2500000, navAtTime: 1128.6145, unitsDelta: 2215.1052, note: "Top Up Oktober 2026" }
+      { id: "m-01", date: "2026-01-15", type: "TOPUP", amount: 2005000, navAtTime: 1199.764697, unitsDelta: 1671.161024, note: "Top Up Januari 2026" },
+      { id: "m-02", date: "2026-02-15", type: "TOPUP", amount: 2000000, navAtTime: 1221, unitsDelta: 1638.001638, note: "Top Up Februari 2026" },
+      { id: "m-03", date: "2026-03-15", type: "TOPUP", amount: 6000000, navAtTime: 1221, unitsDelta: 4914.004914, note: "Top Up Maret 2026" },
+      { id: "m-04", date: "2026-04-15", type: "TOPUP", amount: 3000000, navAtTime: 1113.000008, unitsDelta: 2695.417771, note: "Top Up April 2026" },
+      { id: "m-05", date: "2026-05-15", type: "TOPUP", amount: 12000000, navAtTime: 1091.000003, unitsDelta: 10999.083375, note: "Top Up Mei 2026" },
+      { id: "m-06", date: "2026-06-15", type: "TOPUP", amount: 10500000, navAtTime: 1114.000001, unitsDelta: 9425.493709, note: "Top Up Juni 2026" },
+      { id: "m-07", date: "2026-07-15", type: "TOPUP", amount: 10500000, navAtTime: 1199.000012, unitsDelta: 8757.297664, note: "Top Up Juli 2026" },
+      { id: "m-08", date: "2026-08-15", type: "TOPUP", amount: 2500000, navAtTime: 1155.999982, unitsDelta: 2162.629792, note: "Top Up Agustus 2026" },
+      { id: "m-09", date: "2026-09-15", type: "TOPUP", amount: 2500000, navAtTime: 1233.00002, unitsDelta: 2027.574988, note: "Top Up September 2026" },
+      { id: "m-10", date: "2026-10-15", type: "TOPUP", amount: 2500000, navAtTime: 1129.762013, unitsDelta: 2212.855425, note: "Top Up Oktober 2026" }
     ],
     dividends: [],
     dividendSchedules: JSON.parse(JSON.stringify(DIVIDEND_PRESETS)),
     journal: [],
     benchmark: {
       ihsgStart: 8646.94,
-      ihsgEnd: 5344.41,
+      ihsgEnd: 5181.14,
       lq45Start: 846.57,
-      lq45End: 550.37
+      lq45End: 538.43
     },
     monthlyHistoryByYear: {
       2026: [
@@ -106,11 +225,11 @@ export function getInitialTemplateData() {
         { monthIndex: 3, month: "APR", portfolio: -11.430371, ihsg: -19.546105, lq45: -20.935067 },
         { monthIndex: 4, month: "MEI", portfolio: -9.948956, ihsg: -29.138169, lq45: -27.806324 },
         { monthIndex: 5, month: "JUN", portfolio: -16.907871, ihsg: -34.737722, lq45: -34.664588 },
-        { monthIndex: 6, month: "JUL", portfolio: -3.647080, ihsg: -27.880614, lq45: -26.616818 },
+        { monthIndex: 6, month: "JUL", portfolio: -3.64708, ihsg: -27.880614, lq45: -26.616818 },
         { monthIndex: 7, month: "AGU", portfolio: -0.023077, ihsg: -24.534228, lq45: -23.948404 },
-        { monthIndex: 8, month: "SEP", portfolio: -6.182446, ihsg: -29.788573, lq45: -28.986380 },
+        { monthIndex: 8, month: "SEP", portfolio: -6.182446, ihsg: -29.788573, lq45: -28.98638 },
         { monthIndex: 9, month: "OKT", portfolio: -13.322818, ihsg: -41.516305, lq45: -39.146202 },
-        { monthIndex: 10, month: "NOV", portfolio: -4.9191, ihsg: -38.193, lq45: -34.9882 },
+        { monthIndex: 10, month: "NOV", portfolio: -5.6663, ihsg: -40.0812, lq45: -36.3986 },
         { monthIndex: 11, month: "DES", portfolio: null, ihsg: null, lq45: null }
       ]
     },
@@ -121,12 +240,12 @@ export function getInitialTemplateData() {
       { year: 2023, portfolio: 18.951136, ihsg: 6.16, lq45: 3.56, topUp: 23100000 },
       { year: 2024, portfolio: -5.260968, ihsg: -2.65, lq45: -14.83, topUp: 41300000 },
       { year: 2025, portfolio: 6.462961, ihsg: 22.13, lq45: 2.41, topUp: 29500000 },
-      { year: 2026, portfolio: -4.9191, ihsg: -38.193, lq45: -34.9882, topUp: 53505000 }
+      { year: 2026, portfolio: -5.6663, ihsg: -40.0812, lq45: -36.3986, topUp: 53505000 }
     ],
     marketSync: {
       autoSyncAfterClose: true,
-      lastSyncAt: "2026-11-15T07:49:51.502Z",
-      lastSyncDateWIB: "2026-11-15",
+      lastSyncAt: "2026-11-19T09:06:19.090Z",
+      lastSyncDateWIB: "2026-11-19",
       lastSyncSource: "TradingView IDX • 8/8 emiten",
       lastSyncError: null
     }

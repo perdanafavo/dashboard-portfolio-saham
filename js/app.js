@@ -26,17 +26,46 @@ import { createJournalUI } from "./ui/journal.js";
 import { createCalculatorUI } from "./ui/calculator.js";
 
 // =========================================================================
-// 1. GLOBAL RUNTIME STATE
+// 1. GLOBAL RUNTIME STATE & RENDER CACHE
 // =========================================================================
 let activeTab = "portfolio";
 let isMarketSyncing = false;
 const charts = {};
 let state = loadInitialState();
 
+let stateVersion = 1;
+const renderedTabVersion = {};
+let cachedMetricsVersion = 0;
+let cachedMetricsResult = null;
+
+function invalidateRenderCache() {
+  stateVersion += 1;
+}
+
+function renderIconsIn(rootEl = null) {
+  if (!window.lucide || typeof window.lucide.createIcons !== "function") return;
+  try {
+    if (rootEl instanceof HTMLElement) {
+      const hasUnrendered = rootEl.querySelector("i[data-lucide]");
+      if (!hasUnrendered) return;
+    }
+    window.lucide.createIcons();
+  } catch (e) {
+    window.lucide.createIcons();
+  }
+}
+
 // =========================================================================
 // 2. CORE WRAPPERS & CLOUD SYNC
 // =========================================================================
-const computeMetrics = () => computeMetricsEngine(state);
+const computeMetrics = () => {
+  if (cachedMetricsVersion === stateVersion && cachedMetricsResult) {
+    return cachedMetricsResult;
+  }
+  cachedMetricsResult = computeMetricsEngine(state);
+  cachedMetricsVersion = stateVersion;
+  return cachedMetricsResult;
+};
 const getEmitenColor = (ticker) => getEmitenColorFromHoldings(ticker, state.holdings);
 const ensureYearStructure = (year) => ensureYearStructureForState(state, year);
 const saveToLocalStorage = () => saveStateToLocalStorage(state);
@@ -45,8 +74,9 @@ const cloudSync = createCloudSyncController({
   getState: () => state,
   setState: (incoming) => {
     state = incoming;
+    invalidateRenderCache();
   },
-  onRemoteUpdate: () => window.renderAll(),
+  onRemoteUpdate: () => window.renderAll({ force: true }),
   onConnected: ({ userId }) => {
     const statusText = document.getElementById("cloud-status-text");
     if (statusText) statusText.textContent = "Cloud Sync Aktif";
@@ -79,9 +109,10 @@ function showToast(message, type = "success") {
 }
 
 function commitStateChange(toastMsg = null) {
+  invalidateRenderCache();
   saveToLocalStorage();
   saveToCloudIfAvailable();
-  window.renderAll();
+  window.renderAll({ force: false });
   if (toastMsg) showToast(toastMsg, "success");
 }
 
@@ -242,7 +273,8 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
     if (btn) btn.disabled = false;
     if (icon) icon.classList.remove("animate-spin");
     if (label) label.textContent = "Sync Harga & IHSG";
-    window.renderAll();
+    invalidateRenderCache();
+    window.renderAll({ force: false });
   }
 };
 
@@ -281,7 +313,12 @@ window.switchTab = function (tabName) {
       "tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all bg-emerald-600 text-white shadow-sm shadow-emerald-600/20";
   }
 
-  window.renderAll();
+  if (renderedTabVersion[tabName] === stateVersion) {
+    updateMarketSyncStatusUI();
+    return;
+  }
+
+  window.renderAll({ force: false });
 };
 
 function openModal(id) {
@@ -289,7 +326,7 @@ function openModal(id) {
   if (!el) return;
   el.classList.remove("hidden");
   el.classList.add("flex");
-  if (window.lucide) window.lucide.createIcons();
+  renderIconsIn(el);
 }
 
 window.closeModal = function (id) {
@@ -302,7 +339,8 @@ window.closeModal = function (id) {
 window.toggleTheme = function () {
   const isDark = document.documentElement.classList.toggle("dark");
   localStorage.setItem("portfolio_nav_theme", isDark ? "dark" : "light");
-  window.renderAll();
+  invalidateRenderCache();
+  window.renderAll({ force: false });
 };
 
 function askConfirm(title, message, onConfirm) {
@@ -450,6 +488,7 @@ const appContext = {
   getState: () => state,
   setState: (nextState) => {
     state = nextState;
+    invalidateRenderCache();
   },
   charts,
   computeMetrics,
@@ -469,7 +508,10 @@ const { renderAnalyticsTab } = createAnalyticsUI(appContext);
 const { renderJournalTab } = createJournalUI(appContext);
 const { renderCalculatorTab } = createCalculatorUI(appContext);
 
-window.renderAll = function () {
+window.renderAll = function ({ force = true } = {}) {
+  if (force) {
+    invalidateRenderCache();
+  }
   updateMarketSyncStatusUI();
   if (activeTab === "portfolio") renderPortfolioTab();
   else if (activeTab === "dividends") renderDividendsTab();
@@ -478,9 +520,10 @@ window.renderAll = function () {
   else if (activeTab === "journal") renderJournalTab();
   else if (activeTab === "calculator") renderCalculatorTab();
 
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+  renderedTabVersion[activeTab] = stateVersion;
+
+  const activePanel = document.getElementById(`tab-panel-${activeTab}`);
+  renderIconsIn(activePanel);
 };
 
 function initApp() {
@@ -490,7 +533,8 @@ function initApp() {
     if (el && !el.value) el.value = today;
   });
 
-  window.renderAll();
+  renderIconsIn(document.body);
+  window.renderAll({ force: false });
   scheduleDailyMarketCloseSync();
   initCloudStorage();
 
