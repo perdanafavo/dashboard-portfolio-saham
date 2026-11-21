@@ -453,10 +453,22 @@ window.handleImportPasteSubmit = function (event) {
   applyImportedJSONText(raw);
 };
 
-window.copyCurrentJSONToClipboard = function () {
+window.copyCurrentJSONToClipboard = async function () {
   const ta = document.getElementById("import-json-textarea");
   if (!ta) return;
-  ta.value = JSON.stringify(state, null, 2);
+  const jsonStr = JSON.stringify(state, null, 2);
+  ta.value = jsonStr;
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    try {
+      await navigator.clipboard.writeText(jsonStr);
+      showImportFeedback("JSON portofolio saat ini disalin ke kotak teks & clipboard.", false);
+      return;
+    } catch {
+      // Fallback to execCommand below
+    }
+  }
+
   ta.select();
   try {
     document.execCommand("copy");
@@ -526,6 +538,26 @@ window.renderAll = function ({ force = true } = {}) {
   renderIconsIn(activePanel);
 };
 
+function setupModalAccessibility() {
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const openModals = Array.from(document.querySelectorAll("div[id^='modal-']:not(.hidden)"));
+    const topModal = openModals[openModals.length - 1];
+    if (topModal) {
+      window.closeModal(topModal.id);
+    }
+  });
+
+  document.querySelectorAll("div[id^='modal-']").forEach((modalEl) => {
+    if (modalEl.id === "modal-confirm") return;
+    modalEl.addEventListener("click", (e) => {
+      if (e.target === modalEl) {
+        window.closeModal(modalEl.id);
+      }
+    });
+  });
+}
+
 function initApp() {
   const today = getTodayISO();
   ["mut-date", "sell-date", "div-date", "mj-date"].forEach((id) => {
@@ -533,6 +565,7 @@ function initApp() {
     if (el && !el.value) el.value = today;
   });
 
+  setupModalAccessibility();
   renderIconsIn(document.body);
   window.renderAll({ force: false });
   scheduleDailyMarketCloseSync();

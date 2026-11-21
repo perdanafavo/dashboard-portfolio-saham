@@ -384,6 +384,12 @@ export function createPortfolioUI(ctx) {
       return;
     }
 
+    const isDuplicateTicker = state.holdings.some((item) => item.id !== id && item.ticker === ticker);
+    if (isDuplicateTicker) {
+      showToast(`Emiten ${ticker} sudah ada di portofolio. Gunakan tombol Beli untuk menambah lot.`, "error");
+      return;
+    }
+
     const oldCost = (Number(h.shares) || 0) * (Number(h.avgPrice) || 0);
     const newCost = shares * avgPrice;
     const costDiff = newCost - oldCost;
@@ -397,12 +403,19 @@ export function createPortfolioUI(ctx) {
       state.cash = nextCash;
     }
 
+    const oldTicker = h.ticker;
     const priceChanged = Number(h.currentPrice) !== currentPrice;
     h.ticker = ticker;
     h.name = name || `${ticker} Tbk`;
     h.shares = shares;
     h.avgPrice = avgPrice;
     h.currentPrice = currentPrice;
+    if (oldTicker && oldTicker !== ticker && state.dividendSchedules && state.dividendSchedules[oldTicker]) {
+      if (!state.dividendSchedules[ticker]) {
+        state.dividendSchedules[ticker] = state.dividendSchedules[oldTicker];
+      }
+      delete state.dividendSchedules[oldTicker];
+    }
     if (priceChanged) {
       h.priceSource = "MANUAL";
       h.priceUpdatedDateWIB = getTodayISO();
@@ -431,8 +444,13 @@ export function createPortfolioUI(ctx) {
   window.updateSinglePrice = function (holdingId, rawVal) {
     const state = getState();
     const h = state.holdings.find((item) => item.id === holdingId);
+    if (!h) return;
     const price = Number(rawVal);
-    if (!h || !Number.isFinite(price) || price <= 0) return;
+    if (!Number.isFinite(price) || price <= 0) {
+      showToast("Harga saham harus berupa angka lebih dari Rp 0.", "warning");
+      renderPortfolioTab();
+      return;
+    }
     h.currentPrice = price;
     h.priceSource = "MANUAL";
     h.priceUpdatedDateWIB = getTodayISO();
@@ -557,6 +575,9 @@ export function createPortfolioUI(ctx) {
     state.meta.initialUnits = initUnits;
     if (clearMuts) {
       state.mutations = [];
+      const activeYr = Number(state.meta.activeYear);
+      const ann = state.annualHistory?.find((a) => Number(a.year) === activeYr);
+      if (ann) ann.topUp = 0;
     }
 
     closeModal("modal-baseline");
@@ -819,8 +840,8 @@ export function createPortfolioUI(ctx) {
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#8E9BA8]">${formatIDR(m.totalCost)}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalValuation)}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums ${colorClass(totalPL)}">${formatSignedIDR(totalPL)} (${formatPct(totalPLPct)})</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">100,00%</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">100,00%</td>
+        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">${m.totalCost > 0 ? "100,00%" : "0,00%"}</td>
+        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${m.totalValuation > 0 ? "100,00%" : "0,00%"}</td>
         <td></td>
       </tr>
     `;

@@ -61,9 +61,21 @@ export function createMutationsUI(ctx) {
     updateMutationPreview();
   }
 
+  function syncAnnualTopUpForYear(state, yr) {
+    if (!yr || yr < 2000) return;
+    ctx.ensureYearStructure(yr);
+    const ann = state.annualHistory.find((a) => Number(a.year) === yr);
+    if (!ann) return;
+    const netYr = state.mutations
+      .filter((m) => Number(String(m.date || "").slice(0, 4)) === yr)
+      .reduce((s, m) => s + (m.type === "TOPUP" ? Number(m.amount) || 0 : -(Number(m.amount) || 0)), 0);
+    ann.topUp = netYr;
+  }
+
   function handleAddMutation(e) {
     e.preventDefault();
     const state = ctx.getState();
+    const m = ctx.computeMetrics();
     const date = document.getElementById("mut-date").value || getTodayISO();
     const type = document.getElementById("mut-type").value;
     const amount = Math.max(0, Number(document.getElementById("mut-amount").value) || 0);
@@ -80,13 +92,21 @@ export function createMutationsUI(ctx) {
       ctx.showToast("Masukkan Harga Unit (NAV) Eksekusi yang valid.", "error");
       return;
     }
-    if (type === "WITHDRAW" && adjustCash && amount > (Number(state.cash) || 0)) {
-      ctx.showToast("Saldo Kas RDN tidak mencukupi untuk penarikan (Withdraw) ini.", "error");
-      return;
-    }
 
     const navAtTime = inputNav;
     const unitsDelta = amount / navAtTime;
+
+    if (type === "WITHDRAW") {
+      if (adjustCash && amount > (Number(state.cash) || 0)) {
+        ctx.showToast("Saldo Kas RDN tidak mencukupi untuk penarikan (Withdraw) ini.", "error");
+        return;
+      }
+      if (unitsDelta > m.totalUnits + 1e-6 || amount > m.totalValuation + 1) {
+        ctx.showToast("Nominal penarikan melebihi total unit / valuasi portofolio yang tersedia.", "error");
+        return;
+      }
+    }
+
     const moIdx = Math.max(0, Math.min(11, (parseInt(date.split("-")[1], 10) || 1) - 1));
     const defaultMonthNote = MONTH_NAMES_ID[moIdx].toUpperCase();
 
@@ -105,11 +125,7 @@ export function createMutationsUI(ctx) {
     }
 
     const yr = Number(date.slice(0, 4)) || state.meta.activeYear;
-    ctx.ensureYearStructure(yr);
-    const ann = state.annualHistory.find((a) => Number(a.year) === yr);
-    if (ann) {
-      ann.topUp = (Number(ann.topUp) || 0) + (type === "TOPUP" ? amount : -amount);
-    }
+    syncAnnualTopUpForYear(state, yr);
 
     document.getElementById("mut-amount").value = "";
     document.getElementById("mut-note").value = "";
@@ -145,15 +161,7 @@ export function createMutationsUI(ctx) {
         if (curIdx < 0) return;
         const yr = Number(String(item.date || "").slice(0, 4));
         curState.mutations.splice(curIdx, 1);
-        if (yr >= 2000) {
-          const ann = curState.annualHistory.find((a) => Number(a.year) === yr);
-          if (ann) {
-            const netYr = curState.mutations
-              .filter((m) => Number(String(m.date || "").slice(0, 4)) === yr)
-              .reduce((s, m) => s + (m.type === "TOPUP" ? Number(m.amount) || 0 : -(Number(m.amount) || 0)), 0);
-            ann.topUp = netYr;
-          }
-        }
+        syncAnnualTopUpForYear(curState, yr);
         ctx.commitStateChange("Riwayat mutasi dihapus");
       }
     );
@@ -278,12 +286,14 @@ export function createMutationsUI(ctx) {
     }
     tbody.innerHTML = rowsHTML;
 
+    const totalUnitDiff = m.totalUnits - m.initUnits;
+    const totalUnitDiffLabel = `${totalUnitDiff > 0 ? "+" : totalUnitDiff < 0 ? "-" : ""}${formatNum(Math.abs(totalUnitDiff), 4)} unit`;
     document.getElementById("mutations-table-foot").innerHTML = `
       <tr>
         <td colspan="3" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Akumulasi Modal &amp; Unit Penyertaan</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-emerald-600 dark:text-[#10B981] whitespace-nowrap">${formatSignedIDR(totalTopup - totalWithdraw)}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-400 dark:text-[#8E9BA8]">—</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-sky-600 dark:text-sky-400 whitespace-nowrap">${formatSignedIDR(m.totalUnits - m.initUnits).replace("Rp ", "")} unit</td>
+        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-sky-600 dark:text-sky-400 whitespace-nowrap">${totalUnitDiffLabel}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${formatIDR(m.totalPaidInCapital)}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-sky-600 dark:text-sky-400 whitespace-nowrap">${formatNum(m.totalUnits, 4)}</td>
         <td></td>

@@ -28,10 +28,15 @@ export function createJournalUI(ctx) {
     const state = ctx.getState();
     const date = document.getElementById("mj-date").value || getTodayISO();
     const ticker = (document.getElementById("mj-ticker").value || "").toUpperCase().trim();
-    const shares = Math.max(1, Number(document.getElementById("mj-shares").value) || 0);
+    const shares = Math.max(0, Number(document.getElementById("mj-shares").value) || 0);
     const avgCost = Math.max(0, Number(document.getElementById("mj-avg").value) || 0);
     const sellPrice = Math.max(0, Number(document.getElementById("mj-sell").value) || 0);
     const note = (document.getElementById("mj-note").value || "").trim();
+
+    if (!ticker || shares <= 0 || avgCost <= 0 || sellPrice <= 0) {
+      ctx.showToast("Lengkapi kode emiten, jumlah lembar, harga rata-rata, dan harga jual yang valid.", "error");
+      return;
+    }
 
     const feeCalc = calculateIPOTSellFee(shares * sellPrice, 0.29);
     const costBasis = shares * avgCost;

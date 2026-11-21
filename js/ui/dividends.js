@@ -191,12 +191,22 @@ export function createDividendsUI(ctx) {
     const d2 = Math.max(0, Number(document.getElementById("sched-dps-2").value) || 0);
 
     const payouts = [];
-    if (d1 > 0) payouts.push({ month: m1, dps: d1 });
-    if (d2 > 0) payouts.push({ month: m2, dps: d2 });
+    let mergedSameMonth = false;
+    if (d1 > 0 && d2 > 0 && m1 === m2) {
+      payouts.push({ month: m1, dps: Number((d1 + d2).toFixed(4)) });
+      mergedSameMonth = true;
+    } else {
+      if (d1 > 0) payouts.push({ month: m1, dps: d1 });
+      if (d2 > 0) payouts.push({ month: m2, dps: d2 });
+    }
     state.dividendSchedules[t] = { payouts };
 
     closeModal("modal-dividend-schedule");
-    commitStateChange(`Jadwal & estimasi DPS ${t} disimpan`);
+    commitStateChange(
+      mergedSameMonth
+        ? `Jadwal DPS ${t} di bulan yang sama digabung (${MONTH_NAMES_ID[m1]})`
+        : `Jadwal & estimasi DPS ${t} disimpan`
+    );
   };
 
   function renderDividendProjectionSim(passedAnnualEst = null, passedStockVal = null) {
@@ -583,7 +593,12 @@ export function createDividendsUI(ctx) {
     document.getElementById("div-insight-active-months").textContent = `${activeMonthsCount}/12 Bulan Cair`;
 
     document.getElementById("div-progress-title").textContent = `Progres Realisasi Dividen Tahun ${selectedYear} (Aktual vs Estimasi)`;
-    document.getElementById("div-progress-remaining").textContent = `Sisa Potensi: ${formatIDR(Math.max(0, annualEstimate - actualYearTotal))}`;
+    const remEl = document.getElementById("div-progress-remaining");
+    if (annualEstimate > 0 && actualYearTotal > annualEstimate) {
+      remEl.textContent = `Surplus Realisasi: +${formatIDR(actualYearTotal - annualEstimate)}`;
+    } else {
+      remEl.textContent = `Sisa Potensi: ${formatIDR(Math.max(0, annualEstimate - actualYearTotal))}`;
+    }
     document.getElementById("div-progress-pct").textContent = `${formatNum(progressPct, 1)}%`;
     document.getElementById("div-progress-bar").style.width = `${Math.min(100, progressPct)}%`;
 
@@ -791,7 +806,7 @@ export function createDividendsUI(ctx) {
         <td class="py-3.5 px-3 text-right font-sans tabular-nums font-bold text-[#10B981] whitespace-nowrap">${formatIDR(actualYearTotal)}</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">${formatNum(overallYoC, 2)}%</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums font-bold text-[#10B981] whitespace-nowrap">${formatNum(overallMktYield, 2)}%</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums font-bold text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">100,0%</td>
+        <td class="py-3.5 px-3 text-right font-sans tabular-nums font-bold text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${annualEstimate > 0 ? "100,0%" : "0,0%"}</td>
         <td></td>
       </tr>
     `;

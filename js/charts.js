@@ -26,21 +26,24 @@ export function renderAllocationChart({ charts, state, getEmitenColor }, m) {
   if (!canvas) return;
   destroyChart(charts, "allocation");
 
-  const labels = ["KAS"];
-  const data = [m.cashBalance];
-  const colors = ["#64748b"];
+  const isEmpty = m.totalValuation <= 0;
+  const labels = isEmpty ? ["Belum ada aset"] : ["KAS"];
+  const data = isEmpty ? [1] : [m.cashBalance];
+  const colors = isEmpty ? ["#475569"] : ["#64748b"];
 
-  state.holdings.forEach((h) => {
-    labels.push(h.ticker);
-    data.push(Number(h.shares) * Number(h.currentPrice));
-    colors.push(getEmitenColor(h.ticker));
-  });
+  if (!isEmpty) {
+    state.holdings.forEach((h) => {
+      labels.push(h.ticker);
+      data.push(Number(h.shares) * Number(h.currentPrice));
+      colors.push(getEmitenColor(h.ticker));
+    });
+  }
 
   charts.allocation = new Chart(canvas, {
     type: "doughnut",
     data: {
       labels,
-      datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }]
+      datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: isEmpty ? 0 : 6 }]
     },
     options: {
       responsive: true,
@@ -54,6 +57,7 @@ export function renderAllocationChart({ charts, state, getEmitenColor }, m) {
         tooltip: {
           callbacks: {
             label: (ctx) => {
+              if (isEmpty) return " Belum ada aset saham / kas";
               const val = Number(ctx.raw) || 0;
               const pct = m.totalValuation > 0 ? (val / m.totalValuation) * 100 : 0;
               return ` ${ctx.label}: ${formatIDR(val)} (${formatNum(pct, 1)}%)`;

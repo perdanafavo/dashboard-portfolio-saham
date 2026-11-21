@@ -42,7 +42,7 @@ export function computeMetrics(portfolioState) {
       totalPaidInCapital -= Math.abs(amt);
     }
   }
-  if (!Number.isFinite(totalUnits) || totalUnits <= 0) totalUnits = 1;
+  if (!Number.isFinite(totalUnits) || totalUnits < 0) totalUnits = 0;
 
   let stockCostTotal = 0;
   let stockValTotal = 0;
@@ -58,8 +58,8 @@ export function computeMetrics(portfolioState) {
   const cashBalance = safeFinite(safeState.cash, 0);
   const totalCost = stockCostTotal + cashBalance;
   const totalValuation = stockValTotal + cashBalance;
-  const currentNav = totalUnits > 0 ? totalValuation / totalUnits : 0;
-  const ytdReturnPct = initNav > 0 ? ((currentNav - initNav) / initNav) * 100 : 0;
+  const currentNav = totalUnits > 0 ? totalValuation / totalUnits : (totalValuation > 0 ? initNav : 0);
+  const ytdReturnPct = totalUnits > 0 && initNav > 0 ? ((currentNav - initNav) / initNav) * 100 : 0;
 
   const rawIhsgStart = safeFinite(benchmark.ihsgStart, 0);
   const ihsgStart = rawIhsgStart > 0 ? rawIhsgStart : 1;
@@ -121,9 +121,13 @@ export function calculateIPOTBuyFee(tradeAmount, allInPct = 0.19) {
       netAmount: gross
     };
   }
-  const levyFee = gross * 0.0003;
-  const kpeiFee = gross * 0.0001;
   const totalFee = gross * (pct / 100);
+  const rawLevy = gross * 0.0003;
+  const rawKpei = gross * 0.0001;
+  const fixedSum = rawLevy + rawKpei;
+  const scale = fixedSum > 0 && totalFee < fixedSum ? totalFee / fixedSum : 1;
+  const levyFee = rawLevy * scale;
+  const kpeiFee = rawKpei * scale;
   const brokerPlusVat = Math.max(0, totalFee - levyFee - kpeiFee);
   const brokerFee = brokerPlusVat / 1.11;
   const dpp = brokerFee * (11 / 12);
@@ -154,16 +158,22 @@ export function calculateIPOTSellFee(tradeAmount, allInPct = 0.29) {
       brokerFee: 0,
       levyFee: 0,
       kpeiFee: 0,
+      dpp: 0,
       vat12: 0,
       salesTax: 0,
       totalFee: 0,
       netProceeds: gross
     };
   }
-  const levyFee = gross * 0.0003;
-  const kpeiFee = gross * 0.0001;
-  const salesTax = gross * 0.001;
   const totalFee = gross * (pct / 100);
+  const rawLevy = gross * 0.0003;
+  const rawKpei = gross * 0.0001;
+  const rawSalesTax = gross * 0.001;
+  const fixedSum = rawLevy + rawKpei + rawSalesTax;
+  const scale = fixedSum > 0 && totalFee < fixedSum ? totalFee / fixedSum : 1;
+  const levyFee = rawLevy * scale;
+  const kpeiFee = rawKpei * scale;
+  const salesTax = rawSalesTax * scale;
   const brokerPlusVat = Math.max(0, totalFee - levyFee - kpeiFee - salesTax);
   const brokerFee = brokerPlusVat / 1.11;
   const dpp = brokerFee * (11 / 12);
@@ -173,6 +183,7 @@ export function calculateIPOTSellFee(tradeAmount, allInPct = 0.29) {
     brokerFee,
     levyFee,
     kpeiFee,
+    dpp,
     vat12,
     salesTax,
     totalFee,
