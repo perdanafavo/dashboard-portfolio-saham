@@ -19,6 +19,22 @@ html:not(.dark) {
   font-variant-numeric: tabular-nums;
 }
 
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[data-onclick]:not(:disabled),
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[data-onclick]:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
 input[type="date"] {
   cursor: pointer;
 }

@@ -37,7 +37,7 @@ Panduan operasional, invarian, alur **6 Tahap Product Lifecycle** (PM sebagai Pr
 3. **Gate Perencanaan PM (Product Owner):**
    - **Fitur besar / ubah logika NAV / refactor / entitas baru:** Wajib lewat alur `brainstorming` → `/grill-me` (uji asumsi & edge-case) → `domain-modeling` (kunci istilah & kontrak) → `to-spec` → `to-tickets` → *approval* user. Simpan dokumen di `docs/specs/YYYY-MM-DD-<topik>.md`.
    - **Fitur kecil–sedang / polish UI:** Cukup `brainstorming` → `to-spec` → `to-tickets` → *approval* user (skip `/grill-me` bila tidak ada *trade-off* rumit).
-   - **Quick task jelas** (typo, warna, tweak CSS 1–5 baris): Boleh langsung dieksekusi tanpa dokumen panjang.
+   - **Quick task jelas** (typo, warna, tweak CSS 1–5 baris): Boleh langsung dieksekusi tanpa dokumen spec di `docs/specs/` (skip Tahap 1–3), namun **tetap wajib melewati verifikasi QA singkat (Tahap 5: `/browser` / cek error) serta update `docs/HANDOFF.md` + commit (Tahap 6)**.
 4. **Diff Minimal & Modularisasi Bertahap:** Ikuti prinsip `ponytail` (perubahan terkecil, YAGNI) dan arsitektur modular di `docs/ARCHITECTURE.md` (`codebase-design`).
 5. **Aturan Anti-Tumpang-Tindih Skill & Anti-Konflik `/teamwork`:**
    - Tiap fase **hanya memuat 1–2 skill paling spesifik** sesuai tabel di Bagian 3 (jangan memuat semua skill UI/dev sekaligus agar hemat kuota).
