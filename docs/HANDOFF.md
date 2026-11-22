@@ -7,7 +7,7 @@ Dokumen konteks hidup (*living handoff document*) untuk proyek **Portfolio NAV T
 ## 1. Quick Resume Prompt (Copy-Paste di Akun / AI Baru)
 
 ```text
-Baca AGENTS.md, docs/ARCHITECTURE.md, dan docs/HANDOFF.md. Semua konteks proyek terbaru ada di sana. Sekarang kita siap masuk ke backlog berikutnya (Prioritas 4: Fitur Baru) atau task spesifik yang saya sebutkan di bawah ini.
+Baca AGENTS.md, docs/ARCHITECTURE.md, docs/DESIGN.md, dan docs/HANDOFF.md. Semua konteks proyek terbaru ada di sana. Sekarang kita siap masuk ke backlog berikutnya (Prioritas 4: Fitur Baru) atau task spesifik yang saya sebutkan di bawah ini.
 ```
 
 *(Untuk transfer mendadak di tengah sesi sebelum commit, jalankan juga skill `/handoff` agar snapshot percakapan sementara tersimpan di `%TEMP%`.)*
@@ -29,9 +29,10 @@ Baca AGENTS.md, docs/ARCHITECTURE.md, dan docs/HANDOFF.md. Semua konteks proyek 
 | `1cf55df` | **Prioritas 2 (UI/UX Polish):** Pemisahan jelas **Invested Saham** vs **Uninvested Cash / Buying Power (RDN)** di KPI card & 2-row `<tfoot>`, bar horizontal P/L, dual progress bar Rebalancing (`Bobot Aktual vs Target`), sticky `<thead>`, dan Keyboard Shortcuts (`/`, `1`–`6`, `R`, `Esc`) + `aria-label`. |
 | `a5e9d63` | **Prioritas 3 (Improvement Security):** Migrasi 121 inline event handler ke event delegation (`data-onclick`, `data-onchange`, `data-oninput`, `data-onsubmit`), Strict CSP `<meta>` tanpa `'unsafe-inline'` di `script-src`, SRI (`integrity` + `crossorigin`) pada CDN Chart.js & Lucide, timeout 5 detik & sanitasi ticker di `js/market.js`, allowlist `mergeWithDefaults` di `js/state.js`, Backup Reminder (`>30 hari`), serta **Encrypted JSON Export/Import (Web Crypto PBKDF2-SHA256 + AES-256-GCM)**. |
 | `0895203` | **Copy Polish Bahasa Indonesia & Update Aturan Carbon:** Perapian 5 titik *copy* Tab Portofolio (`Total Valuasi Portofolio`, sub-teks `Saham • Kas` tanpa kotak *pill*, `Saldo Kas (RDN)`, `Subtotal Saham` & `Total Portofolio (Saham + Kas)`, serta Status Bar Sinkronisasi `Diperbarui ... • TradingView (8/8)` & `Bursa Tutup/Buka`) + penambahan panduan opsional **Carbon / Orchestrator Carbon** (dengan fallback otomatis ke Neon) di `AGENTS.md`. |
-| `614d342` | **Upgrade `AGENTS.md` (6-Stage Lifecycle, Phase/Model Guard & `frontend-design`) + Global Cursor Pointer Fix:** Penambahan Pre-Flight Model & Phase Guard, matriks 6 Tahap Product Lifecycle anti-tumpang-tindih skill (termasuk opsi `frontend-design` & aturan QA wajib pada Quick Task), serta aturan CSS global `cursor: pointer` untuk seluruh `<button>`, `[data-onclick]`, `<select>`, `checkbox`, `radio`, dan `summary` di `css/styles.css`. |
+| `c158a26` | **Upgrade `AGENTS.md` (6-Stage Lifecycle, Phase/Model Guard & `frontend-design`) + Global Cursor Pointer Fix:** Penambahan Pre-Flight Model & Phase Guard, matriks 6 Tahap Product Lifecycle anti-tumpang-tindih skill (termasuk opsi `frontend-design` & aturan QA wajib pada Quick Task), serta aturan CSS global `cursor: pointer` untuk seluruh `<button>`, `[data-onclick]`, `<select>`, `checkbox`, `radio`, dan `summary` di `css/styles.css`. |
+| `HEAD` | **Design System SSOT (`docs/DESIGN.md`) & Revamp UI 13 Modal:** Pembuatan `docs/DESIGN.md` (Obsidian FinTech Surface: `#0C1117` canvas, `#141C24` surface, hairline border, Emerald `#10B981`, aturan `tabular-nums` vs `font-mono`, dan Pre-compiled Tailwind Guard), penambahan komponen semantik `.modal-*` di `css/styles.css`, serta perombakan seluruh 13 modal di `index.html`, input `#bulk-price-list` di `js/ui/portfolio.js`, dan state tombol tab aktif di `js/app.js`. |
 
-> **Dokumen Spec Terkait:** `docs/specs/2026-11-22-performance-ux-security-roadmap.md`, `docs/specs/2026-11-22-copy-polish-kas-dan-sync.md`
+> **Dokumen Spec Terkait:** `docs/specs/2026-11-22-performance-ux-security-roadmap.md`, `docs/specs/2026-11-22-copy-polish-kas-dan-sync.md`, `docs/specs/2026-11-22-design-system-and-modal-revamp.md`
 
 ---
 

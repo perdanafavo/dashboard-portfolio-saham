@@ -180,7 +180,7 @@ export function createPortfolioUI(ctx) {
 
     const cashEl = document.getElementById("buy-prev-cash");
     cashEl.textContent = formatIDR(remainingCash);
-    cashEl.className = `font-mono font-semibold ${remainingCash < 0 ? "text-rose-500" : "text-slate-700 dark:text-slate-300"}`;
+    cashEl.className = `font-sans tabular-nums font-semibold ${remainingCash < 0 ? "text-rose-500" : "text-slate-700 dark:text-[#EEF2F6]"}`;
   };
 
   window.handleBuyStock = function (e) {
@@ -312,7 +312,7 @@ export function createPortfolioUI(ctx) {
 
     const plEl = document.getElementById("sell-prev-pl");
     plEl.textContent = `${formatSignedIDR(realizedPL)} (${formatPct(realizedPLPct)})`;
-    plEl.className = `font-mono font-bold ${colorClass(realizedPL)}`;
+    plEl.className = `font-sans tabular-nums font-bold ${colorClass(realizedPL)}`;
   };
 
   window.handleSellStock = function (e) {
@@ -416,15 +416,15 @@ export function createPortfolioUI(ctx) {
 
     const diffEl = document.getElementById("edit-prev-cost-diff");
     diffEl.textContent = formatSignedIDR(costDiff);
-    diffEl.className = `font-mono font-semibold ${colorClass(-costDiff)}`;
+    diffEl.className = `font-sans tabular-nums font-semibold ${colorClass(-costDiff)}`;
 
     const plEl = document.getElementById("edit-prev-pl");
     plEl.textContent = `${formatSignedIDR(pl)} (${formatPct(plPct)})`;
-    plEl.className = `font-mono font-bold ${colorClass(pl)}`;
+    plEl.className = `font-sans tabular-nums font-bold ${colorClass(pl)}`;
 
     const cashEl = document.getElementById("edit-prev-cash");
     cashEl.textContent = formatIDR(projCash);
-    cashEl.className = `font-mono font-semibold ${projCash < 0 ? "text-rose-500" : "text-slate-700 dark:text-slate-300"}`;
+    cashEl.className = `font-sans tabular-nums font-semibold ${projCash < 0 ? "text-rose-500" : "text-slate-700 dark:text-[#EEF2F6]"}`;
   };
 
   window.handleEditHolding = function (e) {
@@ -528,12 +528,12 @@ export function createPortfolioUI(ctx) {
     list.innerHTML = state.holdings
       .map(
         (h) => `
-        <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+        <div class="modal-preview-box py-2.5 flex items-center justify-between gap-3">
           <div>
-            <span class="font-mono font-bold text-xs text-slate-900 dark:text-white">${escapeHTML(h.ticker)}</span>
-            <span class="block text-[11px] text-slate-500">Avg: ${formatNum(h.avgPrice, 2)}</span>
+            <span class="font-mono font-bold text-xs text-slate-900 dark:text-[#EEF2F6]">${escapeHTML(h.ticker)}</span>
+            <span class="block text-[11px] font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8]">Avg: ${formatNum(h.avgPrice, 2)}</span>
           </div>
-          <input type="text" inputmode="numeric" data-num-input="int" data-holding-id="${escapeHTML(h.id)}" value="${Math.round(Number(h.currentPrice) || 0).toLocaleString("id-ID")}" required class="bulk-price-input w-32 px-3 py-1.5 rounded-lg text-right font-mono font-bold text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" />
+          <input type="text" inputmode="numeric" data-num-input="int" data-holding-id="${escapeHTML(h.id)}" value="${Math.round(Number(h.currentPrice) || 0).toLocaleString("id-ID")}" required class="bulk-price-input modal-input w-32 py-1.5 text-right font-bold" />
         </div>
       `
       )
@@ -615,7 +615,7 @@ export function createPortfolioUI(ctx) {
 
     const retEl = document.getElementById("base-prev-return");
     retEl.textContent = formatPct(projRet);
-    retEl.className = `font-mono font-bold ${colorClass(projRet)}`;
+    retEl.className = `font-sans tabular-nums font-bold ${colorClass(projRet)}`;
   };
 
   window.applyCurrentPortfolioAsBaseline = function () {

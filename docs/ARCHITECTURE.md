@@ -79,6 +79,7 @@ dashboard-portfolio-saham/
 │   └── market.js            # Proxy harga saham IDX/IHSG dengan env vars aman
 └── docs/
     ├── ARCHITECTURE.md      # Dokumen peta arsitektur ini
+    ├── DESIGN.md            # Single Source of Truth sistem desain (Obsidian FinTech Surface & .modal-*)
     ├── HANDOFF.md           # Living Handoff Document untuk transfer sesi/akun/AI
     └── specs/               # Design doc, spec & tiket dari fase PM
 ```

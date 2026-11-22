@@ -69,7 +69,7 @@ export function createDividendsUI(ctx) {
     const h = state.holdings.find((item) => item.ticker === ticker);
     if (h) {
       hint.classList.remove("hidden");
-      hint.innerHTML = `<span>Dimiliki: <strong>${Number(h.shares).toLocaleString("id-ID")} lbr</strong></span><span class="font-mono">Valuasi: ${formatIDR(h.shares * h.currentPrice)}</span>`;
+      hint.innerHTML = `<span>Dimiliki: <strong class="font-sans tabular-nums">${Number(h.shares).toLocaleString("id-ID")} lbr</strong></span><span class="font-sans tabular-nums font-semibold">Valuasi: ${formatIDR(h.shares * h.currentPrice)}</span>`;
     } else {
       hint.classList.add("hidden");
     }

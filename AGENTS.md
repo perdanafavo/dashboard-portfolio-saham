@@ -2,9 +2,10 @@
 
 Panduan operasional, invarian, alur **6 Tahap Product Lifecycle** (PM sebagai Product Owner → UI/UX → Frontend → Backend/Core → QA → Security), routing skill anti-tumpang-tindih, dan pemilihan model untuk workspace `dashboard-portfolio-saham`.
 
-> **Referensi Arsitektur & Status Proyek (Baca *On-Demand*):**
+> **Referensi Arsitektur, Design System & Status Proyek (Baca *On-Demand*):**
 > - Baca `docs/HANDOFF.md` di awal sesi baru untuk langsung mengetahui status commit terakhir, *gotchas* teknis (Strict CSP, Tailwind statis), dan backlog berikutnya.
 > - Baca `docs/ARCHITECTURE.md` sebelum mengedit `index.html` atau modul `./js/*`.
+> - Baca `docs/DESIGN.md` (*Single Source of Truth* Visual & Komponen UI) sebelum mengubah styling HTML/CSS, modal, atau membuat komponen UI baru.
 
 ---
 
@@ -118,5 +119,5 @@ Panduan operasional, invarian, alur **6 Tahap Product Lifecycle** (PM sebagai Pr
 
 - [ ] **Fungsional & Matematika:** Kalkulasi NAV, unit penyertaan, fee, mutasi, dan dividen terverifikasi (termasuk via unit test `tdd` bila relevan) untuk kasus `0`, negatif, dan data kosong.
 - [ ] **Kompatibilitas Data & Deploy:** Load/save `localStorage` & Export/Import JSON aman; semua path bersifat relatif (`./`) dan berjalan tanpa error di GitHub Pages & Vercel.
-- [ ] **UI, Aksesibilitas & Keamanan:** Rapi di desktop & mobile, Dark/Light mode konsisten, angka memakai `tabular-nums`, input ter-sanitasi (bebas XSS), lolos `web-design-guidelines`, `impeccable harden`, dan `security-review` tanpa temuan *high-confidence*.
+- [ ] **UI, Design System, Aksesibilitas & Keamanan:** Patuh kontrak `docs/DESIGN.md` (Obsidian FinTech Surface & `.modal-*`), rapi di desktop & mobile, Dark/Light mode konsisten, angka memakai `tabular-nums`, input ter-sanitasi (bebas XSS), lolos `web-design-guidelines`, `impeccable harden`, dan `security-review` tanpa temuan *high-confidence*.
 - [ ] **Kualitas Kode & Runtime:** Lolos `code-review-and-quality` tanpa temuan `Critical`/`Required`, dan nol error console saat diuji lewat `/browser`.

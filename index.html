@@ -144,11 +144,11 @@
           id="tab-btn-portfolio"
           data-onclick="switchTab('portfolio')"
           title="Tab 1: Portofolio & Kinerja (Tekan 1)"
-          class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+          class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all bg-[#10B981] text-slate-950 shadow-sm shadow-[#10B981]/20"
         >
           <i data-lucide="briefcase" class="w-4 h-4"></i>
           <span>Portofolio & Kinerja</span>
-          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/20 text-current opacity-80">1</kbd>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-950/15 text-current opacity-80">1</kbd>
         </button>
 
         <button
@@ -1511,338 +1511,341 @@
   </main>
 
   <!-- ===================================================================== -->
-  <!-- MODALS (CUSTOM UI - NO BROWSER ALERT/CONFIRM)                         -->
+  <!-- MODALS (CUSTOM UI - OBSIDIAN FINTECH SURFACE DESIGN SYSTEM)           -->
   <!-- ===================================================================== -->
 
   <!-- Modal 1: Beli / Tambah Saham (IPOT / Indo Premier PMK 131/2024 Engine) -->
-  <div id="modal-buy" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-buy" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white" id="modal-buy-title">Beli / Tambah Posisi Saham</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Kalkulasi otomatis Trade Confirmation IPOT (PMK No. 131 Tahun 2024)</p>
+          <h3 class="modal-title" id="modal-buy-title">Beli / Tambah Posisi Saham</h3>
+          <p class="modal-subtitle">Kalkulasi otomatis Trade Confirmation IPOT (PMK No. 131 Tahun 2024)</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-buy')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-buy')" aria-label="Tutup modal beli saham" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleBuyStock(event)" class="p-5 space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: ADRO" data-oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="buy-ticker" class="modal-label">Kode Emiten</label>
+            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: ADRO" data-oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="modal-input font-mono font-bold uppercase" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sektor / Nama</label>
-            <input type="text" id="buy-name" placeholder="Energi / Pertambangan" class="w-full px-3 py-2 rounded-xl text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="buy-name" class="modal-label">Sektor / Nama</label>
+            <input type="text" id="buy-name" placeholder="Energi / Pertambangan" class="modal-input font-normal" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah</label>
-              <select id="buy-unit-mode" data-onchange="updateBuyPreview()" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-transparent focus:outline-none">
+              <label for="buy-qty" class="modal-label mb-0">Jumlah</label>
+              <select id="buy-unit-mode" data-onchange="updateBuyPreview()" class="text-[11px] font-semibold text-[#10B981] bg-transparent focus:outline-none">
                 <option value="LOT">Lot (100 lbr)</option>
                 <option value="SHARES">Lembar</option>
               </select>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="buy-qty" required placeholder="25" data-oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-qty" required placeholder="25" data-oninput="updateBuyPreview()" class="modal-input" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Beli / Lbr (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="buy-price" required placeholder="2.480" data-oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="buy-price" class="modal-label">Harga Beli / Lbr (Rp)</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-price" required placeholder="2.480" data-oninput="updateBuyPreview()" class="modal-input" />
           </div>
         </div>
 
         <div class="grid grid-cols-12 gap-3 items-end">
           <div class="col-span-7">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Sekuritas</label>
-            <select id="buy-fee-preset" data-onchange="onBuyFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <label for="buy-fee-preset" class="modal-label">Preset Fee Sekuritas</label>
+            <select id="buy-fee-preset" data-onchange="onBuyFeePresetChange()" class="modal-select">
               <option value="IPOT">IPOT / Indo Premier (0,19% All-In)</option>
               <option value="CUSTOM">Custom % Fee Broker</option>
               <option value="ZERO">0% (Tanpa Fee)</option>
             </select>
           </div>
           <div class="col-span-5">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee All-In</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="buy-fee" value="0,19" data-oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="buy-fee" class="modal-label">% Fee All-In</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="buy-fee" value="0,19" data-oninput="onBuyFeeManualInput()" class="modal-input" />
           </div>
         </div>
 
-        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" id="buy-deduct-cash" checked data-onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-emerald-600" />
+        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer select-none">
+          <input type="checkbox" id="buy-deduct-cash" checked data-onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-[#10B981]" />
           <span>Potong Saldo Kas RDN sesuai Net Amount</span>
         </label>
 
         <!-- Live Trade Confirmation Preview (IPOT Style) -->
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-1.5">
-            <span class="font-bold text-[11px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Live Trade Confirmation (IPOT)</span>
-            <span id="buy-prev-shares" class="font-mono font-semibold text-slate-600 dark:text-slate-300">0 lembar</span>
+        <div class="modal-preview-box space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-white/[0.08] pb-1.5">
+            <span class="font-bold text-[11px] uppercase tracking-wider text-[#10B981]">Live Trade Confirmation (IPOT)</span>
+            <span id="buy-prev-shares" class="font-sans tabular-nums font-semibold text-slate-600 dark:text-[#EEF2F6]">0 lembar</span>
           </div>
 
           <div class="flex justify-between">
-            <span class="text-slate-500">Trade Amount (Bruto):</span>
-            <span id="buy-prev-trade-amount" class="font-mono font-semibold text-slate-800 dark:text-slate-200">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Trade Amount (Bruto):</span>
+            <span id="buy-prev-trade-amount" class="font-sans tabular-nums font-semibold text-slate-800 dark:text-[#EEF2F6]">Rp 0</span>
           </div>
 
           <!-- Rincian Komponen Fee PMK 131/2024 -->
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 py-1.5 px-2.5 rounded-lg bg-white/80 dark:bg-slate-900/90 border border-slate-200/60 dark:border-slate-800/80 text-[11px]">
+          <div class="modal-subbox grid grid-cols-2 gap-x-4 gap-y-1">
             <div class="flex justify-between">
-              <span class="text-slate-400">Broker Fee:</span>
-              <span id="buy-prev-broker" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">Broker Fee:</span>
+              <span id="buy-prev-broker" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">Levy (0,03%):</span>
-              <span id="buy-prev-levy" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">Levy (0,03%):</span>
+              <span id="buy-prev-levy" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">KPEI (0,01%):</span>
-              <span id="buy-prev-kpei" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">KPEI (0,01%):</span>
+              <span id="buy-prev-kpei" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">DPP (11/12):</span>
-              <span id="buy-prev-dpp" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">DPP (11/12):</span>
+              <span id="buy-prev-dpp" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">VAT 12%:</span>
-              <span id="buy-prev-vat" class="font-mono text-slate-700 dark:text-slate-300">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">VAT 12%:</span>
+              <span id="buy-prev-vat" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between font-semibold">
               <span class="text-amber-600 dark:text-amber-400">Total Fee:</span>
-              <span id="buy-prev-total-fee" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</span>
+              <span id="buy-prev-total-fee" class="font-sans tabular-nums text-amber-600 dark:text-amber-400">Rp 0</span>
             </div>
           </div>
 
           <div class="flex justify-between pt-0.5">
-            <span class="font-semibold text-slate-700 dark:text-slate-200">Net Amount (Debet RDN):</span>
-            <span id="buy-prev-total" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
+            <span class="font-semibold text-slate-700 dark:text-[#EEF2F6]">Net Amount (Debet RDN):</span>
+            <span id="buy-prev-total" class="font-sans tabular-nums font-bold text-slate-900 dark:text-white">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="font-semibold text-slate-700 dark:text-slate-200">Avg. Price Baru (Inc. Fee):</span>
-            <span id="buy-prev-newavg" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">Rp 0,00</span>
+            <span class="font-semibold text-slate-700 dark:text-[#EEF2F6]">Avg. Price Baru (Inc. Fee):</span>
+            <span id="buy-prev-newavg" class="font-sans tabular-nums font-bold text-[#10B981]">Rp 0,00</span>
           </div>
-          <div class="flex justify-between text-[11px] pt-0.5 border-t border-slate-200/70 dark:border-slate-800/70">
-            <span class="text-slate-500">Sisa Saldo Kas RDN:</span>
-            <span id="buy-prev-cash" class="font-mono">Rp 0</span>
+          <div class="flex justify-between text-[11px] pt-1 border-t border-slate-200/70 dark:border-white/[0.07]">
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Sisa Saldo Kas RDN:</span>
+            <span id="buy-prev-cash" class="font-sans tabular-nums font-semibold">Rp 0</span>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-buy')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Konfirmasi Beli</button>
+          <button type="button" data-onclick="closeModal('modal-buy')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Konfirmasi Beli</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 2: Jual / Withdraw Saham (IPOT / Indo Premier Sell Fee 0,29% Engine) -->
-  <div id="modal-sell" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-sell" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Jual / Withdraw Saham: <span id="sell-ticker-label" class="text-emerald-500 font-mono"></span></h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Perhitungan Fee Jual IPOT (termasuk Sales Tax PPh 0,10% & VAT 12%)</p>
+          <h3 class="modal-title">Jual / Withdraw Saham: <span id="sell-ticker-label" class="text-[#10B981] font-mono"></span></h3>
+          <p class="modal-subtitle">Perhitungan Fee Jual IPOT (termasuk Sales Tax PPh 0,10% &amp; VAT 12%)</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-sell')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-sell')" aria-label="Tutup modal jual saham" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleSellStock(event)" class="p-5 space-y-3.5">
         <input type="hidden" id="sell-holding-id" />
-        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
+        <div class="modal-preview-box flex justify-between">
           <div>
-            <span class="text-slate-500 block">Dimiliki:</span>
-            <strong id="sell-owned-shares" class="font-mono">0 lbr</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8] block">Dimiliki:</span>
+            <strong id="sell-owned-shares" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">0 lbr</strong>
           </div>
           <div class="text-right">
-            <span class="text-slate-500 block">Avg. Price (Inc. Fee):</span>
-            <strong id="sell-owned-avg" class="font-mono">Rp 0</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8] block">Avg. Price (Inc. Fee):</span>
+            <strong id="sell-owned-avg" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">Rp 0</strong>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lembar Dijual</label>
+              <label for="sell-shares" class="modal-label mb-0">Lembar Dijual</label>
               <div class="flex gap-1">
-                <button type="button" data-onclick="setSellFraction(0.25)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">25%</button>
-                <button type="button" data-onclick="setSellFraction(0.5)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">50%</button>
-                <button type="button" data-onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
+                <button type="button" data-onclick="setSellFraction(0.25)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] text-[10px] font-sans tabular-nums font-semibold">25%</button>
+                <button type="button" data-onclick="setSellFraction(0.5)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] text-[10px] font-sans tabular-nums font-semibold">50%</button>
+                <button type="button" data-onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] text-[10px] font-sans tabular-nums font-bold">100%</button>
               </div>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="sell-shares" required data-oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-shares" required data-oninput="updateSellPreview()" class="modal-input" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Jual / Lbr (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="sell-price" required data-oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="sell-price" class="modal-label">Harga Jual / Lbr (Rp)</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-price" required data-oninput="updateSellPreview()" class="modal-input" />
           </div>
         </div>
 
         <div class="grid grid-cols-12 gap-3 items-end">
           <div class="col-span-7">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Jual Sekuritas</label>
-            <select id="sell-fee-preset" data-onchange="onSellFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <label for="sell-fee-preset" class="modal-label">Preset Fee Jual Sekuritas</label>
+            <select id="sell-fee-preset" data-onchange="onSellFeePresetChange()" class="modal-select">
               <option value="IPOT">IPOT / Indo Premier (0,29% All-In)</option>
               <option value="CUSTOM">Custom % Fee Jual</option>
               <option value="ZERO">0% (Tanpa Fee)</option>
             </select>
           </div>
           <div class="col-span-5">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee Jual</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="sell-fee" value="0,29" data-oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="sell-fee" class="modal-label">% Fee Jual</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="sell-fee" value="0,29" data-oninput="onSellFeeManualInput()" class="modal-input" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Transaksi</label>
-            <input type="date" id="sell-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="sell-date" class="modal-label">Tanggal Transaksi</label>
+            <input type="date" id="sell-date" required data-onclick="try{this.showPicker()}catch(e){}" class="modal-input text-xs" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan TP/CL</label>
-            <input type="text" id="sell-note" placeholder="Take Profit / Cut Loss" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="sell-note" class="modal-label">Catatan TP/CL</label>
+            <input type="text" id="sell-note" placeholder="Take Profit / Cut Loss" class="modal-input text-xs font-normal" />
           </div>
         </div>
 
-        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" id="sell-add-cash" checked class="w-4 h-4 rounded accent-emerald-600" />
+        <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer select-none">
+          <input type="checkbox" id="sell-add-cash" checked class="w-4 h-4 rounded accent-[#10B981]" />
           <span>Masukkan Net Proceeds ke Saldo Kas RDN</span>
         </label>
 
         <!-- Live Sell Trade Confirmation Preview -->
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+        <div class="modal-preview-box space-y-2">
           <div class="flex justify-between">
-            <span class="text-slate-500">Trade Amount Jual (Bruto):</span>
-            <span id="sell-prev-trade-amount" class="font-mono font-semibold">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Trade Amount Jual (Bruto):</span>
+            <span id="sell-prev-trade-amount" class="font-sans tabular-nums font-semibold text-slate-800 dark:text-[#EEF2F6]">Rp 0</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 py-1.5 px-2.5 rounded-lg bg-white/80 dark:bg-slate-900/90 border border-slate-200/60 dark:border-slate-800/80 text-[11px]">
+          <div class="modal-subbox grid grid-cols-2 gap-x-4 gap-y-1">
             <div class="flex justify-between">
-              <span class="text-slate-400">Broker Fee:</span>
-              <span id="sell-prev-broker" class="font-mono">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">Broker Fee:</span>
+              <span id="sell-prev-broker" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">Levy + KPEI:</span>
-              <span id="sell-prev-levy-kpei" class="font-mono">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">Levy + KPEI:</span>
+              <span id="sell-prev-levy-kpei" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">VAT 12% (DPP):</span>
-              <span id="sell-prev-vat" class="font-mono">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">VAT 12% (DPP):</span>
+              <span id="sell-prev-vat" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">Sales Tax (0,10%):</span>
-              <span id="sell-prev-salestax" class="font-mono">Rp 0</span>
+              <span class="text-slate-400 dark:text-[#8E9BA8]">Sales Tax (0,10%):</span>
+              <span id="sell-prev-salestax" class="font-sans tabular-nums text-slate-700 dark:text-[#EEF2F6]">Rp 0</span>
             </div>
-            <div class="col-span-2 flex justify-between font-semibold border-t border-slate-200/60 dark:border-slate-800/60 pt-1">
+            <div class="col-span-2 flex justify-between font-semibold border-t border-slate-200/60 dark:border-white/[0.06] pt-1">
               <span class="text-amber-600 dark:text-amber-400">Total Fee Jual:</span>
-              <span id="sell-prev-total-fee" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</span>
+              <span id="sell-prev-total-fee" class="font-sans tabular-nums text-amber-600 dark:text-amber-400">Rp 0</span>
             </div>
           </div>
 
           <div class="flex justify-between">
-            <span class="font-semibold text-slate-700 dark:text-slate-200">Net Proceeds (Masuk RDN):</span>
-            <span id="sell-prev-proceeds" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
+            <span class="font-semibold text-slate-700 dark:text-[#EEF2F6]">Net Proceeds (Masuk RDN):</span>
+            <span id="sell-prev-proceeds" class="font-sans tabular-nums font-bold text-slate-900 dark:text-white">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="font-semibold text-slate-700 dark:text-slate-200">Realized P/L Bersih (TP/CL):</span>
-            <span id="sell-prev-pl" class="font-mono font-bold">Rp 0 (0,00%)</span>
+            <span class="font-semibold text-slate-700 dark:text-[#EEF2F6]">Realized P/L Bersih (TP/CL):</span>
+            <span id="sell-prev-pl" class="font-sans tabular-nums font-bold">Rp 0 (0,00%)</span>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-sell')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white">Eksekusi Jual</button>
+          <button type="button" data-onclick="closeModal('modal-sell')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-danger">Eksekusi Jual</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 3: Catat Dividen Tunai -->
-  <div id="modal-dividend" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Catat Dividen Tunai</h3>
-        <button type="button" data-onclick="closeModal('modal-dividend')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+  <div id="modal-dividend" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Catat Dividen Tunai</h3>
+          <p class="modal-subtitle">Menambah saldo kas &amp; valuasi tanpa mengubah jumlah unit penyertaan</p>
+        </div>
+        <button type="button" data-onclick="closeModal('modal-dividend')" aria-label="Tutup modal dividen" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleAddDividend(event)" class="p-5 space-y-4">
-        <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-700 dark:text-indigo-300">
-          Dividen menambah <strong>Saldo Kas</strong> & <strong>Valuasi Portofolio</strong> tanpa menambah Unit Penyertaan, sehingga <strong>Harga Unit (NAV/Unit)</strong> dan <strong>% Kinerja</strong> naik otomatis.
+        <div class="p-3 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 text-xs text-slate-700 dark:text-[#EEF2F6] leading-relaxed">
+          Dividen menambah <strong>Saldo Kas</strong> &amp; <strong>Valuasi Portofolio</strong> tanpa menambah Unit Penyertaan, sehingga <strong>Harga Unit (NAV/Unit)</strong> dan <strong>% Kinerja</strong> naik otomatis.
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="div-ticker" list="div-ticker-options" required placeholder="BBRI" data-oninput="this.value = this.value.toUpperCase(); onDivTickerInput()" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="div-ticker" class="modal-label">Kode Emiten</label>
+            <input type="text" id="div-ticker" list="div-ticker-options" required placeholder="BBRI" data-oninput="this.value = this.value.toUpperCase(); onDivTickerInput()" class="modal-input font-mono font-bold uppercase" />
             <datalist id="div-ticker-options"></datalist>
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label for="div-date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Tanggal Cair</label>
+              <label for="div-date" class="modal-label mb-0">Tanggal Cair</label>
               <div class="flex items-center gap-1">
-                <button type="button" data-onclick="setDividendQuickDate('TODAY')" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500/20 text-[10px] font-semibold text-slate-600 dark:text-slate-300">Hari Ini</button>
-                <button type="button" data-onclick="setDividendQuickDate('NEXT_YEAR')" class="px-1.5 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-300">+1 Thn</button>
+                <button type="button" data-onclick="setDividendQuickDate('TODAY')" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] hover:bg-[#10B981]/20 text-[10px] font-semibold text-slate-600 dark:text-[#EEF2F6]">Hari Ini</button>
+                <button type="button" data-onclick="setDividendQuickDate('NEXT_YEAR')" class="px-1.5 py-0.5 rounded bg-[#10B981]/15 hover:bg-[#10B981]/25 text-[10px] font-sans tabular-nums font-bold text-[#10B981]">+1 Thn</button>
               </div>
             </div>
-            <input type="date" id="div-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input type="date" id="div-date" required data-onclick="try{this.showPicker()}catch(e){}" class="modal-input text-xs" />
           </div>
         </div>
-        <div id="div-holding-hint" class="hidden px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between gap-2">
+        <div id="div-holding-hint" class="hidden modal-preview-box py-2 text-[11px] text-slate-600 dark:text-[#EEF2F6] flex items-center justify-between gap-2">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Nominal Dividen Bersih (Rp)</label>
-          <input type="text" inputmode="numeric" data-num-input="int" id="div-amount" required placeholder="Contoh: 4.500.000" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="div-amount" class="modal-label">Total Nominal Dividen Bersih (Rp)</label>
+          <input type="text" inputmode="numeric" data-num-input="int" id="div-amount" required placeholder="Contoh: 4.500.000" class="modal-input font-bold" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan (Opsional)</label>
-          <input type="text" id="div-note" placeholder="Dividen Final / Interim" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="div-note" class="modal-label">Keterangan (Opsional)</label>
+          <input type="text" id="div-note" placeholder="Dividen Final / Interim" class="modal-input text-xs font-normal" />
         </div>
-        <label class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" id="div-sync-schedule" checked class="w-4 h-4 mt-0.5 rounded accent-indigo-600" />
-          <span>Otomatis hitung & simpan estimasi DPS + bulan cair ke grafik proyeksi jika emiten ini belum memiliki jadwal dividen</span>
+        <label class="flex items-start gap-2 text-xs text-slate-600 dark:text-[#8E9BA8] cursor-pointer select-none">
+          <input type="checkbox" id="div-sync-schedule" checked class="w-4 h-4 mt-0.5 rounded accent-[#10B981]" />
+          <span>Otomatis hitung &amp; simpan estimasi DPS + bulan cair ke grafik proyeksi jika emiten ini belum memiliki jadwal dividen</span>
         </label>
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-dividend')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white">Simpan Dividen</button>
+          <button type="button" data-onclick="closeModal('modal-dividend')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan Dividen</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 3B: Atur Estimasi DPS & Jadwal Pencairan Dividen per Emiten -->
-  <div id="modal-dividend-schedule" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-dividend-schedule" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Atur Proyeksi Dividen: <span id="sched-ticker-label" class="text-amber-500 font-mono"></span></h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Estimasi Dividen per Lembar (DPS) & Bulan Pembayaran</p>
+          <h3 class="modal-title">Atur Proyeksi Dividen: <span id="sched-ticker-label" class="text-[#10B981] font-mono"></span></h3>
+          <p class="modal-subtitle">Estimasi Dividen per Lembar (DPS) &amp; Bulan Pembayaran</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-dividend-schedule')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-dividend-schedule')" aria-label="Tutup modal jadwal dividen" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleSaveDividendSchedule(event)" class="p-5 space-y-4">
         <input type="hidden" id="sched-ticker-input" />
 
-        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
+        <div class="modal-preview-box flex justify-between">
           <div>
-            <span class="text-slate-500 block">Kepemilikan Saat Ini:</span>
-            <strong id="sched-owned-shares" class="font-mono">0 lembar</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8] block">Kepemilikan Saat Ini:</span>
+            <strong id="sched-owned-shares" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">0 lembar</strong>
           </div>
           <div class="text-right">
-            <span class="text-slate-500 block">Avg. Price:</span>
-            <strong id="sched-owned-avg" class="font-mono">Rp 0</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8] block">Avg. Price:</span>
+            <strong id="sched-owned-avg" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">Rp 0</strong>
           </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-          <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Pembayaran 1 (Dividen Final / Utama)</div>
+        <div class="modal-preview-box space-y-2.5">
+          <div class="text-xs font-bold text-[#10B981]">Pembayaran 1 (Dividen Final / Utama)</div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
-              <select id="sched-month-1" data-onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <label for="sched-month-1" class="modal-label">Bulan Cair</label>
+              <select id="sched-month-1" data-onchange="updateSchedulePreview()" class="modal-select">
                 <option value="0">Januari</option>
                 <option value="1">Februari</option>
                 <option value="2">Maret</option>
@@ -1858,18 +1861,18 @@
               </select>
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS (Rp / Lembar)</label>
-              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-1" value="0" data-oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <label for="sched-dps-1" class="modal-label">DPS (Rp / Lembar)</label>
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-1" value="0" data-oninput="updateSchedulePreview()" class="modal-input" />
             </div>
           </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-          <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400">Pembayaran 2 (Dividen Interim — Opsional)</div>
+        <div class="modal-preview-box space-y-2.5">
+          <div class="text-xs font-bold text-sky-600 dark:text-sky-400">Pembayaran 2 (Dividen Interim — Opsional)</div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
-              <select id="sched-month-2" data-onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <label for="sched-month-2" class="modal-label">Bulan Cair</label>
+              <select id="sched-month-2" data-onchange="updateSchedulePreview()" class="modal-select">
                 <option value="0">Januari</option>
                 <option value="1">Februari</option>
                 <option value="2">Maret</option>
@@ -1885,88 +1888,94 @@
               </select>
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS Interim (Rp / Lbr)</label>
-              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-2" value="0" data-oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <label for="sched-dps-2" class="modal-label">DPS Interim (Rp / Lbr)</label>
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-2" value="0" data-oninput="updateSchedulePreview()" class="modal-input" />
             </div>
           </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5 text-xs">
+        <div class="modal-preview-box space-y-1.5">
           <div class="flex justify-between">
-            <span class="text-slate-600 dark:text-slate-300">Total DPS Setahun:</span>
-            <strong id="sched-prev-dps" class="font-mono text-slate-900 dark:text-white">Rp 0 / lbr</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Total DPS Setahun:</span>
+            <strong id="sched-prev-dps" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">Rp 0 / lbr</strong>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-600 dark:text-slate-300">Estimasi Dividen Setahun:</span>
-            <strong id="sched-prev-annual" class="font-mono text-amber-600 dark:text-amber-400">Rp 0</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Estimasi Dividen Setahun:</span>
+            <strong id="sched-prev-annual" class="font-sans tabular-nums text-amber-600 dark:text-amber-400">Rp 0</strong>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-600 dark:text-slate-300">Proyeksi Yield on Cost:</span>
-            <strong id="sched-prev-yoc" class="font-mono text-emerald-600 dark:text-emerald-400">0,00%</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Yield on Cost:</span>
+            <strong id="sched-prev-yoc" class="font-sans tabular-nums text-[#10B981]">0,00%</strong>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-dividend-schedule')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950">Simpan Proyeksi</button>
+          <button type="button" data-onclick="closeModal('modal-dividend-schedule')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan Proyeksi</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 4: Bulk Update Harga Pasar -->
-  <div id="modal-bulk-price" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Update Harga Pasar Sekaligus</h3>
-        <button type="button" data-onclick="closeModal('modal-bulk-price')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+  <div id="modal-bulk-price" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Update Harga Pasar Sekaligus</h3>
+          <p class="modal-subtitle">Sesuaikan harga pasar seluruh emiten portofolio secara cepat</p>
+        </div>
+        <button type="button" data-onclick="closeModal('modal-bulk-price')" aria-label="Tutup modal update harga" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleBulkPriceSave(event)" class="p-5 space-y-4">
         <div id="bulk-price-list" class="max-h-80 overflow-y-auto space-y-2.5 pr-1"></div>
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-          <button type="button" data-onclick="closeModal('modal-bulk-price')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan Semua Harga</button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-200/80 dark:border-white/[0.08]">
+          <button type="button" data-onclick="closeModal('modal-bulk-price')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan Semua Harga</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 5: Edit Saldo Kas -->
-  <div id="modal-cash" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Rekonsiliasi Saldo Kas (RDN)</h3>
-        <button type="button" data-onclick="closeModal('modal-cash')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+  <div id="modal-cash" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Rekonsiliasi Saldo Kas (RDN)</h3>
+          <p class="modal-subtitle">Penyesuaian bunga RDN, pajak, atau biaya administrasi</p>
+        </div>
+        <button type="button" data-onclick="closeModal('modal-cash')" aria-label="Tutup modal saldo kas" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleSaveCash(event)" class="p-5 space-y-4">
-        <p class="text-xs text-slate-500 dark:text-slate-400">
-          Gunakan fitur ini untuk menyesuaikan saldo RDN (misalnya bunga RDN atau biaya administrasi). Untuk setoran/penarikan modal baru, gunakan tab <strong>Mutasi Dana</strong> agar unit penyertaan terhitung.
+        <p class="text-xs text-slate-500 dark:text-[#8E9BA8] leading-relaxed">
+          Gunakan fitur ini untuk menyesuaikan saldo RDN (misalnya bunga RDN atau biaya administrasi). Untuk setoran/penarikan modal baru, gunakan tab <strong class="text-slate-700 dark:text-[#EEF2F6]">Mutasi Dana</strong> agar unit penyertaan terhitung.
         </p>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Kas Saat Ini (Rp)</label>
-          <input type="text" inputmode="numeric" data-num-input="int" id="edit-cash-amount" required class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="edit-cash-amount" class="modal-label">Saldo Kas Saat Ini (Rp)</label>
+          <input type="text" inputmode="numeric" data-num-input="int" id="edit-cash-amount" required class="modal-input font-bold" />
         </div>
-        <div class="flex justify-end gap-2">
-          <button type="button" data-onclick="closeModal('modal-cash')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Update Kas</button>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" data-onclick="closeModal('modal-cash')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Update Kas</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 9: Edit Data Emiten -->
-  <div id="modal-edit-holding" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-edit-holding" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Edit Data Emiten: <span id="edit-holding-title-ticker" class="text-sky-500 font-mono"></span></h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Koreksi kode emiten, nama, jumlah lembar/lot, average price, atau harga pasar</p>
+          <h3 class="modal-title">Edit Data Emiten: <span id="edit-holding-title-ticker" class="text-[#10B981] font-mono"></span></h3>
+          <p class="modal-subtitle">Koreksi kode emiten, nama, jumlah lembar/lot, average price, atau harga pasar</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-edit-holding')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-edit-holding')" aria-label="Tutup modal edit emiten" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -1975,243 +1984,249 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="edit-holding-ticker" required maxlength="6" data-oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="edit-holding-ticker" class="modal-label">Kode Emiten</label>
+            <input type="text" id="edit-holding-ticker" required maxlength="6" data-oninput="this.value = this.value.toUpperCase()" class="modal-input font-mono font-bold uppercase" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Perusahaan / Sektor</label>
-            <input type="text" id="edit-holding-name" placeholder="Nama Emiten Tbk" class="w-full px-3 py-2 rounded-xl text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="edit-holding-name" class="modal-label">Nama Perusahaan / Sektor</label>
+            <input type="text" id="edit-holding-name" placeholder="Nama Emiten Tbk" class="modal-input font-normal" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Lembar</label>
-              <span id="edit-prev-lots" class="text-[10px] font-mono text-sky-500 font-semibold">0,00 lot</span>
+              <label for="edit-holding-shares" class="modal-label mb-0">Jumlah Lembar</label>
+              <span id="edit-prev-lots" class="text-[10px] font-sans tabular-nums text-[#10B981] font-semibold">0,00 lot</span>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-shares" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-shares" required data-oninput="updateEditHoldingPreview()" class="modal-input" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Price (Rp)</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="edit-holding-avg" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="edit-holding-avg" class="modal-label">Avg. Price (Rp)</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="edit-holding-avg" required data-oninput="updateEditHoldingPreview()" class="modal-input" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Price (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-current" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="edit-holding-current" class="modal-label">Current Price (Rp)</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-current" required data-oninput="updateEditHoldingPreview()" class="modal-input" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Alokasi Portofolio (%) <span class="font-normal text-slate-400">(opsional, 0–100%)</span></label>
-          <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="edit-holding-target-weight" placeholder="0" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="edit-holding-target-weight" class="modal-label">Target Alokasi Portofolio (%) <span class="font-normal text-slate-400 dark:text-[#8E9BA8]">(opsional, 0–100%)</span></label>
+          <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="edit-holding-target-weight" placeholder="0" class="modal-input" />
         </div>
 
-        <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-0.5">
-          <input type="checkbox" id="edit-holding-adjust-cash" data-onchange="updateEditHoldingPreview()" class="w-4 h-4 mt-0.5 rounded accent-sky-600" />
+        <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer select-none pt-0.5">
+          <input type="checkbox" id="edit-holding-adjust-cash" data-onchange="updateEditHoldingPreview()" class="w-4 h-4 mt-0.5 rounded accent-[#10B981]" />
           <span>Sesuaikan Saldo Kas RDN otomatis berdasarkan selisih perubahan Cost/Modal (centang jika koreksi ini memengaruhi kas RDN)</span>
         </label>
 
         <!-- Live Edit Preview -->
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+        <div class="modal-preview-box space-y-1.5">
           <div class="flex justify-between">
-            <span class="text-slate-500">Cost / Modal Sebelumnya:</span>
-            <span id="edit-prev-old-cost" class="font-mono text-slate-600 dark:text-slate-300">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Cost / Modal Sebelumnya:</span>
+            <span id="edit-prev-old-cost" class="font-sans tabular-nums text-slate-600 dark:text-[#EEF2F6]">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Cost / Modal Baru:</span>
-            <span id="edit-prev-new-cost" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Cost / Modal Baru:</span>
+            <span id="edit-prev-new-cost" class="font-sans tabular-nums font-bold text-slate-900 dark:text-white">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Selisih Modal:</span>
-            <span id="edit-prev-cost-diff" class="font-mono font-semibold">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Selisih Modal:</span>
+            <span id="edit-prev-cost-diff" class="font-sans tabular-nums font-semibold">Rp 0</span>
           </div>
-          <div class="flex justify-between pt-1 border-t border-slate-200/70 dark:border-slate-800/70">
-            <span class="text-slate-500">Proyeksi Unrealized P/L:</span>
-            <span id="edit-prev-pl" class="font-mono font-bold">Rp 0 (0,00%)</span>
+          <div class="flex justify-between pt-1 border-t border-slate-200/70 dark:border-white/[0.07]">
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Unrealized P/L:</span>
+            <span id="edit-prev-pl" class="font-sans tabular-nums font-bold">Rp 0 (0,00%)</span>
           </div>
           <div class="flex justify-between text-[11px]">
-            <span class="text-slate-500">Proyeksi Saldo Kas RDN:</span>
-            <span id="edit-prev-cash" class="font-mono font-semibold">Rp 0</span>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Saldo Kas RDN:</span>
+            <span id="edit-prev-cash" class="font-sans tabular-nums font-semibold">Rp 0</span>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-edit-holding')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white">Simpan Perubahan</button>
+          <button type="button" data-onclick="closeModal('modal-edit-holding')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan Perubahan</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 6: Manual Journal TP/CL -->
-  <div id="modal-manual-journal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Catat Historis TP / CL Manual</h3>
-        <button type="button" data-onclick="closeModal('modal-manual-journal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+  <div id="modal-manual-journal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Catat Historis TP / CL Manual</h3>
+          <p class="modal-subtitle">Tambahkan riwayat Realized Profit/Loss tanpa mengubah posisi aktif</p>
+        </div>
+        <button type="button" data-onclick="closeModal('modal-manual-journal')" aria-label="Tutup modal jurnal manual" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleAddManualJournal(event)" class="p-5 space-y-4">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal</label>
-            <input type="date" id="mj-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="mj-date" class="modal-label">Tanggal</label>
+            <input type="date" id="mj-date" required data-onclick="try{this.showPicker()}catch(e){}" class="modal-input text-xs" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="mj-ticker" required placeholder="ANTM" data-oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="mj-ticker" class="modal-label">Kode Emiten</label>
+            <input type="text" id="mj-ticker" required placeholder="ANTM" data-oninput="this.value = this.value.toUpperCase()" class="modal-input font-mono font-bold uppercase" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-2.5">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Lembar</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="mj-shares" required placeholder="5.000" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="mj-shares" class="modal-label">Lembar</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="mj-shares" required placeholder="5.000" class="modal-input text-xs" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Cost</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="mj-avg" required placeholder="1.500" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="mj-avg" class="modal-label">Avg. Cost</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="mj-avg" required placeholder="1.500" class="modal-input text-xs" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sell Price</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="mj-sell" required placeholder="1.750" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="mj-sell" class="modal-label">Sell Price</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="mj-sell" required placeholder="1.750" class="modal-input text-xs" />
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
-          <input type="text" id="mj-note" placeholder="Take Profit / Cut Loss" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="mj-note" class="modal-label">Catatan</label>
+          <input type="text" id="mj-note" placeholder="Take Profit / Cut Loss" class="modal-input text-xs font-normal" />
         </div>
-        <div class="flex justify-end gap-2">
-          <button type="button" data-onclick="closeModal('modal-manual-journal')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan ke Jurnal</button>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" data-onclick="closeModal('modal-manual-journal')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan ke Jurnal</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 7: Cloud Status & Deployment Info -->
-  <div id="modal-cloud" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white">Sinkronisasi & Penyimpanan Data</h3>
-        <button type="button" data-onclick="closeModal('modal-cloud')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+  <div id="modal-cloud" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Sinkronisasi &amp; Penyimpanan Data</h3>
+          <p class="modal-subtitle">Status penyimpanan browser lokal &amp; sinkronisasi Cloud</p>
+        </div>
+        <button type="button" data-onclick="closeModal('modal-cloud')" aria-label="Tutup modal status penyimpanan" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <div class="p-5 space-y-4 text-xs">
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="modal-preview-box space-y-2">
           <div class="flex justify-between">
-            <span class="text-slate-500">Status Penyimpanan:</span>
-            <strong id="modal-cloud-status" class="text-emerald-500">Auto-Save Lokal Aktif</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Status Penyimpanan:</span>
+            <strong id="modal-cloud-status" class="text-[#10B981]">Auto-Save Lokal Aktif</strong>
           </div>
           <div>
-            <span class="text-slate-500 block mb-1">ID Sesi / Storage Key:</span>
-            <code id="modal-cloud-userid" class="block p-2 rounded-lg bg-slate-200/70 dark:bg-slate-900 font-mono text-[11px] break-all select-all">portfolio_nav_tracker_favo_v1</code>
+            <span class="text-slate-500 dark:text-[#8E9BA8] block mb-1">ID Sesi / Storage Key:</span>
+            <code id="modal-cloud-userid" class="block p-2 rounded-lg bg-slate-200/70 dark:bg-[#141C24] border border-slate-200/80 dark:border-white/[0.06] font-mono text-[11px] text-slate-800 dark:text-[#EEF2F6] break-all select-all">portfolio_nav_tracker_favo_v1</code>
           </div>
         </div>
-        <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
-          Data portofolio tersimpan otomatis secara lokal di browser Anda (dan ke Cloud jika konfigurasi Firebase tersedia). Gunakan tombol <strong>Export JSON</strong> di header untuk mencadangkan atau memindahkan data antar perangkat.
+        <p class="text-slate-500 dark:text-[#8E9BA8] leading-relaxed">
+          Data portofolio tersimpan otomatis secara lokal di browser Anda (dan ke Cloud jika konfigurasi Firebase tersedia). Gunakan tombol <strong class="text-slate-700 dark:text-[#EEF2F6]">Export JSON</strong> di header untuk mencadangkan atau memindahkan data antar perangkat.
         </p>
         <div class="flex justify-end">
-          <button type="button" data-onclick="closeModal('modal-cloud')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 text-white">Tutup</button>
+          <button type="button" data-onclick="closeModal('modal-cloud')" class="modal-btn-secondary">Tutup</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Modal 8: Custom Confirmation Dialog (Replaces browser confirm()) -->
-  <div id="modal-confirm" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-5 space-y-4">
+  <div id="modal-confirm" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
+    <div class="modal-shell max-w-sm p-5 space-y-4">
       <div class="flex items-start gap-3">
         <div class="p-2 rounded-xl bg-rose-500/10 text-rose-500 shrink-0">
           <i data-lucide="alert-triangle" class="w-5 h-5"></i>
         </div>
         <div>
-          <h4 id="confirm-title" class="text-sm font-bold text-slate-900 dark:text-white">Konfirmasi Tindakan</h4>
-          <p id="confirm-message" class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Apakah Anda yakin?</p>
+          <h4 id="confirm-title" class="text-sm font-bold text-slate-900 dark:text-[#EEF2F6]">Konfirmasi Tindakan</h4>
+          <p id="confirm-message" class="text-xs text-slate-500 dark:text-[#8E9BA8] mt-1 leading-relaxed">Apakah Anda yakin?</p>
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button type="button" data-onclick="closeModal('modal-confirm')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-        <button type="button" id="confirm-ok-btn" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white">Ya, Lanjutkan</button>
+        <button type="button" data-onclick="closeModal('modal-confirm')" class="modal-btn-secondary">Batal</button>
+        <button type="button" id="confirm-ok-btn" class="modal-btn-danger">Ya, Lanjutkan</button>
       </div>
     </div>
   </div>
 
   <!-- Modal 10: Tutup Buku / Ganti Tahun (Multi-Year Rollover) -->
-  <div id="modal-year-rollover" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-year-rollover" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-md">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Tutup Buku & Mulai Tahun Baru</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Kunci kinerja akhir tahun & reset benchmark YTD ke 0,00%</p>
+          <h3 class="modal-title">Tutup Buku &amp; Mulai Tahun Baru</h3>
+          <p class="modal-subtitle">Kunci kinerja akhir tahun &amp; reset benchmark YTD ke 0,00%</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-year-rollover')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-year-rollover')" aria-label="Tutup modal tutup buku" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleYearRollover(event)" class="p-5 space-y-4 text-xs">
-        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 space-y-1">
+        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 space-y-1 leading-relaxed">
           <p><strong>Cara Kerja Pergantian Tahun:</strong></p>
           <p>1. Kinerja YTD tahun lama dikunci ke grafik <strong>Performa Tahunan</strong>.</p>
-          <p>2. <strong>Harga Unit (NAV)</strong> & <strong>IHSG/LQ45</strong> saat ini dijadikan titik awal (0,00%) tahun baru.</p>
+          <p>2. <strong>Harga Unit (NAV)</strong> &amp; <strong>IHSG/LQ45</strong> saat ini dijadikan titik awal (0,00%) tahun baru.</p>
           <p>3. Jumlah Unit Penyertaan, saham, dan saldo kas berlanjut tanpa putus.</p>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Baru Tujuan</label>
-          <input type="number" id="rollover-new-year" min="2024" max="2099" required class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <label for="rollover-new-year" class="modal-label">Tahun Baru Tujuan</label>
+          <input type="number" id="rollover-new-year" min="2024" max="2099" required class="modal-input font-bold" />
         </div>
 
-        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5">
+        <div class="modal-preview-box space-y-1.5">
           <div class="flex justify-between">
-            <span class="text-slate-500">NAV Awal Tahun Baru:</span>
-            <strong id="rollover-prev-nav" class="font-mono">1.000,0000</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">NAV Awal Tahun Baru:</span>
+            <strong id="rollover-prev-nav" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">1.000,0000</strong>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">IHSG / LQ45 Awal Tahun Baru:</span>
-            <strong id="rollover-prev-idx" class="font-mono">0 / 0</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">IHSG / LQ45 Awal Tahun Baru:</span>
+            <strong id="rollover-prev-idx" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">0 / 0</strong>
           </div>
         </div>
 
-        <div class="flex justify-end gap-2">
-          <button type="button" data-onclick="closeModal('modal-year-rollover')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950">Eksekusi Tutup Buku</button>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" data-onclick="closeModal('modal-year-rollover')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Eksekusi Tutup Buku</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 11: Setup / Kalibrasi Awal Unit Penyertaan (NAV Baseline) -->
-  <div id="modal-baseline" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-baseline" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Kalibrasi Parameter Awal Unit (NAV)</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Sesuaikan patokan Modal Awal & Harga Unit Awal dengan portofolio pribadi Anda</p>
+          <h3 class="modal-title">Kalibrasi Parameter Awal Unit (NAV)</h3>
+          <p class="modal-subtitle">Sesuaikan patokan Modal Awal &amp; Harga Unit Awal dengan portofolio pribadi Anda</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-baseline')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-baseline')" aria-label="Tutup modal kalibrasi NAV" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <form data-onsubmit="handleSaveBaseline(event)" class="p-5 space-y-4 text-xs">
-        <div class="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/25 space-y-2.5">
-          <div class="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
-            <i data-lucide="sparkles" class="w-4 h-4"></i>
+        <div class="p-3.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/25 space-y-2.5">
+          <div class="font-bold text-slate-900 dark:text-[#EEF2F6] flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#10B981]"></i>
             <span>Kalibrasi Otomatis 1-Klik (Direkomendasikan)</span>
           </div>
-          <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-            Gunakan total <strong>Cost Saham + Saldo Kas</strong> Anda saat ini sebagai patokan awal dengan <strong>Harga Unit Awal = 1.000,0000</strong> agar % Kinerja Portofolio langsung mencerminkan profit/loss riil Anda.
+          <p class="text-[11px] text-slate-600 dark:text-[#8E9BA8] leading-relaxed">
+            Gunakan total <strong class="text-slate-800 dark:text-[#EEF2F6]">Cost Saham + Saldo Kas</strong> Anda saat ini sebagai patokan awal dengan <strong class="text-slate-800 dark:text-[#EEF2F6]">Harga Unit Awal = 1.000,0000</strong> agar % Kinerja Portofolio langsung mencerminkan profit/loss riil Anda.
           </p>
-          <label class="flex items-center gap-2 text-[11px] font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
-            <input type="checkbox" id="base-clear-template-mutations" checked class="w-4 h-4 rounded accent-sky-600" />
+          <label class="flex items-center gap-2 text-[11px] font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer select-none">
+            <input type="checkbox" id="base-clear-template-mutations" checked class="w-4 h-4 rounded accent-[#10B981]" />
             <span>Hapus riwayat mutasi bawaan template (Jan–Okt 2026)</span>
           </label>
           <button
             type="button"
             data-onclick="applyCurrentPortfolioAsBaseline()"
-            class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-colors"
+            class="w-full modal-btn-primary py-2"
           >
             Kalibrasi Sesuai Portofolio Saya Saat Ini
           </button>
@@ -2219,62 +2234,62 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Modal Awal (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="base-init-capital" required data-oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="base-init-capital" class="modal-label">Modal Awal (Rp)</label>
+            <input type="text" inputmode="numeric" data-num-input="int" id="base-init-capital" required data-oninput="onBaselineCapitalOrNavInput()" class="modal-input" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Unit Awal</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-nav" required data-oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="base-init-nav" class="modal-label">Harga Unit Awal</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-nav" required data-oninput="onBaselineCapitalOrNavInput()" class="modal-input" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah Unit Awal</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-units" required data-oninput="updateBaselinePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <label for="base-init-units" class="modal-label">Jumlah Unit Awal</label>
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-units" required data-oninput="updateBaselinePreview()" class="modal-input" />
           </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5">
+        <div class="modal-preview-box space-y-1.5">
           <div class="flex justify-between">
-            <span class="text-slate-500">Total Valuasi Saat Ini:</span>
-            <strong id="base-prev-val" class="font-mono text-slate-900 dark:text-white">Rp 0</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Total Valuasi Saat Ini:</span>
+            <strong id="base-prev-val" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">Rp 0</strong>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Proyeksi Total Unit Penyertaan:</span>
-            <strong id="base-prev-units" class="font-mono text-slate-900 dark:text-white">0,0000</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Total Unit Penyertaan:</span>
+            <strong id="base-prev-units" class="font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">0,0000</strong>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Proyeksi Harga Unit (NAV) Baru:</span>
-            <strong id="base-prev-nav" class="font-mono text-sky-600 dark:text-sky-400">1.000,0000</strong>
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Harga Unit (NAV) Baru:</span>
+            <strong id="base-prev-nav" class="font-sans tabular-nums text-[#10B981]">1.000,0000</strong>
           </div>
-          <div class="flex justify-between pt-1 border-t border-slate-200/70 dark:border-slate-800/70">
-            <span class="text-slate-500">Proyeksi Kinerja Portofolio Baru:</span>
-            <strong id="base-prev-return" class="font-mono font-bold">0,00%</strong>
+          <div class="flex justify-between pt-1 border-t border-slate-200/70 dark:border-white/[0.07]">
+            <span class="text-slate-500 dark:text-[#8E9BA8]">Proyeksi Kinerja Portofolio Baru:</span>
+            <strong id="base-prev-return" class="font-sans tabular-nums font-bold">0,00%</strong>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" data-onclick="closeModal('modal-baseline')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan Kalibrasi</button>
+          <button type="button" data-onclick="closeModal('modal-baseline')" class="modal-btn-secondary">Batal</button>
+          <button type="submit" class="modal-btn-primary">Simpan Kalibrasi</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal 12: Backup Terenkripsi (AES-GCM) & Import / Pulihkan Data JSON -->
-  <div id="modal-import" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+  <div id="modal-import" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="modal-shell max-w-lg">
+      <div class="modal-header">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Backup Terenkripsi &amp; Pulihkan Data JSON</h3>
-          <p id="backup-status-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400">Export backup terenkripsi AES-256-GCM atau pulihkan dari file .json</p>
+          <h3 class="modal-title">Backup Terenkripsi &amp; Pulihkan Data JSON</h3>
+          <p id="backup-status-subtitle" class="modal-subtitle">Export backup terenkripsi AES-256-GCM atau pulihkan dari file .json</p>
         </div>
-        <button type="button" data-onclick="closeModal('modal-import')" aria-label="Tutup modal backup dan import" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-import')" aria-label="Tutup modal backup dan import" class="modal-close-btn">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="p-5 space-y-4 text-xs">
         <!-- Password-Encrypted Export & Decryption Key Box (Web Crypto AES-256-GCM) -->
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] space-y-2.5">
+        <div class="modal-preview-box space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <span class="font-bold text-slate-800 dark:text-[#EEF2F6] flex items-center gap-1.5">
               <i data-lucide="lock" class="w-3.5 h-3.5 text-[#10B981]"></i>
@@ -2288,12 +2303,12 @@
               id="backup-crypto-password"
               placeholder="Password enkripsi / dekripsi (min. 4 karakter)..."
               autocomplete="off"
-              class="flex-1 px-3 py-2 rounded-lg text-xs bg-white dark:bg-[#141C24] border border-slate-200 dark:border-white/[0.1] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+              class="flex-1 modal-input text-xs font-normal"
             />
             <button
               type="button"
               data-onclick="exportEncryptedJSON()"
-              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors shrink-0"
+              class="modal-btn-primary shrink-0"
             >
               <i data-lucide="shield" class="w-3.5 h-3.5"></i>
               <span>Export Terenkripsi</span>
@@ -2307,14 +2322,14 @@
         <!-- File Picker & Dropzone -->
         <div
           id="import-dropzone"
-          class="rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950/60 p-5 text-center space-y-2.5 transition-colors"
+          class="modal-preview-box border-2 border-dashed p-5 text-center space-y-2.5 transition-colors"
         >
-          <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center mx-auto">
+          <div class="w-10 h-10 rounded-xl bg-[#10B981]/15 text-[#10B981] flex items-center justify-center mx-auto">
             <i data-lucide="file-json" class="w-5 h-5"></i>
           </div>
           <div>
-            <p class="font-semibold text-slate-800 dark:text-slate-200">Pilih File Backup (.json) atau Tarik ke Sini</p>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Mendukung file hasil Export JSON maupun backup versi sebelumnya</p>
+            <p class="font-semibold text-slate-800 dark:text-[#EEF2F6]">Pilih File Backup (.json) atau Tarik ke Sini</p>
+            <p class="text-[11px] text-slate-500 dark:text-[#8E9BA8] mt-0.5">Mendukung file hasil Export JSON maupun backup versi sebelumnya</p>
           </div>
           <div>
             <input
@@ -2327,9 +2342,9 @@
             <button
               type="button"
               data-onclick="triggerImportFilePicker()"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-colors"
+              class="modal-btn-secondary"
             >
-              <i data-lucide="folder-open" class="w-4 h-4"></i>
+              <i data-lucide="folder-open" class="w-4 h-4 text-[#10B981]"></i>
               <span>Pilih File dari Perangkat</span>
             </button>
           </div>
@@ -2339,15 +2354,15 @@
         <div id="import-feedback-box" class="hidden p-3 rounded-xl border text-xs leading-relaxed"></div>
 
         <!-- Direct Paste JSON Fallback -->
-        <form data-onsubmit="handleImportPasteSubmit(event)" class="space-y-2.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+        <form data-onsubmit="handleImportPasteSubmit(event)" class="space-y-2.5 pt-2 border-t border-slate-200/80 dark:border-white/[0.08]">
           <div class="flex items-center justify-between">
-            <label for="import-json-textarea" class="font-semibold text-slate-700 dark:text-slate-300">
+            <label for="import-json-textarea" class="modal-label mb-0">
               Atau Tempel (Paste) Isi JSON di Sini:
             </label>
             <button
               type="button"
               data-onclick="copyCurrentJSONToClipboard()"
-              class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+              class="text-[11px] font-semibold text-[#10B981] hover:underline"
             >
               Salin JSON Saat Ini
             </button>
@@ -2356,11 +2371,11 @@
             id="import-json-textarea"
             rows="4"
             placeholder='{"meta": {...}, "cash": 0, "holdings": [...]}'
-            class="w-full p-3 rounded-xl font-mono text-[11px] bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            class="modal-input font-mono text-[11px] font-normal"
           ></textarea>
           <div class="flex justify-end gap-2 pt-1">
-            <button type="button" data-onclick="closeModal('modal-import')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
-            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Pulihkan dari Teks JSON</button>
+            <button type="button" data-onclick="closeModal('modal-import')" class="modal-btn-secondary">Batal</button>
+            <button type="submit" class="modal-btn-primary">Pulihkan dari Teks JSON</button>
           </div>
         </form>
       </div>
