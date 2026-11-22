@@ -465,7 +465,7 @@ export function createDividendsUI(ctx) {
               <td class="py-2.5 px-3 text-right font-sans tabular-nums font-bold text-[#10B981] whitespace-nowrap">${formatIDR(d.amount)}</td>
               <td class="py-2.5 px-3 text-slate-500 dark:text-[#8E9BA8]">${escapeHTML(d.note || "")}</td>
               <td class="py-2.5 px-3 text-center">
-                <button type="button" onclick="deleteDividend('${escapeHTML(d.id)}')" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus">
+                <button type="button" onclick="deleteDividend('${escapeHTML(d.id)}')" aria-label="Hapus catatan dividen ${escapeHTML(d.ticker)}" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </td>

@@ -718,7 +718,11 @@ export function createPortfolioUI(ctx) {
 
     document.getElementById("kpi-total-valuation").textContent = formatIDR(m.totalValuation);
     const cashPct = m.totalValuation > 0 ? (m.cashBalance / m.totalValuation) * 100 : 0;
-    document.getElementById("kpi-total-valuation-sub").innerHTML = `<span>Saham: ${formatCompactIDR(m.stockValTotal)}</span><span>Kas: ${formatNum(cashPct, 2)}%</span>`;
+    const stockPct = m.totalValuation > 0 ? (m.stockValTotal / m.totalValuation) * 100 : 0;
+    document.getElementById("kpi-total-valuation-sub").innerHTML = `
+      <span class="px-2 py-0.5 rounded-md bg-[#10B981]/10 border border-[#10B981]/25 text-emerald-700 dark:text-[#10B981] font-semibold">Invested Saham: ${formatIDR(m.stockValTotal)} (${formatNum(stockPct, 2)}%)</span>
+      <span class="px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/25 text-sky-700 dark:text-sky-400 font-semibold">Uninvested Cash: ${formatIDR(m.cashBalance)} (${formatNum(cashPct, 2)}%)</span>
+    `;
 
     document.getElementById("kpi-nav-unit").textContent = formatNum(m.currentNav, 4);
     const navDiff = m.currentNav - m.initNav;
@@ -738,7 +742,7 @@ export function createPortfolioUI(ctx) {
     `;
 
     document.getElementById("kpi-cash-balance").textContent = formatIDR(m.cashBalance);
-    document.getElementById("kpi-cash-sub").innerHTML = `Porsi Kas: ${formatNum(cashPct, 2)}% &bull; Dividen: <span class="tabular-nums text-[#10B981]">${formatCompactIDR(m.totalDividendsReceived)}</span>`;
+    document.getElementById("kpi-cash-sub").innerHTML = `Buying Power: <strong class="text-slate-700 dark:text-[#EEF2F6]">${formatNum(cashPct, 2)}%</strong> &bull; Dividen: <span class="tabular-nums text-[#10B981]">${formatCompactIDR(m.totalDividendsReceived)}</span>`;
 
     document.getElementById("table-total-paidin").textContent = formatIDR(m.totalPaidInCapital);
 
@@ -774,8 +778,11 @@ export function createPortfolioUI(ctx) {
           <div class="flex items-center gap-2.5">
             <span class="w-9 h-9 rounded-lg bg-[#10B981]/10 border border-[#10B981]/25 text-[#10B981] font-sans font-bold text-xs flex items-center justify-center shrink-0">Kas</span>
             <div>
-              <div class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm">Kas / RDN</div>
-              <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8]">Rekening Dana Nasabah</div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm">Uninvested Cash (RDN)</span>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400">BUYING POWER</span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8]">Dana Siap Beli Saham &bull; Rekening Dana Nasabah</div>
             </div>
           </div>
         </td>
@@ -840,6 +847,14 @@ export function createPortfolioUI(ctx) {
       `;
     }
 
+    const maxAbsPL = Math.max(
+      1,
+      ...displayedHoldings.map((item) => {
+        const s = Number(item.shares) || 0;
+        return Math.abs(s * (Number(item.currentPrice) || 0) - s * (Number(item.avgPrice) || 0));
+      })
+    );
+
     for (const h of displayedHoldings) {
       const shares = Number(h.shares) || 0;
       const avg = Number(h.avgPrice) || 0;
@@ -848,6 +863,7 @@ export function createPortfolioUI(ctx) {
       const val = shares * cur;
       const pl = val - cost;
       const plPct = cost > 0 ? (pl / cost) * 100 : 0;
+      const plBarWidth = Math.max(4, Math.min(100, Math.round((Math.abs(pl) / maxAbsPL) * 100)));
       const fundAlloc = m.totalCost > 0 ? (cost / m.totalCost) * 100 : 0;
       const valWeight = m.totalValuation > 0 ? (val / m.totalValuation) * 100 : 0;
       const valEffect = valWeight - fundAlloc;
@@ -936,9 +952,14 @@ export function createPortfolioUI(ctx) {
           </td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums">
             <div class="font-bold ${colorClass(pl)}">${formatSignedIDR(pl)}</div>
-            <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${pl >= 0 ? "bg-[#10B981]/15 text-emerald-600 dark:text-[#10B981]" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"}">
-              ${formatPct(plPct)}
-            </span>
+            <div class="flex items-center justify-end gap-1.5 mt-0.5">
+              <div class="w-12 h-1.5 rounded-full bg-slate-200/80 dark:bg-[#0C1117] overflow-hidden flex ${pl >= 0 ? "justify-start" : "justify-end"}" title="Proporsi P/L terhadap posisi terbesar">
+                <div class="h-full rounded-full ${pl >= 0 ? "bg-[#10B981]" : "bg-rose-500"}" style="width:${plBarWidth}%"></div>
+              </div>
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${pl >= 0 ? "bg-[#10B981]/15 text-emerald-600 dark:text-[#10B981]" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"}">
+                ${formatPct(plPct)}
+              </span>
+            </div>
           </td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">
             ${formatNum(fundAlloc, 2)}%
@@ -949,12 +970,12 @@ export function createPortfolioUI(ctx) {
           </td>
           <td class="py-3.5 px-4 text-center">
             <div class="inline-flex items-center gap-1">
-              <button type="button" onclick="openBuyModal('${safeId}')" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981]" title="Tambah / Average">Beli</button>
-              <button type="button" onclick="openSellModal('${safeId}')" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400" title="Jual / TP / CL">Jual</button>
-              <button type="button" onclick="openEditHoldingModal('${safeId}')" class="p-1.5 rounded-md bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-600 dark:text-[#8E9BA8] hover:text-[#EEF2F6]" title="Edit Data Emiten">
+              <button type="button" onclick="openBuyModal('${safeId}')" aria-label="Beli atau tambah ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981]" title="Tambah / Average">Beli</button>
+              <button type="button" onclick="openSellModal('${safeId}')" aria-label="Jual ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400" title="Jual / TP / CL">Jual</button>
+              <button type="button" onclick="openEditHoldingModal('${safeId}')" aria-label="Edit data emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-600 dark:text-[#8E9BA8] hover:text-[#EEF2F6]" title="Edit Data Emiten">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
               </button>
-              <button type="button" onclick="deleteHolding('${safeId}')" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus Emiten">
+              <button type="button" onclick="deleteHolding('${safeId}')" aria-label="Hapus emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus Emiten">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
@@ -966,9 +987,22 @@ export function createPortfolioUI(ctx) {
 
     const tfoot = document.getElementById("portfolio-table-foot");
     if (tfoot) {
+      const stockPL = m.stockValTotal - m.stockCostTotal;
+      const stockPLPct = m.stockCostTotal > 0 ? (stockPL / m.stockCostTotal) * 100 : 0;
+      const stockCostAlloc = m.totalCost > 0 ? (m.stockCostTotal / m.totalCost) * 100 : 0;
+      const stockValWeight = m.totalValuation > 0 ? (m.stockValTotal / m.totalValuation) * 100 : 0;
       tfoot.innerHTML = `
+        <tr class="border-b border-slate-200/70 dark:border-white/[0.06] text-slate-600 dark:text-[#8E9BA8] font-semibold">
+          <td colspan="4" class="py-2.5 px-4">Subtotal Aset Saham (Invested Equity) &bull; <span class="text-[#10B981]">Uninvested Cash: ${formatIDR(m.cashBalance)} (${formatNum(cashPct, 2)}%)</span></td>
+          <td class="py-2.5 px-3 text-right font-sans tabular-nums">${formatIDR(m.stockCostTotal)}</td>
+          <td class="py-2.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#EEF2F6]">${formatIDR(m.stockValTotal)}</td>
+          <td class="py-2.5 px-3 text-right font-sans tabular-nums ${colorClass(stockPL)}">${formatSignedIDR(stockPL)} (${formatPct(stockPLPct)})</td>
+          <td class="py-2.5 px-3 text-right font-sans tabular-nums">${formatNum(stockCostAlloc, 2)}%</td>
+          <td class="py-2.5 px-3 text-right font-sans tabular-nums">${formatNum(stockValWeight, 2)}%</td>
+          <td></td>
+        </tr>
         <tr>
-          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Saham + Kas)</td>
+          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Invested Saham + Uninvested Cash)</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#8E9BA8]">${formatIDR(m.totalCost)}</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalValuation)}</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums ${colorClass(totalPL)}">${formatSignedIDR(totalPL)} (${formatPct(totalPLPct)})</td>
@@ -1013,9 +1047,16 @@ export function createPortfolioUI(ctx) {
       return;
     }
 
+    const maxWeightScale = Math.max(
+      25,
+      ...plan.items.map((i) => Math.max(Number(i.actualWeight) || 0, Number(i.targetWeight) || 0))
+    );
+
     tbody.innerHTML = plan.items
       .map((item) => {
         const safeId = escapeHTML(item.id);
+        const actualBarPct = Math.min(100, Math.round(((Number(item.actualWeight) || 0) / maxWeightScale) * 100));
+        const targetBarPct = Math.min(100, Math.round(((Number(item.targetWeight) || 0) / maxWeightScale) * 100));
         const actionBadge =
           item.action === "BUY"
             ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-sans tabular-nums font-bold bg-[#10B981]/15 text-emerald-700 dark:text-[#10B981] border border-[#10B981]/25">Beli +${item.suggestedLots.toLocaleString("id-ID")} Lot</span>`
@@ -1036,8 +1077,16 @@ export function createPortfolioUI(ctx) {
               <div class="font-bold text-slate-900 dark:text-[#EEF2F6]">${escapeHTML(item.ticker)}</div>
               <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8] truncate max-w-[160px]">${escapeHTML(item.name)}</div>
             </td>
-            <td class="py-2.5 px-3 text-right font-sans tabular-nums font-semibold text-slate-800 dark:text-[#EEF2F6]">
-              ${formatNum(item.actualWeight, 2)}%
+            <td class="py-2.5 px-3 text-right font-sans tabular-nums">
+              <div class="font-semibold text-slate-800 dark:text-[#EEF2F6]">${formatNum(item.actualWeight, 2)}% <span class="text-[10px] font-normal text-slate-400">/ ${formatNum(item.targetWeight, 1)}%</span></div>
+              <div class="w-28 ml-auto mt-1 space-y-0.5" title="Hijau: Bobot Aktual (${formatNum(item.actualWeight, 2)}%) • Biru: Target (${formatNum(item.targetWeight, 2)}%)">
+                <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-[#0C1117] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#10B981]" style="width:${actualBarPct}%"></div>
+                </div>
+                <div class="h-1 w-full rounded-full bg-slate-200/80 dark:bg-[#0C1117] overflow-hidden">
+                  <div class="h-full rounded-full bg-sky-400" style="width:${targetBarPct}%"></div>
+                </div>
+              </div>
             </td>
             <td class="py-2.5 px-3 text-right">
               <div class="inline-flex items-center gap-1 justify-end">

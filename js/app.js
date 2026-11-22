@@ -560,12 +560,63 @@ window.renderAll = function ({ force = true } = {}) {
 };
 
 function setupModalAccessibility() {
+  const TAB_SHORTCUT_MAP = {
+    "1": "portfolio",
+    "2": "dividends",
+    "3": "mutations",
+    "4": "analytics",
+    "5": "journal",
+    "6": "calculator"
+  };
+
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    const openModals = Array.from(document.querySelectorAll("div[id^='modal-']:not(.hidden)"));
-    const topModal = openModals[openModals.length - 1];
-    if (topModal) {
-      window.closeModal(topModal.id);
+    if (e.key === "Escape") {
+      const openModals = Array.from(document.querySelectorAll("div[id^='modal-']:not(.hidden)"));
+      const topModal = openModals[openModals.length - 1];
+      if (topModal) {
+        window.closeModal(topModal.id);
+        return;
+      }
+      const searchEl = document.getElementById("portfolio-search-input");
+      if (searchEl && (document.activeElement === searchEl || searchEl.value)) {
+        searchEl.value = "";
+        searchEl.blur();
+        if (typeof window.onPortfolioSearchInput === "function") {
+          window.onPortfolioSearchInput("");
+        }
+      }
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const target = e.target;
+    const isEditable =
+      target instanceof HTMLElement &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.isContentEditable);
+    if (isEditable) return;
+
+    const hasOpenModal = document.querySelector("div[id^='modal-']:not(.hidden)");
+    if (hasOpenModal) return;
+
+    if (e.key === "/") {
+      e.preventDefault();
+      if (activeTab !== "portfolio") {
+        window.switchTab("portfolio");
+      }
+      const searchEl = document.getElementById("portfolio-search-input");
+      if (searchEl) {
+        searchEl.focus();
+        searchEl.select();
+      }
+    } else if (TAB_SHORTCUT_MAP[e.key]) {
+      e.preventDefault();
+      window.switchTab(TAB_SHORTCUT_MAP[e.key]);
+    } else if (e.key === "r" || e.key === "R") {
+      e.preventDefault();
+      window.syncMarketData({ force: true });
     }
   });
 

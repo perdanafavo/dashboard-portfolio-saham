@@ -128,60 +128,72 @@
           type="button"
           id="tab-btn-portfolio"
           onclick="switchTab('portfolio')"
+          title="Tab 1: Portofolio & Kinerja (Tekan 1)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
         >
           <i data-lucide="briefcase" class="w-4 h-4"></i>
           <span>Portofolio & Kinerja</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/20 text-current opacity-80">1</kbd>
         </button>
 
         <button
           type="button"
           id="tab-btn-dividends"
           onclick="switchTab('dividends')"
+          title="Tab 2: Dividen & Proyeksi (Tekan 2)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
           <i data-lucide="coins" class="w-4 h-4"></i>
           <span>Dividen & Proyeksi</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/70 dark:bg-white/[0.06] text-current opacity-75">2</kbd>
         </button>
 
         <button
           type="button"
           id="tab-btn-mutations"
           onclick="switchTab('mutations')"
+          title="Tab 3: Mutasi Dana (Tekan 3)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
           <span>Mutasi Dana</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/70 dark:bg-white/[0.06] text-current opacity-75">3</kbd>
         </button>
 
         <button
           type="button"
           id="tab-btn-analytics"
           onclick="switchTab('analytics')"
+          title="Tab 4: Grafik & Historis (Tekan 4)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
           <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
           <span>Grafik & Historis</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/70 dark:bg-white/[0.06] text-current opacity-75">4</kbd>
         </button>
 
         <button
           type="button"
           id="tab-btn-journal"
           onclick="switchTab('journal')"
+          title="Tab 5: Jurnal TP / CL (Tekan 5)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
           <i data-lucide="book-open-check" class="w-4 h-4"></i>
           <span>Jurnal TP / CL</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/70 dark:bg-white/[0.06] text-current opacity-75">5</kbd>
         </button>
 
         <button
           type="button"
           id="tab-btn-calculator"
           onclick="switchTab('calculator')"
+          title="Tab 6: Kalkulator Average (Tekan 6)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
           <i data-lucide="calculator" class="w-4 h-4"></i>
           <span>Kalkulator Average</span>
+          <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/70 dark:bg-white/[0.06] text-current opacity-75">6</kbd>
         </button>
       </nav>
     </div>
@@ -262,11 +274,12 @@
               </div>
             </div>
 
-            <!-- Metric: Saldo Kas RDN -->
+            <!-- Metric: Uninvested Cash / Buying Power (Kas RDN) -->
             <div class="p-5 flex flex-col justify-between text-left">
               <div>
-                <div class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">
-                  Saldo Kas (RDN)
+                <div class="flex items-center justify-between gap-2 text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">
+                  <span>Uninvested Cash (Buying Power)</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/25">RDN Siap Beli</span>
                 </div>
                 <div id="kpi-cash-balance" class="text-lg sm:text-xl font-bold font-sans tabular-nums tracking-tight text-slate-900 dark:text-[#EEF2F6] mt-2">
                   Rp 0
@@ -298,10 +311,11 @@
               onclick="syncMarketData({ force: true })"
               id="btn-sync-market"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
-              title="Ambil harga penutupan saham (.JK), IHSG, dan LQ45 terbaru secara otomatis"
+              title="Ambil harga penutupan saham (.JK), IHSG, dan LQ45 terbaru secara otomatis (Shortcut: R)"
             >
               <i id="icon-sync-market" data-lucide="cloud-download" class="w-4 h-4 text-[#10B981]"></i>
               <span id="label-sync-market">Sync Harga & IHSG</span>
+              <kbd class="hidden sm:inline-block px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200/80 dark:bg-white/[0.06] text-slate-500 dark:text-[#8E9BA8]">R</kbd>
             </button>
 
             <button
@@ -364,8 +378,8 @@
                 type="search"
                 id="portfolio-search-input"
                 oninput="onPortfolioSearchInput(this.value)"
-                placeholder="Cari ticker / emiten..."
-                aria-label="Cari emiten di tabel portofolio"
+                placeholder="Cari ticker / emiten... ( / )"
+                aria-label="Cari emiten di tabel portofolio (Tekan / untuk fokus)"
                 class="w-44 sm:w-52 pl-8 pr-2.5 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] text-slate-800 dark:text-[#EEF2F6] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#10B981]"
               />
             </div>
@@ -378,10 +392,10 @@
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-4">
                   <button type="button" onclick="togglePortfolioSort('ticker')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
                     <span>Emiten</span><span id="sort-ind-ticker" class="text-[10px] opacity-60">↕</span>
@@ -440,12 +454,12 @@
             </button>
           </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-2.5 px-4">Emiten</th>
-                <th class="py-2.5 px-3 text-right">Bobot Aktual</th>
+                <th class="py-2.5 px-3 text-right">Bobot Aktual vs Target</th>
                 <th class="py-2.5 px-3 text-right">Target (%)</th>
                 <th class="py-2.5 px-3 text-right">Drift (%)</th>
                 <th class="py-2.5 px-3 text-right">Selisih Nilai (Rp)</th>
@@ -675,10 +689,10 @@
             <p class="text-xs text-slate-500 dark:text-[#8E9BA8] mt-0.5">Perbandingan Yield on Cost (basis modal beli) vs Div. Yield (basis harga pasar saat ini)</p>
           </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-4">Emiten</th>
                 <th class="py-3 px-3 text-right">Lembar</th>
                 <th class="py-3 px-3 text-right">Est. DPS / Thn</th>
@@ -785,10 +799,10 @@
             </div>
             <span id="div-actual-count-badge" class="px-2.5 py-1 rounded-md text-xs font-sans tabular-nums font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-600 dark:text-[#8E9BA8] border border-slate-200/70 dark:border-white/[0.07]">0 catatan</span>
           </div>
-          <div class="overflow-x-auto max-h-72">
+          <div class="overflow-x-auto max-h-72 overflow-y-auto">
             <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+              <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+                <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                   <th class="py-2.5 px-4">Tanggal</th>
                   <th class="py-2.5 px-3">Emiten</th>
                   <th class="py-2.5 px-3 text-right">Nominal Bersih</th>
@@ -1001,10 +1015,10 @@
             Total Modal Disetor: <strong class="text-slate-900 dark:text-[#EEF2F6]">Rp 0</strong>
           </span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-4">Bulan / Tanggal</th>
                 <th class="py-3 px-3">Keterangan</th>
                 <th class="py-3 px-3">Jenis</th>
@@ -1208,10 +1222,10 @@
           </div>
           <span class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8]">Format: Kumulatif YTD (%)</span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-5">Bulan</th>
                 <th class="py-3 px-4 text-right">Portofolio (%)</th>
                 <th class="py-3 px-4 text-right">IHSG (%)</th>
@@ -1234,10 +1248,10 @@
           </div>
           <span class="text-xs font-sans tabular-nums text-slate-500 dark:text-[#8E9BA8]">Klik nominal Top Up untuk koreksi</span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-5">Tahun</th>
                 <th class="py-3 px-4 text-right">Portofolio (%)</th>
                 <th class="py-3 px-4 text-right">IHSG (%)</th>
@@ -1329,10 +1343,10 @@
           </button>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-[#0C1117]/70 text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
+              <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-4">Tanggal</th>
                 <th class="py-3 px-3">Emiten</th>
                 <th class="py-3 px-3 text-right">Lembar / Lot</th>
