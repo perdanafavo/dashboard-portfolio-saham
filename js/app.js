@@ -129,7 +129,7 @@ function updateMarketSyncStatusUI() {
   const jkt = getJakartaTimeInfo();
   const clockEl = document.getElementById("market-wib-clock");
   if (clockEl) {
-    clockEl.textContent = `${jkt.dateStr} ${jkt.timeStr} WIB (${jkt.isAfterMarketClose ? "Market Closed" : "Bursa Aktif"})`;
+    clockEl.textContent = `${jkt.timeStr} WIB • ${jkt.isAfterMarketClose ? "Bursa Tutup" : "Bursa Buka"}`;
   }
 
   const toggleEl = document.getElementById("toggle-auto-market-sync");
@@ -162,14 +162,18 @@ function updateMarketSyncStatusUI() {
       minute: "2-digit",
       hour12: false
     }).format(dt);
-    const cleanSource = String(state.marketSync.lastSyncSource || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
-    statusText.textContent = `Terakhir Sync: ${timeFmt} WIB${cleanSource ? ` • ${cleanSource}` : ""}`;
+    const cleanSource = String(state.marketSync.lastSyncSource || "")
+      .replace(/\s*\([^)]*\)\s*$/, "")
+      .replace(/\bTradingView IDX\b/g, "TradingView")
+      .replace(/\s*•\s*(\d+\/\d+)\s*(?:live|emiten)\b/i, " ($1)")
+      .trim();
+    statusText.textContent = `Diperbarui ${timeFmt} WIB${cleanSource ? ` • ${cleanSource}` : ""}`;
   } else {
     if (badgeEl) {
       badgeEl.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
     }
     if (dotEl) dotEl.className = "w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0";
-    statusText.textContent = "Belum pernah Sync Real — klik tombol Sync Harga & IHSG untuk verifikasi harga bursa";
+    statusText.textContent = "Belum disinkronkan — klik Sync Harga & IHSG";
   }
 }
 
@@ -177,7 +181,7 @@ window.toggleAutoMarketSync = function (enabled) {
   state.marketSync.autoSyncAfterClose = !!enabled;
   saveToLocalStorage();
   saveToCloudIfAvailable();
-  showToast(enabled ? "Auto-Sync setelah Market Close (16:15 WIB) aktif" : "Auto-Sync otomatis dinonaktifkan");
+  showToast(enabled ? "Sinkron otomatis saat bursa tutup (16:15 WIB) aktif" : "Sinkron otomatis dinonaktifkan");
 };
 
 window.syncMarketData = async function ({ force = false, silent = false } = {}) {
@@ -251,7 +255,8 @@ window.syncMarketData = async function ({ force = false, silent = false } = {}) 
       const cacheNote = failedTickers.length > 0
         ? ` • Cache: ${failedTickers.slice(0, 4).join(", ")}${failedTickers.length > 4 ? "…" : ""}`
         : "";
-      state.marketSync.lastSyncSource = `${sourceProviderLabel} • ${updatedStocks}/${totalHoldings} live${cacheNote}`;
+      const shortProvider = String(sourceProviderLabel || "IDX").replace(/\bTradingView IDX\b/g, "TradingView");
+      state.marketSync.lastSyncSource = `${shortProvider} (${updatedStocks}/${totalHoldings})${cacheNote}`;
 
       const activeYr = Number(state.meta.activeYear) || jktNow.year;
       ensureYearStructure(activeYr);

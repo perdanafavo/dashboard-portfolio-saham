@@ -720,8 +720,9 @@ export function createPortfolioUI(ctx) {
     const cashPct = m.totalValuation > 0 ? (m.cashBalance / m.totalValuation) * 100 : 0;
     const stockPct = m.totalValuation > 0 ? (m.stockValTotal / m.totalValuation) * 100 : 0;
     document.getElementById("kpi-total-valuation-sub").innerHTML = `
-      <span class="px-2 py-0.5 rounded-md bg-[#10B981]/10 border border-[#10B981]/25 text-emerald-700 dark:text-[#10B981] font-semibold">Invested Saham: ${formatIDR(m.stockValTotal)} (${formatNum(stockPct, 2)}%)</span>
-      <span class="px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/25 text-sky-700 dark:text-sky-400 font-semibold">Uninvested Cash: ${formatIDR(m.cashBalance)} (${formatNum(cashPct, 2)}%)</span>
+      <span>Saham: <strong class="text-slate-700 dark:text-[#EEF2F6]">${formatIDR(m.stockValTotal)}</strong> (${formatNum(stockPct, 2)}%)</span>
+      <span class="text-slate-300 dark:text-white/20">&bull;</span>
+      <span>Kas: <strong class="text-slate-700 dark:text-[#EEF2F6]">${formatIDR(m.cashBalance)}</strong> (${formatNum(cashPct, 2)}%)</span>
     `;
 
     document.getElementById("kpi-nav-unit").textContent = formatNum(m.currentNav, 4);
@@ -742,7 +743,7 @@ export function createPortfolioUI(ctx) {
     `;
 
     document.getElementById("kpi-cash-balance").textContent = formatIDR(m.cashBalance);
-    document.getElementById("kpi-cash-sub").innerHTML = `Buying Power: <strong class="text-slate-700 dark:text-[#EEF2F6]">${formatNum(cashPct, 2)}%</strong> &bull; Dividen: <span class="tabular-nums text-[#10B981]">${formatCompactIDR(m.totalDividendsReceived)}</span>`;
+    document.getElementById("kpi-cash-sub").innerHTML = `Porsi Kas: <strong class="text-slate-700 dark:text-[#EEF2F6]">${formatNum(cashPct, 2)}%</strong> &bull; Dividen: <span class="tabular-nums text-[#10B981]">${formatCompactIDR(m.totalDividendsReceived)}</span>`;
 
     document.getElementById("table-total-paidin").textContent = formatIDR(m.totalPaidInCapital);
 
@@ -778,11 +779,8 @@ export function createPortfolioUI(ctx) {
           <div class="flex items-center gap-2.5">
             <span class="w-9 h-9 rounded-lg bg-[#10B981]/10 border border-[#10B981]/25 text-[#10B981] font-sans font-bold text-xs flex items-center justify-center shrink-0">Kas</span>
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm">Uninvested Cash (RDN)</span>
-                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400">BUYING POWER</span>
-              </div>
-              <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8]">Dana Siap Beli Saham &bull; Rekening Dana Nasabah</div>
+              <div class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm">Saldo Kas (RDN)</div>
+              <div class="text-[11px] text-slate-500 dark:text-[#8E9BA8]">Dana siap beli saham</div>
             </div>
           </div>
         </td>
@@ -993,7 +991,7 @@ export function createPortfolioUI(ctx) {
       const stockValWeight = m.totalValuation > 0 ? (m.stockValTotal / m.totalValuation) * 100 : 0;
       tfoot.innerHTML = `
         <tr class="border-b border-slate-200/70 dark:border-white/[0.06] text-slate-600 dark:text-[#8E9BA8] font-semibold">
-          <td colspan="4" class="py-2.5 px-4">Subtotal Aset Saham (Invested Equity) &bull; <span class="text-[#10B981]">Uninvested Cash: ${formatIDR(m.cashBalance)} (${formatNum(cashPct, 2)}%)</span></td>
+          <td colspan="4" class="py-2.5 px-4">Subtotal Saham</td>
           <td class="py-2.5 px-3 text-right font-sans tabular-nums">${formatIDR(m.stockCostTotal)}</td>
           <td class="py-2.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#EEF2F6]">${formatIDR(m.stockValTotal)}</td>
           <td class="py-2.5 px-3 text-right font-sans tabular-nums ${colorClass(stockPL)}">${formatSignedIDR(stockPL)} (${formatPct(stockPLPct)})</td>
@@ -1002,7 +1000,7 @@ export function createPortfolioUI(ctx) {
           <td></td>
         </tr>
         <tr>
-          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Invested Saham + Uninvested Cash)</td>
+          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Saham + Kas)</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#8E9BA8]">${formatIDR(m.totalCost)}</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalValuation)}</td>
           <td class="py-3.5 px-3 text-right font-sans tabular-nums ${colorClass(totalPL)}">${formatSignedIDR(totalPL)} (${formatPct(totalPLPct)})</td>

@@ -54,16 +54,17 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 
 ---
 
-## 4. Rekomendasi Model per Peran & Task (Hydrogen / Argon / Neon)
+## 4. Rekomendasi Model per Peran & Task (Hydrogen / Argon / Neon / Opsional Carbon)
 
 | Peran / Jenis Task | Rekomendasi Model (UI) | Tier Subagent | Alasan & Strategi Cost-to-Performance |
 | :--- | :--- | :--- | :--- |
 | **Micro-Tasks (Typo, Copy, Tweak CSS 1–5 baris, Tanya Singkat)** | **Hydrogen** / **Argon (Low)** | `flash_lite` | **Paling irit kuota** untuk perubahan kosmetik yang tidak menyentuh logika |
-| **PM (Brainstorming, Spec & Breakdown Tiket)** | **Argon (Medium)** | `inherit` | **Best value:** cukup cerdas menyusun spec & edge case tanpa boros kuota Neon |
-| **Orchestrator / Coordinator (`/teamwork`)** | **Argon (Medium)** *(Neon saat refactor besar)* | `inherit` / `pro` | Hemat kuota koordinasi; naik ke Neon hanya saat bedah file monolitik |
+| **PM (Brainstorming, Spec & Breakdown Tiket)** | **Argon (Medium)** | `inherit` | **Best value:** cukup cerdas menyusun spec & edge case tanpa boros kuota Neon/Carbon |
+| **Orchestrator / Coordinator (`/teamwork`)** | **Argon (Medium)** → *Opsional: **Orchestrator Carbon** (fallback **Neon Medium**)* | `inherit` / `pro` | Default Argon untuk 2–3 task terpisah; naik ke Carbon (atau Neon) hanya untuk epic paralel ≥3 modul yang saling berbagi kontrak state/NAV/CSP |
 | **UI/UX Designer (Layout & Visual FinTech)** | **Argon (Medium)** → **Neon (Medium)** | `inherit` | Argon Medium untuk komponen/chart; Neon untuk rombak desain penuh |
 | **Developer — Modul Terpisah & Fitur Standar** | **Argon (Medium)** | `flash` / `inherit` | Setelah modularisasi selesai, tiap file kecil (<500 baris) sangat aman dikerjakan Argon |
 | **Developer — Logika Inti (NAV, Math, Refactor Monolitik)** | **Neon (Medium / High)** | `pro` | Nol toleransi bug pada perhitungan finansial & pemecahan ribuan baris kode |
+| **Eskalasi High-Stakes (Bug NAV Mentok, Migrasi Skema Risiko Tinggi, Audit Rilis Penuh)** | *Opsional: **Carbon** (fallback **Neon High / `/boost`**)* | `pro` | Hanya bila tersedia (paket Ultra) dan benar-benar butuh daya nalar puncak; otomatis aman fallback ke Neon jika tidak tersedia |
 | **QA — Audit Linter / A11y (`web-design-guidelines`)** | **Hydrogen** / **Argon (Low)** | `flash_lite` / `flash` | Cek checklist mekanis secara cepat dan sangat murah |
 | **QA — Review Arsitektur, Security (`security-review`) & Bug Kompleks** | **Argon (Medium)** / **Neon (Medium)** | `inherit` / `pro` | Menangkap celah logika, XSS/taint flow, dan edge case halus |
 | **Research / Verifikasi Browser (`/browser`)** | **Otomatis `flash`** | `flash` / `flash_lite` | Subagent browser otomatis memakai model ringan agar hemat kuota utama |
@@ -74,8 +75,11 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 
 - **Decision Gate Hemat Kuota (Aturan Mandor / Orchestrator):**
   - **Default = Single Agent + Argon (Medium) / Hydrogen:** Untuk 80% task harian (1–3 file, fitur standar, bugfix jelas, diskusi PM).
-  - **Kapan pakai `/teamwork` (Orchestrator):** Hanya jika ada **≥ 2–3 sub-task independen** di file berbeda yang bisa dikerjakan paralel. Worker riset/QA mekanis **wajib** dipin ke model ringan (`flash` / `flash_lite`). Jangan pakai `/teamwork` untuk task kecil/berurutan (overhead lebih boros).
-  - **Kapan pakai `/boost`:** Hanya untuk masalah berisiko tinggi atau butuh *deep thinking* (logika NAV/matematika kritis, bug misterius, atau desain arsitektur besar). **Jangan** pakai `/boost` untuk UI standar, copy, atau tweak CSS.
+  - **Kapan pakai `/teamwork` (Orchestrator):** Hanya jika ada **≥ 2–3 sub-task independen** di file berbeda yang bisa dikerjakan paralel.
+    - *Mandor Ringan (`Argon Medium`):* Untuk 2–3 sub-task yang tidak saling mengubah kontrak data.
+    - *Mandor Epic (`Orchestrator Carbon`, opsional — fallback `Neon Medium`):* Hanya untuk epic paralel **≥ 3 modul yang saling terkait** (berbagi kontrak `state.js`, `nav-engine.js`, Strict CSP, atau `index.html`). Worker tetap dipin sesuai bobot (`Neon` untuk NAV/math, `Argon` untuk fitur standar, `flash`/`flash_lite` untuk riset/QA) — **jangan** pakai Carbon untuk semua worker.
+    - Jangan pakai `/teamwork` untuk task kecil/berurutan (overhead lebih boros).
+  - **Kapan pakai `/boost` atau Single Agent Carbon *(opsional, fallback Neon High)*:** Hanya untuk masalah berisiko tinggi atau butuh *deep thinking* (bug NAV/matematika yang rumit/mentok, migrasi skema `localStorage` berisiko tinggi, atau audit arsitektur/security menyeluruh sebelum rilis). **Jangan** dipakai untuk UI standar, copy, atau tweak CSS.
   - **Kapan pakai `ponytail` & `caveman`:** Wajib aktif di setiap fase Dev/QA — `ponytail` menjaga diff kode sekecil mungkin (YAGNI, tanpa abstraksi berlebih + 1–2 baris catatan *skipped/risk* di akhir), sedangkan `caveman` menjaga balasan chat tetap padat (naikkan ke `caveman ultra` untuk batch coding besar atau QA berulang).
 - **Fitur Kecil–Sedang:** Jalankan berurutan (PM → UI/UX → Dev → QA) dalam satu sesi, lalu `/compact` di tiap pergantian fase.
 - **Fitur Besar / Paralel:** Gunakan `/teamwork` (Swarm) dengan koordinator membagi tiket sesuai peran & batas *single-writer* pada `index.html`.
@@ -84,11 +88,11 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
   - Kembali ke bahasa penjelasan normal yang ramah saat fase PM / diskusi desain / menjawab pertanyaan user.
 - **Pengingat Otomatis Pergantian Fase & Hemat Kuota (Wajib Ditampilkan Agent di Akhir Pesan):**
   1. **Saat Transisi PM → Dev (Spec Disetujui, Siap Coding):** Tampilkan kotak pengingat singkat:
-     - *Mode & Model:* Rekomendasikan apakah cukup **Single Agent (Argon Medium / Hydrogen)**, perlu **`/teamwork`** (jika ≥ 2–3 file paralel), atau perlu **`/boost` / Neon** (jika menyentuh logika NAV kritis).
+     - *Mode & Model:* Rekomendasikan apakah cukup **Single Agent (Argon Medium / Hydrogen)**, perlu **`/teamwork`** (Mandor Argon Medium untuk paralel ringan, atau *opsional* **Orchestrator Carbon / fallback Neon Medium** untuk epic ≥3 modul terkait), atau perlu **`/boost` / Neon / *opsional* Carbon** (jika menyentuh logika NAV kritis).
      - *Efisiensi Kode, Bahasa & Compact:* Ingatkan aktifnya **`ponytail` (diff minimal/YAGNI)** + **`caveman`** (`caveman ultra` jika batch panjang), serta ketik **`/compact`** jika diskusi perencanaan sudah >10 pesan.
   2. **Saat Transisi Dev/QA → Selesai (Semua Tiket Beres):** Tampilkan kotak pengingat singkat:
      - *Update Living Handoff:* Pastikan `docs/HANDOFF.md` sudah diperbarui (status commit terakhir, *gotchas* baru, dan sisa backlog) sebelum commit agar sesi/akun/AI berikutnya dapat langsung lanjut tanpa kehilangan konteks. (Untuk pindah akun di tengah sesi, gunakan skill `/handoff`.)
-     - *Turunkan Model:* Ingatkan user untuk segera **menurunkan model dari Neon kembali ke Argon (Medium) / Hydrogen** agar kuota mingguan Neon tidak terbuang untuk obrolan ringan.
+     - *Turunkan Model:* Ingatkan user untuk segera **menurunkan model dari Carbon/Neon kembali ke Argon (Medium) / Hydrogen** agar kuota tidak terbuang untuk obrolan ringan.
      - *Compact / Commit:* Ingatkan `/compact` sebelum mulai topik berikutnya.
 - **Format Handoff Ringkas** (jangan teruskan seluruh riwayat chat):
   1. **Tiket / Tujuan:** 1–3 kalimat ruang lingkup & kriteria selesai (atau link ke `docs/specs/...`).

@@ -28,8 +28,9 @@ Baca AGENTS.md, docs/ARCHITECTURE.md, dan docs/HANDOFF.md. Semua konteks proyek 
 | `7046b1f` | **Prioritas 1 (Enhancement Performa):** Pre-compiled Tailwind CSS (`./css/tailwind.min.css`), PWA offline-first (`./manifest.json`, `./sw.js`, `./assets/icon.svg`), Chart.js in-place reuse (`upsertChart()`), dan lazy table row render (`renderPortfolioTableRows()`). |
 | `1cf55df` | **Prioritas 2 (UI/UX Polish):** Pemisahan jelas **Invested Saham** vs **Uninvested Cash / Buying Power (RDN)** di KPI card & 2-row `<tfoot>`, bar horizontal P/L, dual progress bar Rebalancing (`Bobot Aktual vs Target`), sticky `<thead>`, dan Keyboard Shortcuts (`/`, `1`–`6`, `R`, `Esc`) + `aria-label`. |
 | `a5e9d63` | **Prioritas 3 (Improvement Security):** Migrasi 121 inline event handler ke event delegation (`data-onclick`, `data-onchange`, `data-oninput`, `data-onsubmit`), Strict CSP `<meta>` tanpa `'unsafe-inline'` di `script-src`, SRI (`integrity` + `crossorigin`) pada CDN Chart.js & Lucide, timeout 5 detik & sanitasi ticker di `js/market.js`, allowlist `mergeWithDefaults` di `js/state.js`, Backup Reminder (`>30 hari`), serta **Encrypted JSON Export/Import (Web Crypto PBKDF2-SHA256 + AES-256-GCM)**. |
+| *Pending Commit* | **Copy Polish Bahasa Indonesia & Update Aturan Carbon:** Perapian 5 titik *copy* Tab Portofolio (`Total Valuasi Portofolio`, sub-teks `Saham • Kas` tanpa kotak *pill*, `Saldo Kas (RDN)`, `Subtotal Saham` & `Total Portofolio (Saham + Kas)`, serta Status Bar Sinkronisasi `Diperbarui ... • TradingView (8/8)` & `Bursa Tutup/Buka`) + penambahan panduan opsional **Carbon / Orchestrator Carbon** (dengan fallback otomatis ke Neon) di `AGENTS.md`. |
 
-> **Dokumen Spec Terkait:** `docs/specs/2026-11-22-performance-ux-security-roadmap.md`
+> **Dokumen Spec Terkait:** `docs/specs/2026-11-22-performance-ux-security-roadmap.md`, `docs/specs/2026-11-22-copy-polish-kas-dan-sync.md`
 
 ---
 
