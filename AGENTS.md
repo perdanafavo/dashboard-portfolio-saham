@@ -1,6 +1,6 @@
 # AGENTS.md — Portfolio NAV Tracker
 
-Panduan operasional, invarian, alur PM → UI/UX → Developer → QA, routing skill, dan pemilihan model untuk workspace `dashboard-portfolio-saham`.
+Panduan operasional, invarian, alur **6 Tahap Product Lifecycle** (PM sebagai Product Owner → UI/UX → Frontend → Backend/Core → QA → Security), routing skill anti-tumpang-tindih, dan pemilihan model untuk workspace `dashboard-portfolio-saham`.
 
 > **Referensi Arsitektur & Status Proyek (Baca *On-Demand*):**
 > - Baca `docs/HANDOFF.md` di awal sesi baru untuk langsung mengetahui status commit terakhir, *gotchas* teknis (Strict CSP, Tailwind statis), dan backlog berikutnya.
@@ -27,30 +27,42 @@ Panduan operasional, invarian, alur PM → UI/UX → Developer → QA, routing s
 
 ## 2. Aturan Efisiensi Token, Gate & Anti-Konflik
 
-1. **Jangan Baca Utuh `index.html`:** Gunakan peta baris di `docs/ARCHITECTURE.md` atau pencarian terarah, lalu baca rentang baris spesifik saja.
-2. **Gate Perencanaan (`brainstorming`):**
-   - **Fitur baru / ubah logika NAV / refactor:** Wajib lewat `brainstorming` → *approval* design doc dari user → `to-spec` → `to-tickets` (menggantikan `superpowers:writing-plans`). Simpan dokumen di `docs/specs/YYYY-MM-DD-<topik>.md`.
-   - **Quick task jelas** (typo, warna, tweak CSS kecil): Boleh langsung dieksekusi tanpa dokumen panjang.
-3. **Diff Minimal & Modularisasi Bertahap:** Ikuti prinsip `ponytail` (perubahan terkecil, YAGNI). Saat memecah `index.html`, ikuti blueprint native ES Modules di `docs/ARCHITECTURE.md` (`codebase-design`).
-4. **Aturan Anti-Konflik `/teamwork`:** Selama kode utama masih di 1 file (`index.html`), maksimal **1 agent penulis** yang mengedit `index.html` pada satu waktu (agent lain fokus riset, desain, spec, atau QA) hingga modul dipecah ke `./js/*.js`.
-5. **Hemat Token & Lingkungan Windows:** Gunakan gaya ringkas (`caveman`) di fase Dev/QA dan jalankan `/compact` di antara fase besar. Jangan berasumsi `node`/`git` CLI tersedia di sandbox; verifikasi runtime/UI melalui Browser Subagent (`/browser`).
+1. **Pre-Flight Source-of-Truth Check (Model & Phase Guard — Wajib di Awal Tugas):**
+   Sebelum mengeksekusi tugas apa pun, agent wajib mencocokkan **Tahap Tugas (Bagian 3)** dan **Model UI Aktif** terhadap tabel **Bagian 4**:
+   - **Phase Guard:** Pastikan posisi tahap jelas (Tahap 1–6). Untuk fitur/refactor non-trivial tanpa spec yang disetujui di `docs/specs/`, tolak loncat langsung ke Tahap 4 (Coding).
+   - **Model Guard — Terlalu Ringan (Hard Stop):** Jika model aktif di bawah rekomendasi Bagian 4 untuk tugas berisiko tinggi (misal posisi di **Argon Low / Hydrogen**, tapi tugas menyentuh logika inti NAV, matematika finansial, migrasi skema, atau refactor besar yang mensyaratkan **Neon Medium/High** atau **Carbon**), **TAHAN eksekusi kode**, tampilkan peringatan di baris pertama, dan minta user menaikkan model (atau izinkan delegasi ke subagent `pro`).
+   - **Model Guard — Terlalu Mahal (Pengingat Hemat Kuota):** Jika model aktif jauh di atas kebutuhan tugas (misal posisi tertinggal di **Carbon / Neon**, tapi user hanya diskusi PM, tanya jawab, atau tweak teks 1–5 baris), tetap layani permintaan namun tampilkan **1 baris pengingat hemat kuota** di awal/akhir pesan untuk menurunkan model ke **Argon / Hydrogen**.
+   - **Subagent & Swarm Enforcement:** Setiap pemanggilan `invoke_subagent` atau `/teamwork` wajib mem-pin tier model secara eksplisit (`flash` untuk `/browser`, `flash_lite` untuk audit mekanis, `pro` untuk logika inti).
+2. **Jangan Baca Utuh `index.html`:** Gunakan peta baris di `docs/ARCHITECTURE.md` atau pencarian terarah, lalu baca rentang baris spesifik saja.
+3. **Gate Perencanaan PM (Product Owner):**
+   - **Fitur besar / ubah logika NAV / refactor / entitas baru:** Wajib lewat alur `brainstorming` → `/grill-me` (uji asumsi & edge-case) → `domain-modeling` (kunci istilah & kontrak) → `to-spec` → `to-tickets` → *approval* user. Simpan dokumen di `docs/specs/YYYY-MM-DD-<topik>.md`.
+   - **Fitur kecil–sedang / polish UI:** Cukup `brainstorming` → `to-spec` → `to-tickets` → *approval* user (skip `/grill-me` bila tidak ada *trade-off* rumit).
+   - **Quick task jelas** (typo, warna, tweak CSS 1–5 baris): Boleh langsung dieksekusi tanpa dokumen panjang.
+4. **Diff Minimal & Modularisasi Bertahap:** Ikuti prinsip `ponytail` (perubahan terkecil, YAGNI) dan arsitektur modular di `docs/ARCHITECTURE.md` (`codebase-design`).
+5. **Aturan Anti-Tumpang-Tindih Skill & Anti-Konflik `/teamwork`:**
+   - Tiap fase **hanya memuat 1–2 skill paling spesifik** sesuai tabel di Bagian 3 (jangan memuat semua skill UI/dev sekaligus agar hemat kuota).
+   - Pada `/teamwork`, maksimal **1 agent penulis** per file (khususnya `index.html`); agent lain bekerja di modul `./js/*.js` terpisah atau fokus riset/desain/QA.
+6. **Hemat Token & Lingkungan Windows:** Gunakan gaya ringkas (`caveman`) di fase Dev/QA dan jalankan `/compact` di antara fase besar. Jangan berasumsi `node`/`git` CLI tersedia di sandbox; verifikasi runtime/UI melalui Browser Subagent (`/browser`).
 
 ---
 
-## 3. Struktur Tim Multi-Agent & Routing Skill
+## 3. Alur 6 Tahap Product Lifecycle & Routing Skill (Anti-Tumpang-Tindih)
 
-Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
+**PM berperan sebagai Product Owner** yang mengawal konsistensi, prioritas, dan *sign-off* lintas stakeholder (UI/UX, Frontend, Backend/Core, QA, Security). Setiap tahap hanya memakai skill yang paling spesifik agar konteks bersih dan tidak saling tumpang-tindih.
 
-| Peran | Tanggung Jawab Utama | Skill & Tools Utama | Output / Artefak |
+| Tahap Product Lifecycle | Pemilik & Stakeholder | Skill & Tools Utama (Wajib / Pilih Spesifik) | Output / Gerbang Lanjut (*Gate*) |
 | :--- | :--- | :--- | :--- |
-| **1. PM (Product Manager)** | Klarifikasi masalah, batas ruang lingkup, edge case finansial, prioritas | `brainstorming` → `to-spec` → `to-tickets` (opsional `/grill-me`) | Design doc, spec & tiket *vertical-slice* di `docs/specs/` |
-| **2. UI/UX & Frontend Designer** | Riset desain FinTech, hirarki visual, anti-slop UI, prototipe interaktif, layout responsif | `ui-ux-pro-max`, `design-taste-frontend` (`taste-skill`, anti-slop), `frontend-design`, `modern-web-guidance`, `generative_ui` (prototype), `search_web` | Keputusan layout, palet/tipografi, prototipe HTML (bila fitur besar), & spesifikasi komponen |
-| **3. Developer** | Implementasi fitur, logika NAV/state, unit test (TDD), refactor modul, integrasi library | `tdd`, `ponytail`, `codebase-design`, `Context7`, `caveman` | Perubahan kode bersih dengan diff minimal & test terverifikasi |
-| **4. QA & Code Reviewer** | Polish UI, audit a11y/form/focus, security review, review kualitas 5-axis, investigasi bug, cek visual | `impeccable` (`polish`, `harden`), `web-design-guidelines`, `code-review-and-quality`, `security-review`, `systematic-debugging`, `/browser` | Temuan berlabel (`Critical`/`Required`/`Optional`/`Nit`), audit security *high-confidence*, & bukti visual |
+| **1. Discovery & Ideation** *(Riset & Validasi Masalah)* | **PM (Owner)** + User + Research | `brainstorming`, `search_web`, `graphify` *(hanya untuk repo baru/besar tanpa peta)* | Masalah tervalidasi, referensi standar industri, & alasan jelas (*why*) |
+| **2. Planning & Strategy** *(Strategi, Prioritas & Uji Asumsi)* | **PM (Owner)** + Arsitek | `/grill-me` *(wajib untuk fitur besar/berisiko)*, `domain-modeling` *(kunci istilah bisnis & kontrak)* | Keputusan *scope* (in/out), *trade-off* disepakati, & glosarium/kontrak domain terkunci |
+| **3. Defining & Designing** *(Spec, Tiket & Prototipe UI/UX)* | **PM (Owner)** + **UI/UX Designer** | • **PM:** `to-spec` → `to-tickets`<br>• **UI/UX** *(pilih 1, jangan digabung)*: `ui-ux-pro-max` *(dashboard/chart/app)* **atau** `design-taste-frontend` *(landing/company site)* + `generative_ui` *(prototipe interaktif)* | Spec & tiket *vertical-slice* di `docs/specs/YYYY-MM-DD-*.md` + prototipe disetujui user (**Hard Gate** sebelum coding) |
+| **4. Product Development / Execution** *(Pengembangan)* | **Frontend Dev** & **Backend / Core Dev** *(diawasi PM)* | • **Frontend:** `modern-web-guidance` + `antislop`<br>• **Backend / Core:** `implement` + `tdd` + `codebase-design` + `Context7`<br>• **Wajib Semua Dev:** `ponytail` *(diff minimal)* + `caveman` *(ringkas)*<br>• **Investigasi Bug:** `systematic-debugging` *(root cause dulu)* | Kode bersih dengan diff minimal, patuh invarian arsitektur & Strict CSP, serta *unit test* hijau (`ALL PASS`) |
+| **5. Testing & Launch** *(Pengujian, Audit & Peluncuran)* | **QA Engineer** + **Security Engineer** + **PM (Sign-off)** | • **QA Kode & Visual:** `code-review-and-quality`, `impeccable` *(polish/harden)*, `web-design-guidelines` *(a11y)*, `/browser`<br>• **Security:** `security-review`<br>• **Launch:** Git commit + deploy | 0 temuan `Critical`/`Required`, 0 *high-confidence* security issue, 0 console error di `/browser`, & *sign-off* PM |
+| **6. Post-Launch Evaluation** *(Evaluasi, Handoff & Optimasi)* | **PM (Owner)** + User | Update `docs/HANDOFF.md` & `docs/ARCHITECTURE.md`, `/handoff` *(jika pindah akun/sesi)*, `/compact` | *Living docs* terbarui (commit hash, *gotchas* baru, prioritas backlog) → siap siklus berikutnya |
 
-> **Catatan Alur UI/UX, TDD, Debugging & Security:**
-> - **Alur Standar Fitur/Desain Baru:** `PM (Spec) → UI/UX (Riset & Prototype) → Dev/Frontend → QA → Security`. Untuk tab baru, rombak layout besar, atau komponen visual kompleks, wajib riset referensi (`search_web`) + buat prototipe interaktif (`generative_ui`) untuk disetujui user sebelum coding. Untuk fitur UI kecil–sedang, cukup langsung `Spec → Dev` tanpa prototipe.
-> - **TDD, Debugging & Security:** Gunakan `tdd` (*red → green* pada *seam* yang disepakati) saat mengubah/menambah logika NAV, state, atau modul inti. Saat menemukan bug atau perilaku tak terduga, wajib ikuti Iron Law `systematic-debugging` — temukan *root cause* sebelum menulis perbaikan. Jalankan `security-review` untuk audit celah keamanan *high-confidence* (XSS, import JSON, Firebase, supply chain) sebelum rilis.
+> **Aturan Cepat Pemilihan Tahap:**
+> - **Fitur Visual Kompleks / Tab Baru / Rombak Layout:** Jalankan penuh Tahap 1 → 6 (termasuk `/grill-me` + prototipe `generative_ui`).
+> - **Fitur Kecil–Sedang / Polish UI:** Ringkas Tahap 1–3 (`brainstorming` → `to-spec` → `to-tickets`, tanpa prototipe), lalu lanjut Tahap 4–6.
+> - **Bugfix:** Mulai dengan `systematic-debugging` (cari *root cause*), tambah *regression test* (`tdd`), lalu verifikasi di Tahap 5 (`/browser`).
 
 ---
 
