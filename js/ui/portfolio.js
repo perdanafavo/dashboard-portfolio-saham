@@ -969,6 +969,7 @@ export function createPortfolioUI(ctx) {
     renderBenchmarkBarsShared({ state }, m);
     renderPortfolioDividendRecap(m);
     renderRebalancingPanel(m);
+    window.lucide?.createIcons?.();
   }
 
   function renderRebalancingPanel(m) {

@@ -368,6 +368,7 @@ export function createMutationsUI(ctx) {
         }
       });
     }
+    window.lucide?.createIcons?.();
   }
 
   window.setMutationQuickAmount = setMutationQuickAmount;

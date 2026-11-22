@@ -815,6 +815,7 @@ export function createDividendsUI(ctx) {
 
     renderDividendProjectionSim(annualEstimate, m.stockValTotal);
     renderActualDividendsSection(selectedYear);
+    window.lucide?.createIcons?.();
   }
 
   window.renderDividendsTab = renderDividendsTab;

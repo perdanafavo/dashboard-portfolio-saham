@@ -122,6 +122,7 @@ export function createJournalUI(ctx) {
         `;
       })
       .join("");
+    window.lucide?.createIcons?.();
   }
 
   window.openManualJournalModal = openManualJournalModal;
