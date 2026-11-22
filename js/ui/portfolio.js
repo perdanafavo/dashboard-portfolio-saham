@@ -44,7 +44,7 @@ export function createPortfolioUI(ctx) {
 
   window.onPortfolioSearchInput = function (val) {
     searchQuery = String(val || "").trim().toLowerCase();
-    renderPortfolioTab();
+    renderPortfolioTableRows();
   };
 
   window.togglePortfolioSort = function (field) {
@@ -57,7 +57,7 @@ export function createPortfolioUI(ctx) {
       sortField = null;
       sortDir = "desc";
     }
-    renderPortfolioTab();
+    renderPortfolioTableRows();
   };
 
   window.updateHoldingTargetWeight = function (holdingId, rawVal) {
@@ -752,7 +752,19 @@ export function createPortfolioUI(ctx) {
       freshBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${allVerified ? "bg-[#10B981]" : "bg-amber-400"}"></span> Terverifikasi Real: <strong>${verifiedCount}/${state.holdings.length}</strong>`;
     }
 
+    renderPortfolioTableRows(m);
+    renderAllocationChartShared({ charts, state, getEmitenColor }, m);
+    renderBenchmarkBarsShared({ state }, m);
+    renderPortfolioDividendRecap(m);
+    renderRebalancingPanel(m);
+  }
+
+  function renderPortfolioTableRows(passedMetrics = null) {
+    const state = getState();
+    const m = passedMetrics || computeMetrics();
+    const cashPct = m.totalValuation > 0 ? (m.cashBalance / m.totalValuation) * 100 : 0;
     const tbody = document.getElementById("portfolio-table-body");
+    if (!tbody) return;
     const totalPL = m.totalValuation - m.totalCost;
     const totalPLPct = m.totalCost > 0 ? (totalPL / m.totalCost) * 100 : 0;
 
@@ -953,22 +965,19 @@ export function createPortfolioUI(ctx) {
     tbody.innerHTML = rowsHTML;
 
     const tfoot = document.getElementById("portfolio-table-foot");
-    tfoot.innerHTML = `
-      <tr>
-        <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Saham + Kas)</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#8E9BA8]">${formatIDR(m.totalCost)}</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalValuation)}</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums ${colorClass(totalPL)}">${formatSignedIDR(totalPL)} (${formatPct(totalPLPct)})</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">${m.totalCost > 0 ? "100,00%" : "0,00%"}</td>
-        <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${m.totalValuation > 0 ? "100,00%" : "0,00%"}</td>
-        <td></td>
-      </tr>
-    `;
-
-    renderAllocationChartShared({ charts, state, getEmitenColor }, m);
-    renderBenchmarkBarsShared({ state }, m);
-    renderPortfolioDividendRecap(m);
-    renderRebalancingPanel(m);
+    if (tfoot) {
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="4" class="py-3.5 px-4 text-slate-900 dark:text-[#EEF2F6]">Total Portofolio (Saham + Kas)</td>
+          <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-800 dark:text-[#8E9BA8]">${formatIDR(m.totalCost)}</td>
+          <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalValuation)}</td>
+          <td class="py-3.5 px-3 text-right font-sans tabular-nums ${colorClass(totalPL)}">${formatSignedIDR(totalPL)} (${formatPct(totalPLPct)})</td>
+          <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">${m.totalCost > 0 ? "100,00%" : "0,00%"}</td>
+          <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6]">${m.totalValuation > 0 ? "100,00%" : "0,00%"}</td>
+          <td></td>
+        </tr>
+      `;
+    }
     window.lucide?.createIcons?.();
   }
 

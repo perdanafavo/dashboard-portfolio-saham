@@ -21,10 +21,31 @@ export function destroyChart(charts, key) {
   }
 }
 
+export function upsertChart(charts, key, canvas, config) {
+  if (!canvas || typeof Chart === "undefined") return null;
+  const existing = charts?.[key];
+  const nextType = config.type || "bar";
+  if (
+    existing &&
+    existing.canvas === canvas &&
+    existing.config?.type === nextType
+  ) {
+    existing.data = config.data;
+    if (config.options) {
+      existing.options = config.options;
+    }
+    existing.update("none");
+    return existing;
+  }
+  destroyChart(charts, key);
+  const instance = new Chart(canvas, config);
+  if (charts) charts[key] = instance;
+  return instance;
+}
+
 export function renderAllocationChart({ charts, state, getEmitenColor }, m) {
   const canvas = document.getElementById("chart-allocation");
   if (!canvas) return;
-  destroyChart(charts, "allocation");
 
   const isEmpty = m.totalValuation <= 0;
   const labels = isEmpty ? ["Belum ada aset"] : ["KAS"];
@@ -39,7 +60,7 @@ export function renderAllocationChart({ charts, state, getEmitenColor }, m) {
     });
   }
 
-  charts.allocation = new Chart(canvas, {
+  upsertChart(charts, "allocation", canvas, {
     type: "doughnut",
     data: {
       labels,
@@ -160,8 +181,7 @@ export function renderBenchmarkBars({ state }, m) {
 export function renderCalculatorChart(charts, curAvg, newAvg, buyPrice, targetPrice) {
   const canvas = document.getElementById("chart-calculator-bars");
   if (!canvas) return;
-  destroyChart(charts, "calcBars");
-  charts.calcBars = new Chart(canvas, {
+  upsertChart(charts, "calcBars", canvas, {
     type: "bar",
     data: {
       labels: ["Avg. Lama", "Harga Beli", "Avg. Baru", "Target Jual"],

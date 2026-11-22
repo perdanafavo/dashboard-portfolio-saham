@@ -15,7 +15,7 @@ import {
   getNumInput,
   setNumInput
 } from "../storage.js";
-import { destroyChart, getChartTextColor, getChartGridColor } from "../charts.js";
+import { upsertChart, getChartTextColor, getChartGridColor } from "../charts.js";
 
 export function createMutationsUI(ctx) {
   function updateMutationPreview() {
@@ -305,8 +305,7 @@ export function createMutationsUI(ctx) {
 
     const canvas = document.getElementById("chart-mutations");
     if (canvas) {
-      destroyChart(ctx.charts, "mutations");
-      ctx.charts.mutations = new Chart(canvas, {
+      upsertChart(ctx.charts, "mutations", canvas, {
         data: {
           labels: chartLabels,
           datasets: [

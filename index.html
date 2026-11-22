@@ -10,46 +10,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            canvas: '#0C1117',
-            surface: '#141C24',
-            ink: {
-              primary: '#EEF2F6',
-              muted: '#8E9BA8',
-            },
-            brand: {
-              50: '#ecfdf5',
-              100: '#d1fae5',
-              400: '#34d399',
-              500: '#10B981',
-              600: '#059669',
-              700: '#047857',
-            }
-          }
-        }
-      }
-    };
-  </script>
+  <!-- PWA Manifest & App Icons -->
+  <meta name="theme-color" content="#0C1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
+  <link rel="apple-touch-icon" href="./assets/icon.svg" />
+
+  <!-- Pre-compiled Static Tailwind CSS & Custom Theme Styles (Zero Runtime JIT Flash) -->
+  <link rel="stylesheet" href="./css/tailwind.min.css" />
+  <link rel="stylesheet" href="./css/styles.css" />
 
   <!-- Chart.js for Interactive Financial Visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Custom Theme & Utility Styles -->
-  <link rel="stylesheet" href="./css/styles.css" />
 
   <!-- Preload Native ES Modules to Flatten Initial Network Waterfall -->
   <link rel="modulepreload" href="./js/app.js" />

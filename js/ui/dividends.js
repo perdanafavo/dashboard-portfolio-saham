@@ -12,7 +12,7 @@ import {
 import {
   getChartTextColor,
   getChartGridColor,
-  destroyChart as destroyChartInstance
+  upsertChart
 } from "../charts.js";
 
 /**
@@ -32,7 +32,7 @@ export function createDividendsUI(ctx) {
     getEmitenColor
   } = ctx;
 
-  const destroyChart = (key) => destroyChartInstance(charts, key);
+  const updateOrCreateChart = (key, canvas, config) => upsertChart(charts, key, canvas, config);
 
   window.setDividendQuickDate = function (mode) {
     const dateEl = document.getElementById("div-date");
@@ -274,8 +274,7 @@ export function createDividendsUI(ctx) {
 
     const canvas = document.getElementById("chart-dividend-projection");
     if (!canvas) return;
-    destroyChart("divProj");
-    charts.divProj = new Chart(canvas, {
+    updateOrCreateChart("divProj", canvas, {
       data: {
         labels,
         datasets: [
@@ -361,11 +360,10 @@ export function createDividendsUI(ctx) {
     }
 
     if (canvas) {
-      destroyChart("divActual");
       if (mode === "ANNUAL") {
         if (subEl) subEl.textContent = "Akumulasi dividen cair per tahun (Multi-Tahun)";
         const yrs = Object.keys(byYear).sort((a, b) => Number(a) - Number(b));
-        charts.divActual = new Chart(canvas, {
+        updateOrCreateChart("divActual", canvas, {
           type: "bar",
           data: {
             labels: yrs.length > 0 ? yrs : [selectedYear],
@@ -411,7 +409,7 @@ export function createDividendsUI(ctx) {
           });
         }
 
-        charts.divActual = new Chart(canvas, {
+        updateOrCreateChart("divActual", canvas, {
           type: "bar",
           data: {
             labels: MONTH_SHORT_ID,
@@ -669,7 +667,6 @@ export function createDividendsUI(ctx) {
     // Stacked Monthly Chart
     const stackedCanvas = document.getElementById("chart-dividend-monthly-stacked");
     if (stackedCanvas) {
-      destroyChart("divStacked");
       const datasets = state.holdings.map((h) => {
         const shares = Number(h.shares) || 0;
         const sched = state.dividendSchedules[h.ticker] || { payouts: [] };
@@ -686,7 +683,7 @@ export function createDividendsUI(ctx) {
         };
       });
 
-      charts.divStacked = new Chart(stackedCanvas, {
+      updateOrCreateChart("divStacked", stackedCanvas, {
         type: "bar",
         data: { labels: MONTH_SHORT_ID, datasets },
         options: {
@@ -715,9 +712,8 @@ export function createDividendsUI(ctx) {
     // Emiten Contribution Donut
     const donutCanvas = document.getElementById("chart-dividend-emiten-donut");
     if (donutCanvas) {
-      destroyChart("divDonut");
       const activeDivItems = emitenBreakdown.filter((i) => i.annualEst > 0);
-      charts.divDonut = new Chart(donutCanvas, {
+      updateOrCreateChart("divDonut", donutCanvas, {
         type: "doughnut",
         data: {
           labels: activeDivItems.length > 0 ? activeDivItems.map((i) => i.ticker) : ["Belum ada estimasi"],

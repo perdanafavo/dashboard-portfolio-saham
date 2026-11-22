@@ -15,7 +15,7 @@ import {
 import {
   getChartTextColor,
   getChartGridColor,
-  destroyChart as destroyChartInstance
+  upsertChart
 } from "../charts.js";
 
 /**
@@ -34,7 +34,7 @@ export function createAnalyticsUI(ctx) {
     ensureYearStructure
   } = ctx;
 
-  const destroyChart = (key) => destroyChartInstance(charts, key);
+  const updateOrCreateChart = (key, canvas, config) => upsertChart(charts, key, canvas, config);
   let selectedAnalyticsYear = null;
 
   window.onAnalyticsYearChange = function () {
@@ -320,8 +320,7 @@ export function createAnalyticsUI(ctx) {
 
     const moCanvas = document.getElementById("chart-monthly-performance");
     if (moCanvas) {
-      destroyChart("monthlyPerf");
-      charts.monthlyPerf = new Chart(moCanvas, {
+      updateOrCreateChart("monthlyPerf", moCanvas, {
         type: "line",
         data: {
           labels: monthRows.map((r) => r.month),
@@ -383,9 +382,8 @@ export function createAnalyticsUI(ctx) {
 
     const annPerfCanvas = document.getElementById("chart-annual-performance");
     if (annPerfCanvas) {
-      destroyChart("annualPerf");
       const perfYears = annList.filter((a) => a.portfolio !== null || a.ihsg !== null);
-      charts.annualPerf = new Chart(annPerfCanvas, {
+      updateOrCreateChart("annualPerf", annPerfCanvas, {
         type: "bar",
         data: {
           labels: perfYears.map((a) => String(a.year)),
@@ -412,8 +410,7 @@ export function createAnalyticsUI(ctx) {
 
     const annTopCanvas = document.getElementById("chart-annual-topup");
     if (annTopCanvas) {
-      destroyChart("annualTopup");
-      charts.annualTopup = new Chart(annTopCanvas, {
+      updateOrCreateChart("annualTopup", annTopCanvas, {
         data: {
           labels: annList.map((a) => String(a.year)),
           datasets: [

@@ -1,0 +1,20 @@
+{
+  "name": "Portfolio NAV Tracker — Sistem Unit Penyertaan Saham",
+  "short_name": "NAV Tracker",
+  "description": "Dashboard Unit Penyertaan Saham Indonesia (NAV/Unit, Dividen, Mutasi Dana, Rebalancing & Benchmark IHSG/LQ45)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0C1117",
+  "theme_color": "#0C1117",
+  "lang": "id-ID",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
