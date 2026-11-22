@@ -5,7 +5,9 @@ import {
   formatCompactIDR,
   escapeHTML,
   getJakartaTimeInfo,
-  getTodayISO
+  getTodayISO,
+  getNumInput,
+  setNumInput
 } from "../storage.js";
 import {
   getChartTextColor,
@@ -78,7 +80,7 @@ export function createDividendsUI(ctx) {
     const state = getState();
     const ticker = (document.getElementById("div-ticker").value || "").toUpperCase().trim();
     const date = document.getElementById("div-date").value || getTodayISO();
-    const amount = Math.max(0, Number(document.getElementById("div-amount").value) || 0);
+    const amount = Math.max(0, getNumInput("div-amount"));
     const note = (document.getElementById("div-note").value || "").trim();
     const syncSched = document.getElementById("div-sync-schedule").checked;
 
@@ -156,9 +158,9 @@ export function createDividendsUI(ctx) {
     document.getElementById("sched-owned-shares").textContent = h ? `${Number(h.shares).toLocaleString("id-ID")} lembar` : "0 lembar";
     document.getElementById("sched-owned-avg").textContent = h ? `Rp ${formatNum(h.avgPrice, 2)}` : "Rp 0";
     document.getElementById("sched-month-1").value = String(p1.month ?? 3);
-    document.getElementById("sched-dps-1").value = p1.dps || 0;
+    setNumInput("sched-dps-1", p1.dps || 0);
     document.getElementById("sched-month-2").value = String(p2.month ?? 11);
-    document.getElementById("sched-dps-2").value = p2.dps || 0;
+    setNumInput("sched-dps-2", p2.dps || 0);
 
     window.updateSchedulePreview();
     openModal("modal-dividend-schedule");
@@ -170,8 +172,8 @@ export function createDividendsUI(ctx) {
     const h = state.holdings.find((item) => item.ticker === t);
     const shares = h ? Number(h.shares) || 0 : 0;
     const cost = h ? shares * (Number(h.avgPrice) || 0) : 0;
-    const dps1 = Math.max(0, Number(document.getElementById("sched-dps-1").value) || 0);
-    const dps2 = Math.max(0, Number(document.getElementById("sched-dps-2").value) || 0);
+    const dps1 = Math.max(0, getNumInput("sched-dps-1"));
+    const dps2 = Math.max(0, getNumInput("sched-dps-2"));
     const totalDps = dps1 + dps2;
     const annualEst = shares * totalDps;
     const yoc = cost > 0 ? (annualEst / cost) * 100 : 0;
@@ -186,9 +188,9 @@ export function createDividendsUI(ctx) {
     const state = getState();
     const t = document.getElementById("sched-ticker-input").value;
     const m1 = Number(document.getElementById("sched-month-1").value) || 0;
-    const d1 = Math.max(0, Number(document.getElementById("sched-dps-1").value) || 0);
+    const d1 = Math.max(0, getNumInput("sched-dps-1"));
     const m2 = Number(document.getElementById("sched-month-2").value) || 0;
-    const d2 = Math.max(0, Number(document.getElementById("sched-dps-2").value) || 0);
+    const d2 = Math.max(0, getNumInput("sched-dps-2"));
 
     const payouts = [];
     let mergedSameMonth = false;
@@ -227,8 +229,8 @@ export function createDividendsUI(ctx) {
     const baseYield = stockVal > 0 && baseAnnualDiv > 0 ? baseAnnualDiv / stockVal : 0.065;
     const startYear = Number(state.meta.activeYear) || getJakartaTimeInfo().year;
 
-    const growthPct = Math.max(0, Number(document.getElementById("div-proj-growth")?.value) || 0) / 100;
-    const monthlyTopup = Math.max(0, Number(document.getElementById("div-proj-topup")?.value) || 0);
+    const growthPct = Math.max(0, getNumInput("div-proj-growth")) / 100;
+    const monthlyTopup = Math.max(0, getNumInput("div-proj-topup"));
     const useDrip = document.getElementById("div-proj-drip")?.checked !== false;
 
     let organicBaseDiv = baseAnnualDiv;
@@ -519,7 +521,7 @@ export function createDividendsUI(ctx) {
         if (dps > 0) {
           const amt = shares * dps;
           const payoutIdx = scheduleBadges.length;
-          const dpsFormatted = dps % 1 === 0 ? Math.round(dps).toLocaleString("id-ID") : formatNum(dps, 1);
+          const dpsFormatted = dps % 1 === 0 ? Math.round(dps).toLocaleString("id-ID") : formatNum(dps, 2);
           const pillStyle =
             payoutIdx === 0
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
@@ -599,7 +601,7 @@ export function createDividendsUI(ctx) {
     } else {
       remEl.textContent = `Sisa Potensi: ${formatIDR(Math.max(0, annualEstimate - actualYearTotal))}`;
     }
-    document.getElementById("div-progress-pct").textContent = `${formatNum(progressPct, 1)}%`;
+    document.getElementById("div-progress-pct").textContent = `${formatNum(progressPct, 2)}%`;
     document.getElementById("div-progress-bar").style.width = `${Math.min(100, progressPct)}%`;
 
     // 12-Month Calendar Grid
@@ -739,7 +741,7 @@ export function createDividendsUI(ctx) {
                   if (activeDivItems.length === 0) return " Atur jadwal DPS emiten";
                   const val = Number(tooltipCtx.raw) || 0;
                   const pct = annualEstimate > 0 ? (val / annualEstimate) * 100 : 0;
-                  return ` ${tooltipCtx.label}: ${formatIDR(val)} (${formatNum(pct, 1)}%)`;
+                  return ` ${tooltipCtx.label}: ${formatIDR(val)} (${formatNum(pct, 2)}%)`;
                 }
               }
             }
@@ -782,7 +784,7 @@ export function createDividendsUI(ctx) {
             <td class="py-3 px-3 text-right font-sans tabular-nums font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">${formatNum(item.yoc, 2)}%</td>
             <td class="py-3 px-3 text-right font-sans tabular-nums font-bold text-[#10B981] whitespace-nowrap">${formatNum(item.mktYield, 2)}%</td>
             <td class="py-3 px-3 text-right font-sans tabular-nums whitespace-nowrap">
-              <div class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs">${formatNum(sharePct, 1)}%</div>
+              <div class="font-bold text-slate-900 dark:text-[#EEF2F6] text-xs">${formatNum(sharePct, 2)}%</div>
               <div class="mt-1.5 h-1.5 w-14 ml-auto rounded-full bg-slate-200 dark:bg-[#0C1117] overflow-hidden">
                 <div class="h-full rounded-full" style="width:${Math.min(100, sharePct)}%; background:${badgeColor}"></div>
               </div>

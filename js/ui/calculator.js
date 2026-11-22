@@ -9,17 +9,19 @@ import {
   formatSignedIDR,
   formatPct,
   colorClass,
-  escapeHTML
+  escapeHTML,
+  getNumInput,
+  setNumInput
 } from "../storage.js";
 import { renderCalculatorChart } from "../charts.js";
 
 export function createCalculatorUI(ctx) {
   function recalculateAverageSim() {
-    const curShares = Math.max(0, Number(document.getElementById("calc-cur-shares")?.value) || 0);
-    const curAvg = Math.max(0, Number(document.getElementById("calc-cur-avg")?.value) || 0);
-    const buyPrice = Math.max(0, Number(document.getElementById("calc-new-price")?.value) || 0);
-    const buyShares = Math.max(0, Number(document.getElementById("calc-new-shares")?.value) || 0);
-    const targetPrice = Math.max(0, Number(document.getElementById("calc-target-price")?.value) || 0);
+    const curShares = Math.max(0, getNumInput("calc-cur-shares"));
+    const curAvg = Math.max(0, getNumInput("calc-cur-avg"));
+    const buyPrice = Math.max(0, getNumInput("calc-new-price"));
+    const buyShares = Math.max(0, getNumInput("calc-new-shares"));
+    const targetPrice = Math.max(0, getNumInput("calc-target-price"));
     const includeFee = document.getElementById("calc-include-ipot-fee")?.checked;
 
     const curCost = curShares * curAvg;
@@ -51,17 +53,17 @@ export function createCalculatorUI(ctx) {
   }
 
   function syncCalcFromShares() {
-    const price = Math.max(0, Number(document.getElementById("calc-new-price").value) || 0);
-    const shares = Math.max(0, Number(document.getElementById("calc-new-shares").value) || 0);
-    document.getElementById("calc-new-budget").value = Math.round(price * shares);
+    const price = Math.max(0, getNumInput("calc-new-price"));
+    const shares = Math.max(0, getNumInput("calc-new-shares"));
+    setNumInput("calc-new-budget", Math.round(price * shares));
     recalculateAverageSim();
   }
 
   function syncCalcFromBudget() {
-    const price = Math.max(1, Number(document.getElementById("calc-new-price").value) || 1);
-    const budget = Math.max(0, Number(document.getElementById("calc-new-budget").value) || 0);
+    const price = Math.max(1, getNumInput("calc-new-price", 1));
+    const budget = Math.max(0, getNumInput("calc-new-budget"));
     const lots = Math.floor(budget / (price * 100));
-    document.getElementById("calc-new-shares").value = lots * 100;
+    setNumInput("calc-new-shares", lots * 100);
     recalculateAverageSim();
   }
 
@@ -70,10 +72,10 @@ export function createCalculatorUI(ctx) {
     const ticker = document.getElementById("calc-load-ticker").value;
     const h = state.holdings.find((item) => item.ticker === ticker);
     if (!h) return;
-    document.getElementById("calc-cur-shares").value = h.shares;
-    document.getElementById("calc-cur-avg").value = Number(h.avgPrice).toFixed(2);
-    document.getElementById("calc-new-price").value = h.currentPrice;
-    document.getElementById("calc-target-price").value = Math.round(h.avgPrice * 1.05);
+    setNumInput("calc-cur-shares", h.shares);
+    setNumInput("calc-cur-avg", Number(h.avgPrice), 2);
+    setNumInput("calc-new-price", h.currentPrice);
+    setNumInput("calc-target-price", Math.round(h.avgPrice * 1.05));
     syncCalcFromShares();
   }
 
@@ -87,7 +89,7 @@ export function createCalculatorUI(ctx) {
         state.holdings
           .map(
             (h) =>
-              `<option value="${escapeHTML(h.ticker)}">${escapeHTML(h.ticker)} (${Number(h.shares).toLocaleString("id-ID")} lbr @ ${formatNum(h.avgPrice, 0)})</option>`
+              `<option value="${escapeHTML(h.ticker)}">${escapeHTML(h.ticker)} (${Number(h.shares).toLocaleString("id-ID")} lbr @ ${formatNum(h.avgPrice, 2)})</option>`
           )
           .join("");
       if (prev && state.holdings.some((h) => h.ticker === prev)) sel.value = prev;

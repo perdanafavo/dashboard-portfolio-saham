@@ -7,7 +7,10 @@ import {
   formatCompactIDR,
   formatPct,
   colorClass,
-  getJakartaTimeInfo
+  getJakartaTimeInfo,
+  parseIDNumber,
+  getNumInput,
+  setNumInput
 } from "../storage.js";
 import {
   getChartTextColor,
@@ -44,10 +47,10 @@ export function createAnalyticsUI(ctx) {
 
   window.updateBenchmarkInputs = function () {
     const state = getState();
-    const ihsgStart = Number(document.getElementById("bench-ihsg-start").value);
-    const ihsgEnd = Number(document.getElementById("bench-ihsg-end").value);
-    const lq45Start = Number(document.getElementById("bench-lq45-start").value);
-    const lq45End = Number(document.getElementById("bench-lq45-end").value);
+    const ihsgStart = getNumInput("bench-ihsg-start");
+    const ihsgEnd = getNumInput("bench-ihsg-end");
+    const lq45Start = getNumInput("bench-lq45-start");
+    const lq45End = getNumInput("bench-lq45-end");
 
     if (
       !Number.isFinite(ihsgStart) || ihsgStart <= 0 ||
@@ -74,8 +77,8 @@ export function createAnalyticsUI(ctx) {
     ensureYearStructure(year);
     const row = state.monthlyHistoryByYear[year]?.[monthIdx];
     if (!row) return;
-    const cleaned = String(rawVal ?? "").replace(",", ".").trim();
-    row[field] = cleaned === "" || !Number.isFinite(Number(cleaned)) ? null : Number(cleaned);
+    const trimmed = String(rawVal ?? "").trim();
+    row[field] = trimmed === "" || trimmed === "-" ? null : parseIDNumber(trimmed, "signed-dec");
     commitStateChange();
   };
 
@@ -84,12 +87,11 @@ export function createAnalyticsUI(ctx) {
     ensureYearStructure(year);
     const ann = state.annualHistory.find((a) => Number(a.year) === Number(year));
     if (!ann) return;
+    const trimmed = String(rawVal ?? "").trim();
     if (field === "topUp") {
-      const numeric = Number(String(rawVal ?? "").replace(/[^\d.-]/g, ""));
-      ann.topUp = Number.isFinite(numeric) ? numeric : 0;
+      ann.topUp = parseIDNumber(trimmed, "signed-int");
     } else {
-      const cleaned = String(rawVal ?? "").replace(",", ".").trim();
-      ann[field] = cleaned === "" || !Number.isFinite(Number(cleaned)) ? null : Number(cleaned);
+      ann[field] = trimmed === "" || trimmed === "-" ? null : parseIDNumber(trimmed, "signed-dec");
     }
     commitStateChange();
   };
@@ -197,10 +199,10 @@ export function createAnalyticsUI(ctx) {
       yearSel.value = String(viewYr);
     }
 
-    document.getElementById("bench-ihsg-start").value = state.benchmark.ihsgStart;
-    document.getElementById("bench-ihsg-end").value = state.benchmark.ihsgEnd;
-    document.getElementById("bench-lq45-start").value = state.benchmark.lq45Start;
-    document.getElementById("bench-lq45-end").value = state.benchmark.lq45End;
+    setNumInput("bench-ihsg-start", state.benchmark.ihsgStart, 2);
+    setNumInput("bench-ihsg-end", state.benchmark.ihsgEnd, 2);
+    setNumInput("bench-lq45-start", state.benchmark.lq45Start, 2);
+    setNumInput("bench-lq45-end", state.benchmark.lq45End, 2);
 
     const ihsgBadge = document.getElementById("bench-ihsg-pct-badge");
     ihsgBadge.textContent = formatPct(m.ihsgReturnPct);
@@ -301,13 +303,13 @@ export function createAnalyticsUI(ctx) {
           <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors">
             <td class="py-2.5 px-5 font-sans font-bold text-slate-900 dark:text-[#EEF2F6]">${MONTH_NAMES_ID[r.monthIndex]}</td>
             <td class="py-2 px-4 text-right">
-              <input type="text" value="${r.portfolio !== null ? formatNum(r.portfolio, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'portfolio', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums font-semibold bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-[#10B981] focus:outline-none ${r.portfolio !== null ? colorClass(r.portfolio) : "text-slate-400 dark:text-[#8E9BA8]"}" />
+              <input type="text" inputmode="decimal" data-num-input="signed-dec" data-num-decimals="2" data-num-min-decimals="2" value="${r.portfolio !== null ? formatNum(r.portfolio, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'portfolio', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums font-semibold bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-[#10B981] focus:outline-none ${r.portfolio !== null ? colorClass(r.portfolio) : "text-slate-400 dark:text-[#8E9BA8]"}" />
             </td>
             <td class="py-2 px-4 text-right">
-              <input type="text" value="${r.ihsg !== null ? formatNum(r.ihsg, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'ihsg', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-sky-500 focus:outline-none ${r.ihsg !== null ? colorClass(r.ihsg) : "text-slate-400 dark:text-[#8E9BA8]"}" />
+              <input type="text" inputmode="decimal" data-num-input="signed-dec" data-num-decimals="2" data-num-min-decimals="2" value="${r.ihsg !== null ? formatNum(r.ihsg, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'ihsg', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-sky-500 focus:outline-none ${r.ihsg !== null ? colorClass(r.ihsg) : "text-slate-400 dark:text-[#8E9BA8]"}" />
             </td>
             <td class="py-2 px-4 text-right">
-              <input type="text" value="${r.lq45 !== null ? formatNum(r.lq45, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'lq45', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-amber-500 focus:outline-none ${r.lq45 !== null ? colorClass(r.lq45) : "text-slate-400 dark:text-[#8E9BA8]"}" />
+              <input type="text" inputmode="decimal" data-num-input="signed-dec" data-num-decimals="2" data-num-min-decimals="2" value="${r.lq45 !== null ? formatNum(r.lq45, 2) : ""}" placeholder="—" onchange="updateMonthlyHistoryCell(${viewYr}, ${r.monthIndex}, 'lq45', this.value)" class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-amber-500 focus:outline-none ${r.lq45 !== null ? colorClass(r.lq45) : "text-slate-400 dark:text-[#8E9BA8]"}" />
             </td>
             <td class="py-2.5 px-4 text-right font-sans tabular-nums font-semibold ${aI !== null ? colorClass(aI) : "text-slate-400 dark:text-[#8E9BA8]"}">${aI !== null ? formatPct(aI) : "—"}</td>
             <td class="py-2.5 px-5 text-right font-sans tabular-nums font-semibold ${aL !== null ? colorClass(aL) : "text-slate-400 dark:text-[#8E9BA8]"}">${aL !== null ? formatPct(aL) : "—"}</td>
@@ -334,9 +336,12 @@ export function createAnalyticsUI(ctx) {
           maintainAspectRatio: false,
           scales: {
             x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
-            y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` }, grid: { color: getChartGridColor() } }
+            y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${formatNum(v, 1)}%` }, grid: { color: getChartGridColor() } }
           },
-          plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
+          plugins: {
+            legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
+            tooltip: { callbacks: { label: (tCtx) => ` ${tCtx.dataset.label}: ${formatPct(tCtx.raw)}` } }
+          }
         }
       });
     }
@@ -360,7 +365,7 @@ export function createAnalyticsUI(ctx) {
             <td class="py-2.5 px-4 text-right font-sans tabular-nums ${a.lq45 !== null ? colorClass(a.lq45) : "text-slate-400 dark:text-[#8E9BA8]"}">${a.lq45 !== null ? formatPct(a.lq45) : "—"}</td>
             <td class="py-2.5 px-4 text-right font-sans tabular-nums font-semibold ${alphaI !== null ? colorClass(alphaI) : "text-slate-400 dark:text-[#8E9BA8]"}">${alphaI !== null ? formatPct(alphaI) : "—"}</td>
             <td class="py-2 px-4 text-right">
-              <input type="number" value="${Math.round(top)}" onchange="updateAnnualHistoryCell(${a.year}, 'topUp', this.value)" class="w-32 px-2 py-1 rounded-md text-right font-sans tabular-nums text-slate-800 dark:text-[#EEF2F6] bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-[#10B981] focus:outline-none" />
+              <input type="text" inputmode="numeric" data-num-input="signed-int" value="${Math.round(top).toLocaleString("id-ID")}" onchange="updateAnnualHistoryCell(${a.year}, 'topUp', this.value)" class="w-32 px-2 py-1 rounded-md text-right font-sans tabular-nums text-slate-800 dark:text-[#EEF2F6] bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-[#10B981] focus:outline-none" />
             </td>
             <td class="py-2.5 px-5 text-right font-sans tabular-nums font-bold text-indigo-600 dark:text-indigo-400">${formatIDR(cumTopUp)}</td>
           </tr>
@@ -395,9 +400,12 @@ export function createAnalyticsUI(ctx) {
           maintainAspectRatio: false,
           scales: {
             x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
-            y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${v}%` }, grid: { color: getChartGridColor() } }
+            y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => `${formatNum(v, 1)}%` }, grid: { color: getChartGridColor() } }
           },
-          plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
+          plugins: {
+            legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
+            tooltip: { callbacks: { label: (tCtx) => ` ${tCtx.dataset.label}: ${formatPct(tCtx.raw)}` } }
+          }
         }
       });
     }
@@ -435,7 +443,10 @@ export function createAnalyticsUI(ctx) {
             x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
             y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatCompactIDR(v) }, grid: { color: getChartGridColor() } }
           },
-          plugins: { legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } } }
+          plugins: {
+            legend: { labels: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } } },
+            tooltip: { callbacks: { label: (tCtx) => ` ${tCtx.dataset.label}: ${formatIDR(tCtx.raw)}` } }
+          }
         }
       });
     }

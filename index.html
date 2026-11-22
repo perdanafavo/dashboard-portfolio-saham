@@ -739,11 +739,11 @@
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <label for="div-proj-growth" class="block font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Kenaikan DPS / Thn (%)</label>
-                <input type="number" id="div-proj-growth" value="6" min="0" max="50" step="0.5" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="div-proj-growth" value="6" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               </div>
               <div>
                 <label for="div-proj-topup" class="block font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Top Up / Bln</label>
-                <input type="number" id="div-proj-topup" value="2500000" min="0" step="500000" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                <input type="text" inputmode="numeric" data-num-input="int" id="div-proj-topup" value="2.500.000" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               </div>
             </div>
 
@@ -943,7 +943,7 @@
                   <button type="button" onclick="setMutationQuickAmount(10000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+10 Jt</button>
                 </div>
               </div>
-              <input type="number" id="mut-amount" min="1" step="1" required placeholder="Contoh: 5000000" oninput="updateMutationPreview()" class="w-full px-3 py-2.5 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+              <input type="text" inputmode="numeric" data-num-input="int" id="mut-amount" required placeholder="Contoh: 5.000.000" oninput="updateMutationPreview()" class="w-full px-3 py-2.5 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
             </div>
 
             <div>
@@ -953,7 +953,7 @@
                   Gunakan NAV Terkini
                 </button>
               </div>
-              <input type="number" id="mut-nav-price" min="0.0001" step="any" required placeholder="1130.9663" oninput="onMutationNavInput()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="mut-nav-price" required placeholder="1.130,9663" oninput="onMutationNavInput()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               <p class="text-[11px] text-slate-500 dark:text-[#8E9BA8] mt-1">Default terisi NAV terkini. Ubah jika mencatat mutasi tanggal mundur (backdate).</p>
             </div>
 
@@ -1092,25 +1092,25 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3.5 border-t border-slate-200/70 dark:border-white/[0.07] text-xs">
           <div>
             <label class="block text-xs font-medium text-slate-500 dark:text-[#8E9BA8] mb-1">IHSG Awal Tahun</label>
-            <input type="number" id="bench-ihsg-start" step="any" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-start" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">IHSG Terkini</label>
               <span id="bench-ihsg-pct-badge" class="text-[11px] font-sans tabular-nums font-bold">0,00%</span>
             </div>
-            <input type="number" id="bench-ihsg-end" step="any" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-end" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-500 dark:text-[#8E9BA8] mb-1">LQ45 Awal Tahun</label>
-            <input type="number" id="bench-lq45-start" step="any" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-start" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">LQ45 Terkini</label>
               <span id="bench-lq45-pct-badge" class="text-[11px] font-sans tabular-nums font-bold">0,00%</span>
             </div>
-            <input type="number" id="bench-lq45-end" step="any" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-end" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
         </div>
       </div>
@@ -1400,11 +1400,11 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-cur-shares" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Lembar Dimiliki</label>
-                    <input type="number" id="calc-cur-shares" value="14600" min="0" step="100" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-cur-shares" value="14.600" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-cur-avg" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Avg. Price Saat Ini (Rp)</label>
-                    <input type="number" id="calc-cur-avg" value="3961.36" min="0" step="any" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="calc-cur-avg" value="3.961,36" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
               </div>
@@ -1415,22 +1415,22 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-new-price" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Harga Beli (Rp)</label>
-                    <input type="number" id="calc-new-price" value="2880" min="1" step="any" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-price" value="2.880" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-new-shares" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Beli (Lembar)</label>
-                    <input type="number" id="calc-new-shares" value="5400" min="0" step="100" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-shares" value="5.400" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-new-budget" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Atau Budget Dana (Rp)</label>
-                    <input type="number" id="calc-new-budget" value="15552000" min="0" step="10000" oninput="syncCalcFromBudget()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-budget" value="15.552.000" oninput="syncCalcFromBudget()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-target-price" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Simulasi Target Jual (Rp)</label>
-                    <input type="number" id="calc-target-price" value="4000" min="1" step="any" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-target-price" value="4.000" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
               </div>
@@ -1541,11 +1541,11 @@
                 <option value="SHARES">Lembar</option>
               </select>
             </div>
-            <input type="number" id="buy-qty" min="1" step="1" required placeholder="25" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-qty" required placeholder="25" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Beli / Lbr (Rp)</label>
-            <input type="number" id="buy-price" min="1" step="any" required placeholder="2480" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-price" required placeholder="2.480" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1560,7 +1560,7 @@
           </div>
           <div class="col-span-5">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee All-In</label>
-            <input type="number" id="buy-fee" value="0.19" min="0" max="5" step="0.0001" oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="buy-fee" value="0,19" oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1666,11 +1666,11 @@
                 <button type="button" onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
               </div>
             </div>
-            <input type="number" id="sell-shares" min="1" step="1" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-shares" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Jual / Lbr (Rp)</label>
-            <input type="number" id="sell-price" min="1" step="any" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-price" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1685,7 +1685,7 @@
           </div>
           <div class="col-span-5">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee Jual</label>
-            <input type="number" id="sell-fee" value="0.29" min="0" max="5" step="0.0001" oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="sell-fee" value="0,29" oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1787,7 +1787,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Nominal Dividen Bersih (Rp)</label>
-          <input type="number" id="div-amount" min="1" step="1" required placeholder="Contoh: 4500000" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <input type="text" inputmode="numeric" data-num-input="int" id="div-amount" required placeholder="Contoh: 4.500.000" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan (Opsional)</label>
@@ -1853,7 +1853,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS (Rp / Lembar)</label>
-              <input type="number" id="sched-dps-1" min="0" step="any" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-1" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
             </div>
           </div>
         </div>
@@ -1880,7 +1880,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS Interim (Rp / Lbr)</label>
-              <input type="number" id="sched-dps-2" min="0" step="any" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-2" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
             </div>
           </div>
         </div>
@@ -1942,7 +1942,7 @@
         </p>
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Kas Saat Ini (Rp)</label>
-          <input type="number" id="edit-cash-amount" min="0" step="1" required class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <input type="text" inputmode="numeric" data-num-input="int" id="edit-cash-amount" required class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
         <div class="flex justify-end gap-2">
           <button type="button" onclick="closeModal('modal-cash')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
@@ -1982,23 +1982,23 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Lembar</label>
-              <span id="edit-prev-lots" class="text-[10px] font-mono text-sky-500 font-semibold">0 lot</span>
+              <span id="edit-prev-lots" class="text-[10px] font-mono text-sky-500 font-semibold">0,00 lot</span>
             </div>
-            <input type="number" id="edit-holding-shares" min="1" step="1" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-shares" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Price (Rp)</label>
-            <input type="number" id="edit-holding-avg" min="0" step="any" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="edit-holding-avg" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Price (Rp)</label>
-            <input type="number" id="edit-holding-current" min="1" step="any" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-current" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Alokasi Portofolio (%) <span class="font-normal text-slate-400">(opsional, 0–100%)</span></label>
-          <input type="number" id="edit-holding-target-weight" min="0" max="100" step="0.1" placeholder="0" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+          <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="edit-holding-target-weight" placeholder="0" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
 
         <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-0.5">
@@ -2061,15 +2061,15 @@
         <div class="grid grid-cols-3 gap-2.5">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Lembar</label>
-            <input type="number" id="mj-shares" min="1" required placeholder="5000" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="mj-shares" required placeholder="5.000" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Cost</label>
-            <input type="number" id="mj-avg" min="1" step="any" required placeholder="1500" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="mj-avg" required placeholder="1.500" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sell Price</label>
-            <input type="number" id="mj-sell" min="1" step="any" required placeholder="1750" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="mj-sell" required placeholder="1.750" class="w-full px-2.5 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
         <div>
@@ -2214,15 +2214,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Modal Awal (Rp)</label>
-            <input type="number" id="base-init-capital" min="1" step="any" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="base-init-capital" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Unit Awal</label>
-            <input type="number" id="base-init-nav" min="0.0001" step="any" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-nav" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah Unit Awal</label>
-            <input type="number" id="base-init-units" min="0.0001" step="any" required oninput="updateBaselinePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-units" required oninput="updateBaselinePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 

@@ -10,7 +10,10 @@ import {
   formatCompactIDR,
   formatPct,
   escapeHTML,
-  getTodayISO
+  getTodayISO,
+  parseIDNumber,
+  getNumInput,
+  setNumInput
 } from "../storage.js";
 import { destroyChart, getChartTextColor, getChartGridColor } from "../charts.js";
 
@@ -18,9 +21,8 @@ export function createMutationsUI(ctx) {
   function updateMutationPreview() {
     const m = ctx.computeMetrics();
     const type = document.getElementById("mut-type")?.value || "TOPUP";
-    const amount = Math.max(0, Number(document.getElementById("mut-amount")?.value) || 0);
-    const navInp = document.getElementById("mut-nav-price");
-    const rawNav = Number(navInp?.value);
+    const amount = Math.max(0, getNumInput("mut-amount"));
+    const rawNav = getNumInput("mut-nav-price");
     const nav = rawNav > 0 ? rawNav : (m.currentNav > 0 ? m.currentNav : m.initNav);
     const delta = nav > 0 ? amount / nav : 0;
     const signedDelta = type === "TOPUP" ? delta : -delta;
@@ -39,9 +41,7 @@ export function createMutationsUI(ctx) {
   }
 
   function setMutationQuickAmount(val) {
-    const inp = document.getElementById("mut-amount");
-    if (!inp) return;
-    inp.value = val;
+    setNumInput("mut-amount", val);
     updateMutationPreview();
   }
 
@@ -56,7 +56,7 @@ export function createMutationsUI(ctx) {
     const navInp = document.getElementById("mut-nav-price");
     if (navInp) {
       navInp.dataset.userEdited = "";
-      navInp.value = (m.currentNav > 0 ? m.currentNav : m.initNav).toFixed(4);
+      setNumInput(navInp, m.currentNav > 0 ? m.currentNav : m.initNav, 4);
     }
     updateMutationPreview();
   }
@@ -78,9 +78,9 @@ export function createMutationsUI(ctx) {
     const m = ctx.computeMetrics();
     const date = document.getElementById("mut-date").value || getTodayISO();
     const type = document.getElementById("mut-type").value;
-    const amount = Math.max(0, Number(document.getElementById("mut-amount").value) || 0);
+    const amount = Math.max(0, getNumInput("mut-amount"));
     const navInp = document.getElementById("mut-nav-price");
-    const inputNav = Number(navInp?.value);
+    const inputNav = getNumInput(navInp);
     const note = (document.getElementById("mut-note").value || "").trim();
     const adjustCash = document.getElementById("mut-adjust-cash").checked;
 
@@ -136,8 +136,7 @@ export function createMutationsUI(ctx) {
   function updateMutationNavInline(mutId, rawVal) {
     const state = ctx.getState();
     const item = state.mutations.find((m) => m.id === mutId);
-    const cleaned = String(rawVal ?? "").replace(/\./g, "").replace(",", ".").trim();
-    const newNav = Number(cleaned);
+    const newNav = parseIDNumber(rawVal, "dec");
     if (!item || !Number.isFinite(newNav) || newNav <= 0) {
       renderMutationsTab();
       return;
@@ -199,14 +198,14 @@ export function createMutationsUI(ctx) {
     document.getElementById("mut-kpi-nav-sub").textContent = `NAV Saat Ini: ${formatNum(m.currentNav, 4)}`;
 
     const sampleUnits = m.currentNav > 0 ? 10000000 / m.currentNav : 0;
-    document.getElementById("mut-neutrality-nav").textContent = formatNum(m.currentNav, 2);
-    document.getElementById("mut-neutrality-units").textContent = `+${formatNum(sampleUnits, 2)} unit`;
+    document.getElementById("mut-neutrality-nav").textContent = formatNum(m.currentNav, 4);
+    document.getElementById("mut-neutrality-units").textContent = `+${formatNum(sampleUnits, 4)} unit`;
     document.getElementById("mut-neutrality-twr").textContent = formatPct(m.ytdReturnPct);
 
     document.getElementById("mut-summary-badge").innerHTML = `Total Modal Disetor: <strong class="text-slate-900 dark:text-[#EEF2F6]">${formatIDR(m.totalPaidInCapital)}</strong>`;
     const mutNavInp = document.getElementById("mut-nav-price");
     if (mutNavInp && mutNavInp.dataset.userEdited !== "1") {
-      mutNavInp.value = (m.currentNav > 0 ? m.currentNav : m.initNav).toFixed(4);
+      setNumInput(mutNavInp, m.currentNav > 0 ? m.currentNav : m.initNav, 4);
     }
     updateMutationPreview();
 
@@ -265,6 +264,10 @@ export function createMutationsUI(ctx) {
           <td class="py-2 px-3 text-right font-sans tabular-nums text-slate-600 dark:text-[#EEF2F6] whitespace-nowrap">
             <input
               type="text"
+              inputmode="decimal"
+              data-num-input="dec"
+              data-num-decimals="4"
+              data-num-min-decimals="4"
               value="${formatNum(mut.navAtTime, 4)}"
               onchange="updateMutationNavInline('${escapeHTML(mut.id)}', this.value)"
               title="Klik untuk koreksi Harga Unit (NAV) eksekusi"
@@ -347,12 +350,20 @@ export function createMutationsUI(ctx) {
             },
             y1: {
               position: "right",
-              ticks: { color: "#38bdf8", font: { family: "JetBrains Mono", size: 10 } },
+              ticks: { color: "#38bdf8", font: { family: "JetBrains Mono", size: 10 }, callback: (v) => formatNum(v, 0) },
               grid: { drawOnChartArea: false }
             }
           },
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (tCtx) =>
+                  tCtx.dataset.yAxisID === "y1"
+                    ? ` ${tCtx.dataset.label}: ${formatNum(tCtx.raw, 4)} unit`
+                    : ` ${tCtx.dataset.label}: ${formatSignedIDR(tCtx.raw)}`
+              }
+            }
           }
         }
       });

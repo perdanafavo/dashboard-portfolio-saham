@@ -9,7 +9,8 @@ import {
   formatPct,
   colorClass,
   escapeHTML,
-  getTodayISO
+  getTodayISO,
+  getNumInput
 } from "../storage.js";
 
 export function createJournalUI(ctx) {
@@ -28,9 +29,9 @@ export function createJournalUI(ctx) {
     const state = ctx.getState();
     const date = document.getElementById("mj-date").value || getTodayISO();
     const ticker = (document.getElementById("mj-ticker").value || "").toUpperCase().trim();
-    const shares = Math.max(0, Number(document.getElementById("mj-shares").value) || 0);
-    const avgCost = Math.max(0, Number(document.getElementById("mj-avg").value) || 0);
-    const sellPrice = Math.max(0, Number(document.getElementById("mj-sell").value) || 0);
+    const shares = Math.max(0, getNumInput("mj-shares"));
+    const avgCost = Math.max(0, getNumInput("mj-avg"));
+    const sellPrice = Math.max(0, getNumInput("mj-sell"));
     const note = (document.getElementById("mj-note").value || "").trim();
 
     if (!ticker || shares <= 0 || avgCost <= 0 || sellPrice <= 0) {
@@ -77,7 +78,7 @@ export function createJournalUI(ctx) {
     const plEl = document.getElementById("journal-kpi-total-pl");
     plEl.textContent = formatSignedIDR(totalPL);
     plEl.className = `text-2xl sm:text-3xl font-extrabold font-sans tabular-nums tracking-tight mt-2 ${colorClass(totalPL)}`;
-    document.getElementById("journal-kpi-winrate").textContent = `${formatNum(winRate, 1)}%`;
+    document.getElementById("journal-kpi-winrate").textContent = `${formatNum(winRate, 2)}%`;
     document.getElementById("journal-kpi-count").textContent = `${state.journal.length} transaksi`;
 
     const tbody = document.getElementById("journal-table-body");
@@ -102,9 +103,9 @@ export function createJournalUI(ctx) {
                 <span class="font-sans font-bold text-slate-900 dark:text-[#EEF2F6]">${escapeHTML(j.ticker)}</span>
               </div>
             </td>
-            <td class="py-3 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${Number(j.shares).toLocaleString("id-ID")} <span class="text-[11px] text-slate-400 dark:text-[#8E9BA8]">(${formatNum(j.shares / 100, 1)} lot)</span></td>
+            <td class="py-3 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${Number(j.shares).toLocaleString("id-ID")} <span class="text-[11px] text-slate-400 dark:text-[#8E9BA8]">(${formatNum(j.shares / 100, 2)} lot)</span></td>
             <td class="py-3 px-3 text-right font-sans tabular-nums text-slate-600 dark:text-[#8E9BA8] whitespace-nowrap">${formatNum(j.avgCost, 2)}</td>
-            <td class="py-3 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${formatNum(j.sellPrice, 2)}</td>
+            <td class="py-3 px-3 text-right font-sans tabular-nums text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${formatNum(j.sellPrice, 0)}</td>
             <td class="py-3 px-3 text-right font-sans tabular-nums font-bold whitespace-nowrap ${colorClass(pl)}">${formatSignedIDR(pl)}</td>
             <td class="py-3 px-3 text-right font-sans tabular-nums whitespace-nowrap">
               <span class="inline-block px-2 py-0.5 rounded-md text-xs font-semibold ${pl >= 0 ? "bg-[#10B981]/15 text-emerald-600 dark:text-[#10B981]" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"}">

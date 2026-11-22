@@ -11,7 +11,9 @@ import {
   getLatestTradingDateWIB,
   loadInitialState,
   saveStateToLocalStorage,
-  createCloudSyncController
+  createCloudSyncController,
+  initLiveNumberInputs,
+  syncNumInputs
 } from "./storage.js";
 import {
   formatUnixMarketDateWIB,
@@ -343,6 +345,7 @@ function openModal(id) {
   if (!el) return;
   el.classList.remove("hidden");
   el.classList.add("flex");
+  syncNumInputs(el);
   renderIconsIn(el);
 }
 
@@ -552,6 +555,7 @@ window.renderAll = function ({ force = true } = {}) {
   renderedTabVersion[activeTab] = stateVersion;
 
   const activePanel = document.getElementById(`tab-panel-${activeTab}`);
+  syncNumInputs(activePanel || document);
   renderIconsIn(activePanel);
 };
 
@@ -583,6 +587,7 @@ function initApp() {
   });
 
   setupModalAccessibility();
+  initLiveNumberInputs();
   renderIconsIn(document.body);
   window.renderAll({ force: false });
   scheduleDailyMarketCloseSync();

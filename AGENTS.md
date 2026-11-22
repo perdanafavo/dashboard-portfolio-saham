@@ -42,11 +42,13 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 | Peran | Tanggung Jawab Utama | Skill & Tools Utama | Output / Artefak |
 | :--- | :--- | :--- | :--- |
 | **1. PM (Product Manager)** | Klarifikasi masalah, batas ruang lingkup, edge case finansial, prioritas | `brainstorming` → `to-spec` → `to-tickets` (opsional `/grill-me`) | Design doc, spec & tiket *vertical-slice* di `docs/specs/` |
-| **2. UI/UX & Frontend Designer** | Hirarki visual dashboard FinTech, chart, layout responsif, komponen modern | `ui-ux-pro-max`, `frontend-design` / `taste-skill`, `modern-web-guidance` | Keputusan layout, palet/tipografi, spesifikasi komponen & interaksi |
+| **2. UI/UX & Frontend Designer** | Riset desain FinTech, hirarki visual, anti-slop UI, prototipe interaktif, layout responsif | `ui-ux-pro-max`, `design-taste-frontend` (`taste-skill`, anti-slop), `frontend-design`, `modern-web-guidance`, `generative_ui` (prototype), `search_web` | Keputusan layout, palet/tipografi, prototipe HTML (bila fitur besar), & spesifikasi komponen |
 | **3. Developer** | Implementasi fitur, logika NAV/state, unit test (TDD), refactor modul, integrasi library | `tdd`, `ponytail`, `codebase-design`, `Context7`, `caveman` | Perubahan kode bersih dengan diff minimal & test terverifikasi |
 | **4. QA & Code Reviewer** | Polish UI, audit a11y/form/focus, security review, review kualitas 5-axis, investigasi bug, cek visual | `impeccable` (`polish`, `harden`), `web-design-guidelines`, `code-review-and-quality`, `security-review`, `systematic-debugging`, `/browser` | Temuan berlabel (`Critical`/`Required`/`Optional`/`Nit`), audit security *high-confidence*, & bukti visual |
 
-> **Catatan TDD, Debugging & Security:** Gunakan `tdd` (*red → green* pada *seam* yang disepakati) saat mengubah/menambah logika NAV, state, atau modul inti. Saat menemukan bug atau perilaku tak terduga, wajib ikuti Iron Law `systematic-debugging` — temukan *root cause* sebelum menulis perbaikan. Jalankan `security-review` untuk audit celah keamanan *high-confidence* (XSS, import JSON, Firebase, supply chain) sebelum rilis.
+> **Catatan Alur UI/UX, TDD, Debugging & Security:**
+> - **Alur Standar Fitur/Desain Baru:** `PM (Spec) → UI/UX (Riset & Prototype) → Dev/Frontend → QA → Security`. Untuk tab baru, rombak layout besar, atau komponen visual kompleks, wajib riset referensi (`search_web`) + buat prototipe interaktif (`generative_ui`) untuk disetujui user sebelum coding. Untuk fitur UI kecil–sedang, cukup langsung `Spec → Dev` tanpa prototipe.
+> - **TDD, Debugging & Security:** Gunakan `tdd` (*red → green* pada *seam* yang disepakati) saat mengubah/menambah logika NAV, state, atau modul inti. Saat menemukan bug atau perilaku tak terduga, wajib ikuti Iron Law `systematic-debugging` — temukan *root cause* sebelum menulis perbaikan. Jalankan `security-review` untuk audit celah keamanan *high-confidence* (XSS, import JSON, Firebase, supply chain) sebelum rilis.
 
 ---
 
@@ -68,15 +70,20 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
 
 ## 5. Protokol Eksekusi, Pengingat Hemat Kuota & Handoff
 
+- **Decision Gate Hemat Kuota (Aturan Mandor / Orchestrator):**
+  - **Default = Single Agent + Argon (Medium) / Hydrogen:** Untuk 80% task harian (1–3 file, fitur standar, bugfix jelas, diskusi PM).
+  - **Kapan pakai `/teamwork` (Orchestrator):** Hanya jika ada **≥ 2–3 sub-task independen** di file berbeda yang bisa dikerjakan paralel. Worker riset/QA mekanis **wajib** dipin ke model ringan (`flash` / `flash_lite`). Jangan pakai `/teamwork` untuk task kecil/berurutan (overhead lebih boros).
+  - **Kapan pakai `/boost`:** Hanya untuk masalah berisiko tinggi atau butuh *deep thinking* (logika NAV/matematika kritis, bug misterius, atau desain arsitektur besar). **Jangan** pakai `/boost` untuk UI standar, copy, atau tweak CSS.
+  - **Kapan pakai `ponytail` & `caveman`:** Wajib aktif di setiap fase Dev/QA — `ponytail` menjaga diff kode sekecil mungkin (YAGNI, tanpa abstraksi berlebih + 1–2 baris catatan *skipped/risk* di akhir), sedangkan `caveman` menjaga balasan chat tetap padat (naikkan ke `caveman ultra` untuk batch coding besar atau QA berulang).
 - **Fitur Kecil–Sedang:** Jalankan berurutan (PM → UI/UX → Dev → QA) dalam satu sesi, lalu `/compact` di tiap pergantian fase.
 - **Fitur Besar / Paralel:** Gunakan `/teamwork` (Swarm) dengan koordinator membagi tiket sesuai peran & batas *single-writer* pada `index.html`.
-- **Otomatis Mode `caveman` di Fase Dev & QA:**
-  - Saat mengeksekusi tiket coding (Developer) dan pemeriksaan kode (QA), agent **wajib otomatis menggunakan gaya bahasa ringkas (`caveman` lite)** — langsung hasil, tanpa basa-basi panjang — meskipun user tidak mengetik `/caveman`.
+- **Otomatis Mode `ponytail` + `caveman` di Fase Dev & QA:**
+  - Saat mengeksekusi tiket coding (Developer) dan pemeriksaan kode (QA), agent **wajib otomatis menggunakan prinsip `ponytail` (diff minimal) dan gaya bahasa ringkas (`caveman` lite)** — langsung hasil, tanpa basa-basi panjang — meskipun user tidak mengetik `/ponytail` atau `/caveman` (naikkan ke `caveman ultra` untuk batch besar).
   - Kembali ke bahasa penjelasan normal yang ramah saat fase PM / diskusi desain / menjawab pertanyaan user.
-- **Pengingat Otomatis Pergantian Fase (Wajib Ditampilkan Agent di Akhir Pesan):**
+- **Pengingat Otomatis Pergantian Fase & Hemat Kuota (Wajib Ditampilkan Agent di Akhir Pesan):**
   1. **Saat Transisi PM → Dev (Spec Disetujui, Siap Coding):** Tampilkan kotak pengingat singkat:
-     - *Switch Model:* Ingatkan apakah tahap ini cukup memakai **Argon (Medium)** atau perlu naik ke **Neon (Medium)**.
-     - *Compact:* Ingatkan user untuk mengetik `/compact` jika diskusi perencanaan sudah >10 pesan.
+     - *Mode & Model:* Rekomendasikan apakah cukup **Single Agent (Argon Medium / Hydrogen)**, perlu **`/teamwork`** (jika ≥ 2–3 file paralel), atau perlu **`/boost` / Neon** (jika menyentuh logika NAV kritis).
+     - *Efisiensi Kode, Bahasa & Compact:* Ingatkan aktifnya **`ponytail` (diff minimal/YAGNI)** + **`caveman`** (`caveman ultra` jika batch panjang), serta ketik **`/compact`** jika diskusi perencanaan sudah >10 pesan.
   2. **Saat Transisi Dev/QA → Selesai (Semua Tiket Beres):** Tampilkan kotak pengingat singkat:
      - *Turunkan Model:* Ingatkan user untuk segera **menurunkan model dari Neon kembali ke Argon (Medium) / Hydrogen** agar kuota mingguan Neon tidak terbuang untuk obrolan ringan.
      - *Compact / Commit:* Ingatkan `/compact` sebelum mulai topik berikutnya.

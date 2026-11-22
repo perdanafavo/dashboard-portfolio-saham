@@ -6,6 +6,11 @@ import {
   computeRebalancePlan
 } from "../js/nav-engine.js";
 import { getInitialTemplateData, mergeWithDefaults } from "../js/state.js";
+import {
+  parseIDNumber,
+  formatIDInputValue,
+  formatLiveIDString
+} from "../js/storage.js";
 
 // =========================================================================
 // Minimal Zero-Dependency Browser Test Runner
@@ -243,6 +248,33 @@ describe("Seam 5: computeRebalancePlan(holdings, metrics)", () => {
     assertEqual(plan.items[0].suggestedLots, 0, "zero price -> 0 lots");
     assertEqual(plan.items[0].action, "HOLD", "zero price -> HOLD");
     assertTrue(Number.isFinite(plan.items[0].driftPct), "finite drift");
+  });
+});
+
+// =========================================================================
+// SEAM 6: Indonesian (id-ID) Number Parser & Live Input Formatter
+// =========================================================================
+describe("Seam 6: Indonesian (id-ID) Number Parser & Live Input Formatter", () => {
+  test("parseIDNumber parses id-ID thousands (.) and decimals (,) accurately", () => {
+    assertEqual(parseIDNumber("15.552.000", "int"), 15552000, "millions int");
+    assertEqual(parseIDNumber("14.600", "int"), 14600, "thousands int");
+    assertApprox(parseIDNumber("3.961,36", "dec"), 3961.36, 1e-6, "thousands + comma decimal");
+    assertApprox(parseIDNumber("1.130,9663", "dec"), 1130.9663, 1e-6, "4-decimal NAV");
+    assertApprox(parseIDNumber("0,19", "dec"), 0.19, 1e-6, "small decimal comma");
+    assertApprox(parseIDNumber("-4,25", "signed-dec"), -4.25, 1e-6, "negative decimal comma");
+    assertEqual(parseIDNumber("-5.000.000", "signed-int"), -5000000, "negative int thousands");
+    assertEqual(parseIDNumber("", "dec"), 0, "empty string -> 0");
+    assertEqual(parseIDNumber("-", "signed-dec"), 0, "bare minus -> 0");
+  });
+
+  test("formatLiveIDString & formatIDInputValue format numbers with (.) thousands and (,) decimals", () => {
+    assertEqual(formatLiveIDString("15552000", "int"), "15.552.000", "live int millions");
+    assertEqual(formatLiveIDString("3.961,36", "dec", 2), "3.961,36", "live dec 2");
+    assertEqual(formatLiveIDString("1130,96639", "dec", 4), "1.130,9663", "live dec clamped to 4");
+    assertEqual(formatLiveIDString("-12,5", "signed-dec", 2), "-12,5", "live signed-dec");
+    assertEqual(formatIDInputValue(15552000, "int"), "15.552.000", "formatIDInputValue int");
+    assertEqual(formatIDInputValue(3961.36, "dec", 2), "3.961,36", "formatIDInputValue dec 2");
+    assertEqual(formatIDInputValue(1130.9663, "dec", 4, 4), "1.130,9663", "formatIDInputValue dec 4");
   });
 });
 

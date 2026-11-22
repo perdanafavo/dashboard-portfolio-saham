@@ -60,7 +60,7 @@ export function renderAllocationChart({ charts, state, getEmitenColor }, m) {
               if (isEmpty) return " Belum ada aset saham / kas";
               const val = Number(ctx.raw) || 0;
               const pct = m.totalValuation > 0 ? (val / m.totalValuation) * 100 : 0;
-              return ` ${ctx.label}: ${formatIDR(val)} (${formatNum(pct, 1)}%)`;
+              return ` ${ctx.label}: ${formatIDR(val)} (${formatNum(pct, 2)}%)`;
             }
           }
         }
@@ -179,7 +179,7 @@ export function renderCalculatorChart(charts, curAvg, newAvg, buyPrice, targetPr
       maintainAspectRatio: false,
       scales: {
         x: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { display: false } },
-        y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 } }, grid: { color: getChartGridColor() } }
+        y: { ticks: { color: getChartTextColor(), font: { family: "JetBrains Mono", size: 11 }, callback: (v) => formatIDR(v) }, grid: { color: getChartGridColor() } }
       },
       plugins: {
         legend: { display: false },

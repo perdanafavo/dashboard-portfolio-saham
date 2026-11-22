@@ -58,6 +58,185 @@ export function formatPct(val) {
   return `${sign}${formatNum(n, 2)}%`;
 }
 
+// =========================================================================
+// INDONESIAN (id-ID) NUMBER INPUT PARSER & LIVE AUTO-FORMATTER
+// =========================================================================
+
+export function parseIDNumber(raw, mode = "dec") {
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : 0;
+  let s = String(raw ?? "").trim();
+  if (!s || s === "-" || s === "+") return 0;
+
+  const sign = s.startsWith("-") ? -1 : 1;
+  s = s.replace(/^[+-]/, "").trim();
+
+  if (mode === "int" || mode === "signed-int") {
+    if (s.includes(",")) {
+      s = s.split(",")[0].replace(/\D/g, "");
+    } else if ((s.match(/\./g) || []).length > 1 || /^[1-9]\d{0,2}\.\d{3}$/.test(s)) {
+      s = s.replace(/\D/g, "");
+    } else {
+      return sign * Math.round(Number(s.replace(/[^\d.]/g, "")) || 0);
+    }
+    return sign * (Number(s) || 0);
+  }
+
+  if (s.includes(",")) {
+    s = s.replace(/\./g, "").replace(",", ".").replace(/[^\d.]/g, "");
+  } else if ((s.match(/\./g) || []).length > 1) {
+    s = s.replace(/\./g, "").replace(/\D/g, "");
+  } else if (/^[1-9]\d{0,2}\.\d{3}$/.test(s)) {
+    s = s.replace(".", "");
+  } else {
+    s = s.replace(/[^\d.]/g, "");
+  }
+
+  const num = Number(s);
+  return Number.isFinite(num) ? sign * num : 0;
+}
+
+export function formatIDInputValue(val, mode = "int", maxDecimals = 2, minDecimals = 0) {
+  if (val === "" || val === null || val === undefined) return "";
+  const n = typeof val === "number" ? val : parseIDNumber(val, mode);
+  if (!Number.isFinite(n)) return "";
+  const isInt = mode === "int" || mode === "signed-int" || maxDecimals <= 0;
+  if (isInt) return Math.round(n).toLocaleString("id-ID");
+  return n.toLocaleString("id-ID", {
+    minimumFractionDigits: Math.max(0, Math.min(minDecimals, maxDecimals)),
+    maximumFractionDigits: Math.max(0, maxDecimals)
+  });
+}
+
+export function formatLiveIDString(rawStr, mode = "int", maxDecimals = 2) {
+  const s = String(rawStr ?? "");
+  if (!s) return "";
+  const allowNeg = mode === "signed-int" || mode === "signed-dec";
+  const isNeg = allowNeg && s.trim().startsWith("-");
+  const isInt = mode === "int" || mode === "signed-int" || maxDecimals <= 0;
+
+  if (isInt) {
+    const digits = s.replace(/\D/g, "");
+    if (!digits) return isNeg ? "-" : "";
+    const norm = digits.replace(/^0+(?=\d)/, "");
+    return (isNeg ? "-" : "") + norm.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  const parts = s.split(",");
+  const intDigits = parts[0].replace(/\D/g, "");
+  const hasComma = parts.length > 1;
+  const decDigits = hasComma ? parts.slice(1).join("").replace(/\D/g, "").slice(0, maxDecimals) : "";
+
+  if (!intDigits && !hasComma) return isNeg ? "-" : "";
+  const normInt = (intDigits || "0").replace(/^0+(?=\d)/, "");
+  const fmtInt = normInt.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return (isNeg ? "-" : "") + fmtInt + (hasComma ? "," + decDigits : "");
+}
+
+export function getNumInput(idOrEl, fallback = 0) {
+  const el = typeof idOrEl === "string" ? document.getElementById(idOrEl) : idOrEl;
+  if (!el) return fallback;
+  const raw = String(el.value ?? "").trim();
+  if (!raw || raw === "-") return fallback;
+  const mode = el.dataset?.numInput || "dec";
+  const parsed = parseIDNumber(raw, mode);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+export function setNumInput(idOrEl, val, minDecimals = 0) {
+  const el = typeof idOrEl === "string" ? document.getElementById(idOrEl) : idOrEl;
+  if (!el) return;
+  if (val === "" || val === null || val === undefined) {
+    el.value = "";
+    return;
+  }
+  const mode = el.dataset?.numInput || "int";
+  const maxDec = Number(el.dataset?.numDecimals ?? (mode.includes("int") ? 0 : 2));
+  const minDec = Number(el.dataset?.numMinDecimals ?? minDecimals);
+  el.value = formatIDInputValue(val, mode, maxDec, minDec);
+}
+
+export function syncNumInputs(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  root.querySelectorAll("input[data-num-input]").forEach((el) => {
+    if (document.activeElement === el) return;
+    const raw = String(el.value ?? "").trim();
+    if (!raw) return;
+    setNumInput(el, raw);
+  });
+}
+
+let liveNumInputsInitialized = false;
+export function initLiveNumberInputs() {
+  if (liveNumInputsInitialized || typeof document === "undefined") return;
+  liveNumInputsInitialized = true;
+
+  // Step over thousand-separator '.' on Backspace/Delete so 1 keypress deletes the digit
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement) || !el.dataset.numInput) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      if (start === null || start !== end) return;
+      if (e.key === "Backspace" && start > 0 && el.value[start - 1] === ".") {
+        el.setSelectionRange(start - 1, start);
+      } else if (e.key === "Delete" && start < el.value.length && el.value[start] === ".") {
+        el.setSelectionRange(start, start + 1);
+      }
+    },
+    true
+  );
+
+  // Capture-phase live formatting so el.value is formatted before inline oninput="..." runs
+  document.addEventListener(
+    "input",
+    (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement) || !el.dataset.numInput) return;
+      const mode = el.dataset.numInput;
+      const maxDec = Number(el.dataset.numDecimals ?? (mode.includes("int") ? 0 : 2));
+      const isDec = !mode.includes("int") && maxDec > 0;
+
+      let val = el.value;
+      let caret = el.selectionStart ?? val.length;
+
+      // Convert newly typed '.' (e.g. numpad decimal key) into ',' on decimal inputs
+      if (isDec && e.data === "." && caret > 0 && val[caret - 1] === ".") {
+        val = val.slice(0, caret - 1) + "," + val.slice(caret);
+      } else if (isDec && e.inputType === "insertFromPaste" && !val.includes(",") && (val.match(/\./g) || []).length === 1) {
+        if (!/^[+-]?[1-9]\d{0,2}\.\d{3}$/.test(val.trim())) {
+          val = val.replace(".", ",");
+        }
+      }
+
+      const leftSlice = val.slice(0, caret);
+      const meaningfulLeftCount = (leftSlice.match(/[\d,-]/g) || []).length;
+
+      const formatted = formatLiveIDString(val, mode, maxDec);
+      if (formatted === el.value) return;
+
+      el.value = formatted;
+
+      // Restore caret after the same count of meaningful chars (digits, ',', '-')
+      let newCaret = 0;
+      let seen = 0;
+      while (newCaret < formatted.length && seen < meaningfulLeftCount) {
+        if (/[\d,-]/.test(formatted[newCaret])) seen++;
+        newCaret++;
+      }
+      try {
+        el.setSelectionRange(newCaret, newCaret);
+      } catch {
+        // Ignore if input type does not support selection range
+      }
+    },
+    true
+  );
+
+  syncNumInputs(document);
+}
+
 export function colorClass(val) {
   const n = Number(val) || 0;
   if (n > 0) return "text-emerald-600 dark:text-emerald-400";

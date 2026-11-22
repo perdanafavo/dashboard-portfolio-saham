@@ -9,7 +9,11 @@ import {
   escapeHTML,
   getJakartaTimeInfo,
   getTodayISO,
-  getPriceFreshnessInfo
+  getPriceFreshnessInfo,
+  parseIDNumber,
+  formatIDInputValue,
+  getNumInput,
+  setNumInput
 } from "../storage.js";
 import {
   renderAllocationChart as renderAllocationChartShared,
@@ -60,7 +64,7 @@ export function createPortfolioUI(ctx) {
     const state = getState();
     const h = state.holdings.find((item) => item.id === holdingId);
     if (!h) return;
-    const parsed = Number(rawVal);
+    const parsed = parseIDNumber(rawVal, "dec");
     if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
       showToast("Target alokasi harus antara 0% sampai 100%.", "warning");
       renderPortfolioTab();
@@ -109,7 +113,7 @@ export function createPortfolioUI(ctx) {
         tickerInput.value = h.ticker;
         nameInput.value = h.name || "";
         qtyInput.value = "";
-        priceInput.value = h.currentPrice || "";
+        setNumInput(priceInput, h.currentPrice || "");
       }
     } else {
       titleEl.textContent = "Beli / Tambah Posisi Saham";
@@ -121,7 +125,7 @@ export function createPortfolioUI(ctx) {
 
     document.getElementById("buy-unit-mode").value = "LOT";
     document.getElementById("buy-fee-preset").value = "IPOT";
-    document.getElementById("buy-fee").value = "0.19";
+    setNumInput("buy-fee", 0.19, 2);
     document.getElementById("buy-deduct-cash").checked = true;
     window.updateBuyPreview();
     openModal("modal-buy");
@@ -129,14 +133,13 @@ export function createPortfolioUI(ctx) {
 
   window.onBuyFeePresetChange = function () {
     const preset = document.getElementById("buy-fee-preset").value;
-    const feeEl = document.getElementById("buy-fee");
-    if (preset === "IPOT") feeEl.value = "0.19";
-    else if (preset === "ZERO") feeEl.value = "0";
+    if (preset === "IPOT") setNumInput("buy-fee", 0.19, 2);
+    else if (preset === "ZERO") setNumInput("buy-fee", 0);
     window.updateBuyPreview();
   };
 
   window.onBuyFeeManualInput = function () {
-    const val = Number(document.getElementById("buy-fee").value);
+    const val = getNumInput("buy-fee");
     const presetEl = document.getElementById("buy-fee-preset");
     if (val === 0.19) presetEl.value = "IPOT";
     else if (val === 0) presetEl.value = "ZERO";
@@ -148,9 +151,9 @@ export function createPortfolioUI(ctx) {
     const state = getState();
     const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const mode = document.getElementById("buy-unit-mode").value;
-    const qty = Math.max(0, Number(document.getElementById("buy-qty").value) || 0);
-    const price = Math.max(0, Number(document.getElementById("buy-price").value) || 0);
-    const feePct = Math.max(0, Number(document.getElementById("buy-fee").value) || 0);
+    const qty = Math.max(0, getNumInput("buy-qty"));
+    const price = Math.max(0, getNumInput("buy-price"));
+    const feePct = Math.max(0, getNumInput("buy-fee"));
     const deductCash = document.getElementById("buy-deduct-cash").checked;
 
     const shares = mode === "LOT" ? qty * 100 : qty;
@@ -186,9 +189,9 @@ export function createPortfolioUI(ctx) {
     const ticker = (document.getElementById("buy-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const name = (document.getElementById("buy-name").value || "").trim();
     const mode = document.getElementById("buy-unit-mode").value;
-    const qty = Math.max(0, Number(document.getElementById("buy-qty").value) || 0);
-    const price = Math.max(0, Number(document.getElementById("buy-price").value) || 0);
-    const feePct = Math.max(0, Number(document.getElementById("buy-fee").value) || 0);
+    const qty = Math.max(0, getNumInput("buy-qty"));
+    const price = Math.max(0, getNumInput("buy-price"));
+    const feePct = Math.max(0, getNumInput("buy-fee"));
     const deductCash = document.getElementById("buy-deduct-cash").checked;
 
     const shares = mode === "LOT" ? qty * 100 : qty;
@@ -245,11 +248,10 @@ export function createPortfolioUI(ctx) {
     document.getElementById("sell-ticker-label").textContent = h.ticker;
     document.getElementById("sell-owned-shares").textContent = `${Number(h.shares).toLocaleString("id-ID")} lbr (${formatNum(h.shares / 100, 2)} lot)`;
     document.getElementById("sell-owned-avg").textContent = `Rp ${formatNum(h.avgPrice, 2)}`;
-    document.getElementById("sell-shares").value = h.shares;
-    document.getElementById("sell-shares").max = h.shares;
-    document.getElementById("sell-price").value = h.currentPrice;
+    setNumInput("sell-shares", h.shares);
+    setNumInput("sell-price", h.currentPrice);
     document.getElementById("sell-fee-preset").value = "IPOT";
-    document.getElementById("sell-fee").value = "0.29";
+    setNumInput("sell-fee", 0.29, 2);
     document.getElementById("sell-date").value = getTodayISO();
     document.getElementById("sell-note").value = "";
     document.getElementById("sell-add-cash").checked = true;
@@ -265,20 +267,19 @@ export function createPortfolioUI(ctx) {
     if (!h) return;
     const total = Number(h.shares) || 0;
     const target = fraction >= 1 ? total : Math.max(100, Math.floor((total * fraction) / 100) * 100);
-    document.getElementById("sell-shares").value = Math.min(total, target);
+    setNumInput("sell-shares", Math.min(total, target));
     window.updateSellPreview();
   };
 
   window.onSellFeePresetChange = function () {
     const preset = document.getElementById("sell-fee-preset").value;
-    const feeEl = document.getElementById("sell-fee");
-    if (preset === "IPOT") feeEl.value = "0.29";
-    else if (preset === "ZERO") feeEl.value = "0";
+    if (preset === "IPOT") setNumInput("sell-fee", 0.29, 2);
+    else if (preset === "ZERO") setNumInput("sell-fee", 0);
     window.updateSellPreview();
   };
 
   window.onSellFeeManualInput = function () {
-    const val = Number(document.getElementById("sell-fee").value);
+    const val = getNumInput("sell-fee");
     const presetEl = document.getElementById("sell-fee-preset");
     if (val === 0.29) presetEl.value = "IPOT";
     else if (val === 0) presetEl.value = "ZERO";
@@ -292,9 +293,9 @@ export function createPortfolioUI(ctx) {
     const h = state.holdings.find((item) => item.id === id);
     if (!h) return;
 
-    const shares = Math.max(0, Number(document.getElementById("sell-shares").value) || 0);
-    const price = Math.max(0, Number(document.getElementById("sell-price").value) || 0);
-    const feePct = Math.max(0, Number(document.getElementById("sell-fee").value) || 0);
+    const shares = Math.max(0, getNumInput("sell-shares"));
+    const price = Math.max(0, getNumInput("sell-price"));
+    const feePct = Math.max(0, getNumInput("sell-fee"));
 
     const feeCalc = calculateIPOTSellFee(shares * price, feePct);
     const costBasis = shares * (Number(h.avgPrice) || 0);
@@ -323,9 +324,9 @@ export function createPortfolioUI(ctx) {
 
     const h = state.holdings[hIdx];
     const owned = Number(h.shares) || 0;
-    const shares = Math.max(0, Number(document.getElementById("sell-shares").value) || 0);
-    const price = Math.max(0, Number(document.getElementById("sell-price").value) || 0);
-    const feePct = Math.max(0, Number(document.getElementById("sell-fee").value) || 0);
+    const shares = Math.max(0, getNumInput("sell-shares"));
+    const price = Math.max(0, getNumInput("sell-price"));
+    const feePct = Math.max(0, getNumInput("sell-fee"));
     const date = document.getElementById("sell-date").value || getTodayISO();
     const note = (document.getElementById("sell-note").value || "").trim();
     const addCash = document.getElementById("sell-add-cash").checked;
@@ -380,11 +381,10 @@ export function createPortfolioUI(ctx) {
     document.getElementById("edit-holding-title-ticker").textContent = h.ticker;
     document.getElementById("edit-holding-ticker").value = h.ticker;
     document.getElementById("edit-holding-name").value = h.name || "";
-    document.getElementById("edit-holding-shares").value = h.shares;
-    document.getElementById("edit-holding-avg").value = h.avgPrice;
-    document.getElementById("edit-holding-current").value = h.currentPrice;
-    const targetEl = document.getElementById("edit-holding-target-weight");
-    if (targetEl) targetEl.value = Number(h.targetWeight) || 0;
+    setNumInput("edit-holding-shares", h.shares);
+    setNumInput("edit-holding-avg", h.avgPrice, 2);
+    setNumInput("edit-holding-current", h.currentPrice);
+    setNumInput("edit-holding-target-weight", Number(h.targetWeight) || 0);
     document.getElementById("edit-holding-adjust-cash").checked = false;
 
     window.updateEditHoldingPreview();
@@ -398,9 +398,9 @@ export function createPortfolioUI(ctx) {
     if (!h) return;
 
     const oldCost = (Number(h.shares) || 0) * (Number(h.avgPrice) || 0);
-    const newShares = Math.max(0, Number(document.getElementById("edit-holding-shares").value) || 0);
-    const newAvg = Math.max(0, Number(document.getElementById("edit-holding-avg").value) || 0);
-    const newCur = Math.max(0, Number(document.getElementById("edit-holding-current").value) || 0);
+    const newShares = Math.max(0, getNumInput("edit-holding-shares"));
+    const newAvg = Math.max(0, getNumInput("edit-holding-avg"));
+    const newCur = Math.max(0, getNumInput("edit-holding-current"));
     const adjustCash = document.getElementById("edit-holding-adjust-cash").checked;
 
     const newCost = newShares * newAvg;
@@ -436,10 +436,10 @@ export function createPortfolioUI(ctx) {
 
     const ticker = (document.getElementById("edit-holding-ticker").value || "").toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
     const name = (document.getElementById("edit-holding-name").value || "").trim();
-    const shares = Math.max(1, Number(document.getElementById("edit-holding-shares").value) || 0);
-    const avgPrice = Math.max(0, Number(document.getElementById("edit-holding-avg").value) || 0);
-    const currentPrice = Math.max(1, Number(document.getElementById("edit-holding-current").value) || 0);
-    const rawTarget = Number(document.getElementById("edit-holding-target-weight")?.value);
+    const shares = Math.max(1, getNumInput("edit-holding-shares"));
+    const avgPrice = Math.max(0, getNumInput("edit-holding-avg"));
+    const currentPrice = Math.max(1, getNumInput("edit-holding-current"));
+    const rawTarget = getNumInput("edit-holding-target-weight", NaN);
     const targetWeight = Number.isFinite(rawTarget) ? Math.min(100, Math.max(0, Number(rawTarget.toFixed(2)))) : (Number(h.targetWeight) || 0);
     const adjustCash = document.getElementById("edit-holding-adjust-cash").checked;
 
@@ -510,7 +510,7 @@ export function createPortfolioUI(ctx) {
     const state = getState();
     const h = state.holdings.find((item) => item.id === holdingId);
     if (!h) return;
-    const price = Number(rawVal);
+    const price = parseIDNumber(rawVal, "int");
     if (!Number.isFinite(price) || price <= 0) {
       showToast("Harga saham harus berupa angka lebih dari Rp 0.", "warning");
       renderPortfolioTab();
@@ -533,7 +533,7 @@ export function createPortfolioUI(ctx) {
             <span class="font-mono font-bold text-xs text-slate-900 dark:text-white">${escapeHTML(h.ticker)}</span>
             <span class="block text-[11px] text-slate-500">Avg: ${formatNum(h.avgPrice, 2)}</span>
           </div>
-          <input type="number" data-holding-id="${escapeHTML(h.id)}" value="${h.currentPrice}" min="1" step="any" required class="bulk-price-input w-32 px-3 py-1.5 rounded-lg text-right font-mono font-bold text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" />
+          <input type="text" inputmode="numeric" data-num-input="int" data-holding-id="${escapeHTML(h.id)}" value="${Math.round(Number(h.currentPrice) || 0).toLocaleString("id-ID")}" required class="bulk-price-input w-32 px-3 py-1.5 rounded-lg text-right font-mono font-bold text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" />
         </div>
       `
       )
@@ -547,7 +547,7 @@ export function createPortfolioUI(ctx) {
     const today = getTodayISO();
     document.querySelectorAll(".bulk-price-input").forEach((inp) => {
       const h = state.holdings.find((item) => item.id === inp.dataset.holdingId);
-      const val = Number(inp.value);
+      const val = getNumInput(inp);
       if (h && Number.isFinite(val) && val > 0 && Number(h.currentPrice) !== val) {
         h.currentPrice = val;
         h.priceSource = "MANUAL";
@@ -561,14 +561,14 @@ export function createPortfolioUI(ctx) {
   // --- CASH & BASELINE NAV CALIBRATION ---
   window.openCashModal = function () {
     const state = getState();
-    document.getElementById("edit-cash-amount").value = Math.round(Number(state.cash) || 0);
+    setNumInput("edit-cash-amount", Math.round(Number(state.cash) || 0));
     openModal("modal-cash");
   };
 
   window.handleSaveCash = function (e) {
     e.preventDefault();
     const state = getState();
-    const val = Math.max(0, Number(document.getElementById("edit-cash-amount").value) || 0);
+    const val = Math.max(0, getNumInput("edit-cash-amount"));
     state.cash = val;
     closeModal("modal-cash");
     commitStateChange(`Saldo Kas RDN diperbarui menjadi ${formatIDR(val)}`);
@@ -576,25 +576,25 @@ export function createPortfolioUI(ctx) {
 
   window.openBaselineModal = function () {
     const state = getState();
-    document.getElementById("base-init-capital").value = Number(state.meta.initialCapital) || 0;
-    document.getElementById("base-init-nav").value = Number(state.meta.initialNav) || 1000;
-    document.getElementById("base-init-units").value = Number(state.meta.initialUnits) || 0;
+    setNumInput("base-init-capital", Number(state.meta.initialCapital) || 0);
+    setNumInput("base-init-nav", Number(state.meta.initialNav) || 1000, 4);
+    setNumInput("base-init-units", Number(state.meta.initialUnits) || 0, 4);
     window.updateBaselinePreview();
     openModal("modal-baseline");
   };
 
   window.onBaselineCapitalOrNavInput = function () {
-    const cap = Math.max(0, Number(document.getElementById("base-init-capital").value) || 0);
-    const nav = Math.max(0.0001, Number(document.getElementById("base-init-nav").value) || 1000);
-    document.getElementById("base-init-units").value = (cap / nav).toFixed(6);
+    const cap = Math.max(0, getNumInput("base-init-capital"));
+    const nav = Math.max(0.0001, getNumInput("base-init-nav", 1000));
+    setNumInput("base-init-units", cap / nav, 4);
     window.updateBaselinePreview();
   };
 
   window.updateBaselinePreview = function () {
     const state = getState();
     const m = computeMetrics();
-    const initUnits = Math.max(0.0001, Number(document.getElementById("base-init-units").value) || 1);
-    const initNav = Math.max(0.0001, Number(document.getElementById("base-init-nav").value) || 1000);
+    const initUnits = Math.max(0.0001, getNumInput("base-init-units", 1));
+    const initNav = Math.max(0.0001, getNumInput("base-init-nav", 1000));
     const clearMuts = document.getElementById("base-clear-template-mutations")?.checked;
 
     let totalUnits = initUnits;
@@ -621,18 +621,18 @@ export function createPortfolioUI(ctx) {
   window.applyCurrentPortfolioAsBaseline = function () {
     const m = computeMetrics();
     const totalCostNow = Math.max(1, Math.round(m.totalCost));
-    document.getElementById("base-init-capital").value = totalCostNow;
-    document.getElementById("base-init-nav").value = "1000";
-    document.getElementById("base-init-units").value = (totalCostNow / 1000).toFixed(6);
+    setNumInput("base-init-capital", totalCostNow);
+    setNumInput("base-init-nav", 1000, 4);
+    setNumInput("base-init-units", totalCostNow / 1000, 4);
     window.updateBaselinePreview();
   };
 
   window.handleSaveBaseline = function (e) {
     e.preventDefault();
     const state = getState();
-    const initCap = Math.max(1, Number(document.getElementById("base-init-capital").value) || 0);
-    const initNav = Math.max(0.0001, Number(document.getElementById("base-init-nav").value) || 1000);
-    const initUnits = Math.max(0.0001, Number(document.getElementById("base-init-units").value) || initCap / initNav);
+    const initCap = Math.max(1, getNumInput("base-init-capital"));
+    const initNav = Math.max(0.0001, getNumInput("base-init-nav", 1000));
+    const initUnits = Math.max(0.0001, getNumInput("base-init-units", initCap / initNav));
     const clearMuts = document.getElementById("base-clear-template-mutations").checked;
 
     state.meta.initialCapital = initCap;
@@ -718,7 +718,7 @@ export function createPortfolioUI(ctx) {
 
     document.getElementById("kpi-total-valuation").textContent = formatIDR(m.totalValuation);
     const cashPct = m.totalValuation > 0 ? (m.cashBalance / m.totalValuation) * 100 : 0;
-    document.getElementById("kpi-total-valuation-sub").innerHTML = `<span>Saham: ${formatCompactIDR(m.stockValTotal)}</span><span>Kas: ${formatNum(cashPct, 1)}%</span>`;
+    document.getElementById("kpi-total-valuation-sub").innerHTML = `<span>Saham: ${formatCompactIDR(m.stockValTotal)}</span><span>Kas: ${formatNum(cashPct, 2)}%</span>`;
 
     document.getElementById("kpi-nav-unit").textContent = formatNum(m.currentNav, 4);
     const navDiff = m.currentNav - m.initNav;
@@ -726,7 +726,7 @@ export function createPortfolioUI(ctx) {
 
     document.getElementById("kpi-total-units").textContent = formatNum(m.totalUnits, 4);
     const unitDiff = m.totalUnits - m.initUnits;
-    document.getElementById("kpi-total-units-sub").innerHTML = `Awal: ${formatNum(m.initUnits, 2)} <span class="font-mono text-sky-500">(${unitDiff >= 0 ? "+" : ""}${formatNum(unitDiff, 2)})</span>`;
+    document.getElementById("kpi-total-units-sub").innerHTML = `Awal: ${formatNum(m.initUnits, 4)} <span class="font-mono text-sky-500">(${unitDiff >= 0 ? "+" : ""}${formatNum(unitDiff, 2)})</span>`;
 
     const ytdEl = document.getElementById("kpi-ytd-return");
     ytdEl.textContent = formatPct(m.ytdReturnPct);
@@ -905,10 +905,10 @@ export function createPortfolioUI(ctx) {
           <td class="py-3.5 px-3 text-right">
             <div class="inline-flex flex-col items-end">
               <input
-                type="number"
-                value="${cur}"
-                min="1"
-                step="any"
+                type="text"
+                inputmode="numeric"
+                data-num-input="int"
+                value="${Math.round(cur).toLocaleString("id-ID")}"
                 onchange="updateSinglePrice('${safeId}', this.value)"
                 class="w-24 px-2.5 py-1.5 rounded-lg text-right font-sans tabular-nums font-bold text-xs sm:text-sm border ${priceInputStyle} focus:outline-none focus:ring-1 focus:ring-[#10B981]"
                 title="Klik untuk edit harga manual"
@@ -982,13 +982,13 @@ export function createPortfolioUI(ctx) {
     if (badge) {
       if (plan.isOverAllocated) {
         badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400";
-        badge.innerHTML = `Total Target Melebihi 100%: <strong>${formatNum(plan.totalTargetWeight, 1)}%</strong>`;
+        badge.innerHTML = `Total Target Melebihi 100%: <strong>${formatNum(plan.totalTargetWeight, 2)}%</strong>`;
       } else if (plan.totalTargetWeight > 0) {
         badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-[#10B981]/10 border border-[#10B981]/25 text-emerald-700 dark:text-[#10B981]";
-        badge.innerHTML = `Target Saham: <strong>${formatNum(plan.totalTargetWeight, 1)}%</strong> &bull; Target Kas: <strong>${formatNum(plan.impliedCashTargetPct, 1)}%</strong>`;
+        badge.innerHTML = `Target Saham: <strong>${formatNum(plan.totalTargetWeight, 2)}%</strong> &bull; Target Kas: <strong>${formatNum(plan.impliedCashTargetPct, 2)}%</strong>`;
       } else {
         badge.className = "inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#0C1117] border border-slate-200/70 dark:border-white/[0.07] text-slate-600 dark:text-[#8E9BA8]";
-        badge.innerHTML = `Target Saham: <strong>0,0%</strong> &bull; Sisa Kas: <strong>100,0%</strong>`;
+        badge.innerHTML = `Target Saham: <strong>0,00%</strong> &bull; Sisa Kas: <strong>100,00%</strong>`;
       }
     }
 
@@ -1032,11 +1032,11 @@ export function createPortfolioUI(ctx) {
             <td class="py-2.5 px-3 text-right">
               <div class="inline-flex items-center gap-1 justify-end">
                 <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                  value="${item.targetWeight}"
+                  type="text"
+                  inputmode="decimal"
+                  data-num-input="dec"
+                  data-num-decimals="2"
+                  value="${formatIDInputValue(item.targetWeight, "dec", 2)}"
                   aria-label="Target bobot ${escapeHTML(item.ticker)}"
                   onchange="updateHoldingTargetWeight('${safeId}', this.value)"
                   class="w-20 px-2 py-1 rounded-lg text-right font-sans tabular-nums font-bold text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200 dark:border-white/[0.1] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
