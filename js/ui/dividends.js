@@ -465,7 +465,7 @@ export function createDividendsUI(ctx) {
               <td class="py-2.5 px-3 text-right font-sans tabular-nums font-bold text-[#10B981] whitespace-nowrap">${formatIDR(d.amount)}</td>
               <td class="py-2.5 px-3 text-slate-500 dark:text-[#8E9BA8]">${escapeHTML(d.note || "")}</td>
               <td class="py-2.5 px-3 text-center">
-                <button type="button" onclick="deleteDividend('${escapeHTML(d.id)}')" aria-label="Hapus catatan dividen ${escapeHTML(d.ticker)}" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus">
+                <button type="button" data-onclick="deleteDividend('${escapeHTML(d.id)}')" aria-label="Hapus catatan dividen ${escapeHTML(d.ticker)}" class="p-1 rounded hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </td>
@@ -550,7 +550,7 @@ export function createDividendsUI(ctx) {
         scheduleHTML:
           scheduleBadges.length > 0
             ? `<div class="flex flex-col items-start gap-1">${scheduleBadges.join("")}</div>`
-            : `<button type="button" onclick="openDividendScheduleModal('${escapeHTML(h.ticker)}')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-500 dark:text-[#8E9BA8] hover:text-amber-500 border border-slate-200/70 dark:border-white/[0.07] transition-colors whitespace-nowrap">Belum diatur</button>`,
+            : `<button type="button" data-onclick="openDividendScheduleModal('${escapeHTML(h.ticker)}')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-500 dark:text-[#8E9BA8] hover:text-amber-500 border border-slate-200/70 dark:border-white/[0.07] transition-colors whitespace-nowrap">Belum diatur</button>`,
         annualEst: emitenEst,
         monthlyAvg: emitenEst / 12,
         actualYear: actualYearEmiten,
@@ -787,8 +787,8 @@ export function createDividendsUI(ctx) {
             </td>
             <td class="py-3 px-4 text-center">
               <div class="inline-flex items-center gap-1.5">
-                <button type="button" onclick="openDividendScheduleModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/25 transition-colors whitespace-nowrap" title="Atur Estimasi DPS & Bulan Cair">Atur DPS</button>
-                <button type="button" onclick="openDividendModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981] border border-[#10B981]/25 transition-colors whitespace-nowrap" title="Catat Dividen Cair">Catat Cair</button>
+                <button type="button" data-onclick="openDividendScheduleModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/25 transition-colors whitespace-nowrap" title="Atur Estimasi DPS & Bulan Cair">Atur DPS</button>
+                <button type="button" data-onclick="openDividendModal('${escapeHTML(item.ticker)}')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981] border border-[#10B981]/25 transition-colors whitespace-nowrap" title="Catat Dividen Cair">Catat Cair</button>
               </div>
             </td>
           </tr>

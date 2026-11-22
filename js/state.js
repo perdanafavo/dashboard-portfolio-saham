@@ -299,8 +299,8 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   const activeYear = Number(rawMeta.activeYear) >= 2000 ? Number(rawMeta.activeYear) : def.meta.activeYear;
 
   const meta = {
-    ...def.meta,
-    ...rawMeta,
+    title: String(rawMeta.title || def.meta.title).slice(0, 120),
+    currency: "IDR",
     initialCapital: initCap,
     initialNav: initNav,
     initialUnits: initUnits,
@@ -308,32 +308,43 @@ export function mergeWithDefaults(raw, fallbackDate = getDefaultTodayWIB()) {
   };
 
   const parsedCash = Number(source.cash);
-  const cash = Number.isFinite(parsedCash) ? parsedCash : def.cash;
+  const cash = Number.isFinite(parsedCash) && parsedCash >= 0 ? parsedCash : def.cash;
 
   const rawHoldings = Array.isArray(source.holdings) ? source.holdings : def.holdings;
   const sanitizedHoldings = rawHoldings
     .filter((h) => h && typeof h === "object")
     .map((h, idx) => {
       const ticker = sanitizeTicker(h.ticker || h.code || h.symbol || "");
-      const shares = h.shares != null
-        ? Number(h.shares) || 0
-        : (h.lots != null ? (Number(h.lots) || 0) * 100 : 0);
-      const avgPrice = Number(h.avgPrice ?? h.averagePrice ?? h.avg ?? 0) || 0;
-      const currentPrice = Number(h.currentPrice ?? h.price ?? h.lastPrice ?? avgPrice) || 0;
+      const shares = Math.max(
+        0,
+        h.shares != null
+          ? Number(h.shares) || 0
+          : (h.lots != null ? (Number(h.lots) || 0) * 100 : 0)
+      );
+      const avgPrice = Math.max(0, Number(h.avgPrice ?? h.averagePrice ?? h.avg ?? 0) || 0);
+      const currentPrice = Math.max(0, Number(h.currentPrice ?? h.price ?? h.lastPrice ?? avgPrice) || 0);
+      const prevClose = Math.max(0, Number(h.prevClose) || 0);
       const rawTargetWeight = Number(h.targetWeight);
       const targetWeight = Number.isFinite(rawTargetWeight)
         ? Math.min(100, Math.max(0, rawTargetWeight))
         : 0;
 
       const copy = {
-        ...h,
         id: sanitizeId(h.id, `h-${ticker || "item"}-${idx}-${Date.now()}`),
         ticker,
-        name: String(h.name || h.companyName || (ticker ? `${ticker} Tbk` : "Emiten")),
+        name: String(h.name || h.companyName || (ticker ? `${ticker} Tbk` : "Emiten")).slice(0, 120),
+        sector: h.sector ? String(h.sector).slice(0, 80) : undefined,
         shares,
         avgPrice,
         currentPrice,
-        targetWeight
+        prevClose,
+        targetWeight,
+        priceUpdatedAt: h.priceUpdatedAt ? String(h.priceUpdatedAt).slice(0, 40) : undefined,
+        priceUpdatedDateWIB: h.priceUpdatedDateWIB ? String(h.priceUpdatedDateWIB).slice(0, 20) : undefined,
+        marketDateWIB: h.marketDateWIB ? String(h.marketDateWIB).slice(0, 20) : undefined,
+        marketDateLabel: h.marketDateLabel ? String(h.marketDateLabel).slice(0, 30) : undefined,
+        priceSource: ["SYNC", "MANUAL", "TRX"].includes(h.priceSource) ? h.priceSource : undefined,
+        lastSyncStatus: ["LIVE", "CACHE"].includes(h.lastSyncStatus) ? h.lastSyncStatus : undefined
       };
 
       if (copy.priceSource !== "SYNC" && TEMPLATE_DEFAULT_PRICES[ticker] === currentPrice) {

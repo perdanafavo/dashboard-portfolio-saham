@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://scanner.tradingview.com https://query1.finance.yahoo.com https://api.allorigins.win https://corsproxy.io https://stooq.com https://*.googleapis.com https://*.firebaseio.com; object-src 'none'; base-uri 'self';"
+  />
   <title>Portfolio NAV Tracker — Sistem Unit Penyertaan Saham</title>
 
   <!-- Google Fonts: Inter & JetBrains Mono for Tabular Financial Numbers -->
@@ -22,11 +26,19 @@
   <link rel="stylesheet" href="./css/tailwind.min.css" />
   <link rel="stylesheet" href="./css/styles.css" />
 
-  <!-- Chart.js for Interactive Financial Visualizations -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <!-- Chart.js for Interactive Financial Visualizations (Pinned + SRI) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
+    integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt"
+    crossorigin="anonymous"
+  ></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons (Pinned + SRI) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"
+    integrity="sha384-ieG+IKD0d/ZPXyCBTMVAbqsQdns8QGJR/e26WMw7M4fkaI/rHcS/YIoi+ah9WGge"
+    crossorigin="anonymous"
+  ></script>
 
   <!-- Preload Native ES Modules to Flatten Initial Network Waterfall -->
   <link rel="modulepreload" href="./js/app.js" />
@@ -72,7 +84,7 @@
         <div class="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
-            onclick="openCloudModal()"
+            data-onclick="openCloudModal()"
             class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#141C24] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             title="Status sinkronisasi data"
           >
@@ -82,27 +94,30 @@
 
           <button
             type="button"
-            onclick="exportJSON()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#141C24] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
+            id="btn-export-json"
+            data-onclick="exportJSON()"
+            class="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#141C24] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             title="Unduh backup data JSON"
           >
             <i data-lucide="download" class="w-3.5 h-3.5 text-[#10B981]"></i>
             <span class="hidden sm:inline">Export JSON</span>
+            <span id="backup-reminder-dot" class="hidden w-2 h-2 rounded-full bg-amber-400" title="Disarankan backup rutin (>30 hari)"></span>
           </button>
 
           <button
             type="button"
-            onclick="openImportModal()"
+            id="btn-open-import"
+            data-onclick="openImportModal()"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#141C24] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
-            title="Pulihkan data dari file atau teks JSON"
+            title="Backup Terenkripsi (AES-GCM) & Pulihkan Data JSON"
           >
-            <i data-lucide="upload" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span class="hidden sm:inline">Import JSON</span>
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span class="hidden sm:inline">Backup & Import</span>
           </button>
 
           <button
             type="button"
-            onclick="confirmResetTemplate()"
+            data-onclick="confirmResetTemplate()"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#141C24] hover:bg-rose-500/10 text-slate-600 dark:text-[#8E9BA8] hover:text-rose-400 border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             title="Reset ke data awal template"
           >
@@ -112,7 +127,7 @@
 
           <button
             type="button"
-            onclick="toggleTheme()"
+            data-onclick="toggleTheme()"
             class="p-2 rounded-lg bg-slate-100 dark:bg-[#141C24] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-600 dark:text-[#8E9BA8] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             title="Ubah tema tampilan"
           >
@@ -127,7 +142,7 @@
         <button
           type="button"
           id="tab-btn-portfolio"
-          onclick="switchTab('portfolio')"
+          data-onclick="switchTab('portfolio')"
           title="Tab 1: Portofolio & Kinerja (Tekan 1)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
         >
@@ -139,7 +154,7 @@
         <button
           type="button"
           id="tab-btn-dividends"
-          onclick="switchTab('dividends')"
+          data-onclick="switchTab('dividends')"
           title="Tab 2: Dividen & Proyeksi (Tekan 2)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
@@ -151,7 +166,7 @@
         <button
           type="button"
           id="tab-btn-mutations"
-          onclick="switchTab('mutations')"
+          data-onclick="switchTab('mutations')"
           title="Tab 3: Mutasi Dana (Tekan 3)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
@@ -163,7 +178,7 @@
         <button
           type="button"
           id="tab-btn-analytics"
-          onclick="switchTab('analytics')"
+          data-onclick="switchTab('analytics')"
           title="Tab 4: Grafik & Historis (Tekan 4)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
@@ -175,7 +190,7 @@
         <button
           type="button"
           id="tab-btn-journal"
-          onclick="switchTab('journal')"
+          data-onclick="switchTab('journal')"
           title="Tab 5: Jurnal TP / CL (Tekan 5)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
@@ -187,7 +202,7 @@
         <button
           type="button"
           id="tab-btn-calculator"
-          onclick="switchTab('calculator')"
+          data-onclick="switchTab('calculator')"
           title="Tab 6: Kalkulator Average (Tekan 6)"
           class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all text-slate-600 dark:text-[#8E9BA8] hover:bg-slate-100 dark:hover:bg-[#141C24] hover:text-slate-900 dark:hover:text-[#EEF2F6]"
         >
@@ -246,7 +261,7 @@
               <div>
                 <div class="flex items-center justify-between gap-2 text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">
                   <span>Harga Unit (NAV / Unit)</span>
-                  <button type="button" onclick="openBaselineModal()" class="text-[#8E9BA8] hover:text-[#10B981] transition-colors" title="Kalibrasi Parameter Awal Unit (NAV)">
+                  <button type="button" data-onclick="openBaselineModal()" class="text-[#8E9BA8] hover:text-[#10B981] transition-colors" title="Kalibrasi Parameter Awal Unit (NAV)">
                     <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
@@ -299,7 +314,7 @@
           <div class="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onclick="openBuyModal()"
+              data-onclick="openBuyModal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors"
             >
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -308,7 +323,7 @@
 
             <button
               type="button"
-              onclick="syncMarketData({ force: true })"
+              data-onclick="syncMarketData({ force: true })"
               id="btn-sync-market"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
               title="Ambil harga penutupan saham (.JK), IHSG, dan LQ45 terbaru secara otomatis (Shortcut: R)"
@@ -320,7 +335,7 @@
 
             <button
               type="button"
-              onclick="openBulkPriceModal()"
+              data-onclick="openBulkPriceModal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             >
               <i data-lucide="refresh-cw" class="w-4 h-4 text-sky-400"></i>
@@ -329,7 +344,7 @@
 
             <button
               type="button"
-              onclick="openCashModal()"
+              data-onclick="openCashModal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             >
               <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
@@ -338,7 +353,7 @@
 
             <button
               type="button"
-              onclick="openBaselineModal()"
+              data-onclick="openBaselineModal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
               title="Atur ulang Modal Awal, Harga Unit Awal, dan Jumlah Unit Awal agar sesuai portofolio Anda"
             >
@@ -358,7 +373,7 @@
             <span id="market-wib-clock" class="font-sans tabular-nums text-slate-400 dark:text-[#8E9BA8]"></span>
           </div>
           <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
-            <input type="checkbox" id="toggle-auto-market-sync" checked onchange="toggleAutoMarketSync(this.checked)" class="w-3.5 h-3.5 rounded accent-[#10B981]" />
+            <input type="checkbox" id="toggle-auto-market-sync" checked data-onchange="toggleAutoMarketSync(this.checked)" class="w-3.5 h-3.5 rounded accent-[#10B981]" />
             <span>Auto-Sync otomatis setelah Market Close BEI (16:15 WIB)</span>
           </label>
         </div>
@@ -377,7 +392,7 @@
               <input
                 type="search"
                 id="portfolio-search-input"
-                oninput="onPortfolioSearchInput(this.value)"
+                data-oninput="onPortfolioSearchInput(this.value)"
                 placeholder="Cari ticker / emiten... ( / )"
                 aria-label="Cari emiten di tabel portofolio (Tekan / untuk fokus)"
                 class="w-44 sm:w-52 pl-8 pr-2.5 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] text-slate-800 dark:text-[#EEF2F6] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#10B981]"
@@ -397,7 +412,7 @@
             <thead class="sticky top-0 z-10 backdrop-blur-md bg-slate-50/95 dark:bg-[#141C24]/95">
               <tr class="border-b border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-500 dark:text-[#8E9BA8]">
                 <th class="py-3 px-4">
-                  <button type="button" onclick="togglePortfolioSort('ticker')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                  <button type="button" data-onclick="togglePortfolioSort('ticker')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
                     <span>Emiten</span><span id="sort-ind-ticker" class="text-[10px] opacity-60">↕</span>
                   </button>
                 </th>
@@ -406,18 +421,18 @@
                 <th class="py-3 px-3 text-right">Current Price</th>
                 <th class="py-3 px-3 text-right">Cost / Modal</th>
                 <th class="py-3 px-3 text-right">
-                  <button type="button" onclick="togglePortfolioSort('valuation')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                  <button type="button" data-onclick="togglePortfolioSort('valuation')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
                     <span>Valuation</span><span id="sort-ind-valuation" class="text-[10px] opacity-60">↕</span>
                   </button>
                 </th>
                 <th class="py-3 px-3 text-right">
-                  <button type="button" onclick="togglePortfolioSort('pl')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                  <button type="button" data-onclick="togglePortfolioSort('pl')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
                     <span>Unrealized P/L</span><span id="sort-ind-pl" class="text-[10px] opacity-60">↕</span>
                   </button>
                 </th>
                 <th class="py-3 px-3 text-right">Fund Alloc</th>
                 <th class="py-3 px-3 text-right">
-                  <button type="button" onclick="togglePortfolioSort('weight')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
+                  <button type="button" data-onclick="togglePortfolioSort('weight')" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#EEF2F6] transition-colors">
                     <span>Value Effect</span><span id="sort-ind-weight" class="text-[10px] opacity-60">↕</span>
                   </button>
                 </th>
@@ -446,10 +461,10 @@
             <div id="rebalance-allocation-badge" class="inline-flex items-center gap-1.5 text-xs font-sans tabular-nums px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#0C1117] border border-slate-200/70 dark:border-white/[0.07] text-slate-600 dark:text-[#8E9BA8]">
               Target Saham: <strong>0,0%</strong> &bull; Sisa Kas: <strong>100,0%</strong>
             </div>
-            <button type="button" onclick="syncTargetsToCurrentWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors">
+            <button type="button" data-onclick="syncTargetsToCurrentWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors">
               Samakan dgn Bobot Saat Ini
             </button>
-            <button type="button" onclick="resetAllTargetWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-[#8E9BA8] hover:text-rose-500 transition-colors">
+            <button type="button" data-onclick="resetAllTargetWeights()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-[#8E9BA8] hover:text-rose-500 transition-colors">
               Reset
             </button>
           </div>
@@ -492,7 +507,7 @@
           </div>
           <div class="mt-5 pt-3 border-t border-slate-200/70 dark:border-white/[0.07] flex items-center justify-between text-xs text-slate-500 dark:text-[#8E9BA8]">
             <span>Top Up / Withdraw tidak mendistorsi persentase TWR</span>
-            <button type="button" onclick="switchTab('analytics')" class="text-[#10B981] font-semibold hover:underline">
+            <button type="button" data-onclick="switchTab('analytics')" class="text-[#10B981] font-semibold hover:underline">
               Lihat Grafik Historis
             </button>
           </div>
@@ -511,7 +526,7 @@
               <p class="text-xs text-slate-500 dark:text-[#8E9BA8]">Akumulasi dividen tunai bersih yang telah masuk ke Kas RDN &amp; meningkatkan NAV</p>
             </div>
           </div>
-          <button type="button" onclick="switchTab('dividends')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#10B981]/10 hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/25 transition-colors">
+          <button type="button" data-onclick="switchTab('dividends')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#10B981]/10 hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/25 transition-colors">
             <span>Kelola di Dividen &amp; Proyeksi</span>
           </button>
         </div>
@@ -528,7 +543,7 @@
               <span id="porto-div-recap-year-label" class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">Dividen Tahun 2026</span>
               <select
                 id="porto-div-recap-year-select"
-                onchange="this.dataset.userPicked='1'; renderAll()"
+                data-onchange="this.dataset.userPicked='1'; renderAll()"
                 title="Pilih tahun rekap dividen"
                 class="px-2 py-0.5 rounded-md text-xs font-sans tabular-nums font-semibold bg-slate-100 dark:bg-[#0C1117] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#10B981]"
               >
@@ -572,14 +587,14 @@
           <div class="flex flex-wrap items-center gap-2">
             <div class="flex items-center gap-2 bg-slate-100 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] px-3 py-1.5 rounded-lg">
               <label for="div-year-select" class="text-xs font-medium text-slate-600 dark:text-[#8E9BA8] whitespace-nowrap">Tahun Realisasi:</label>
-              <select id="div-year-select" onchange="this.dataset.userPicked='1'; renderDividendsTab()" class="bg-transparent text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm font-sans tabular-nums font-bold cursor-pointer focus:outline-none">
+              <select id="div-year-select" data-onchange="this.dataset.userPicked='1'; renderDividendsTab()" class="bg-transparent text-slate-900 dark:text-[#EEF2F6] text-xs sm:text-sm font-sans tabular-nums font-bold cursor-pointer focus:outline-none">
                 <option value="2026" class="bg-white dark:bg-[#141C24] text-slate-900 dark:text-[#EEF2F6]">2026</option>
               </select>
             </div>
 
             <button
               type="button"
-              onclick="openDividendModal()"
+              data-onclick="openDividendModal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors"
             >
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -730,16 +745,16 @@
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <label for="div-proj-growth" class="block font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Kenaikan DPS / Thn (%)</label>
-                <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="div-proj-growth" value="6" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="div-proj-growth" value="6" data-oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               </div>
               <div>
                 <label for="div-proj-topup" class="block font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Top Up / Bln</label>
-                <input type="text" inputmode="numeric" data-num-input="int" id="div-proj-topup" value="2.500.000" oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                <input type="text" inputmode="numeric" data-num-input="int" id="div-proj-topup" value="2.500.000" data-oninput="renderDividendProjectionSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               </div>
             </div>
 
             <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer">
-              <input type="checkbox" id="div-proj-drip" checked onchange="renderDividendProjectionSim()" class="w-4 h-4 rounded accent-[#10B981]" />
+              <input type="checkbox" id="div-proj-drip" checked data-onchange="renderDividendProjectionSim()" class="w-4 h-4 rounded accent-[#10B981]" />
               <span>Reinvestasi 100% Dividen Cair ke Saham (DRIP Compounding)</span>
             </label>
 
@@ -778,7 +793,7 @@
                 <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-[#EEF2F6]">Grafik Realisasi Dividen Tunai</h3>
                 <p id="div-actual-chart-sub" class="text-xs text-slate-500 dark:text-[#8E9BA8]">Dividen yang sudah masuk ke Kas RDN</p>
               </div>
-              <select id="div-actual-chart-mode" onchange="renderDividendsTab()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08]">
+              <select id="div-actual-chart-mode" data-onchange="renderDividendsTab()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#0C1117] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08]">
                 <option value="MONTHLY">Bulanan (Tahun Terpilih)</option>
                 <option value="ANNUAL">Rekap Tahunan (Multi-Tahun)</option>
               </select>
@@ -909,15 +924,15 @@
             Konversi otomatis setoran/penarikan ke Unit Penyertaan pada NAV eksekusi.
           </p>
 
-          <form onsubmit="handleAddMutation(event)" class="space-y-3.5">
+          <form data-onsubmit="handleAddMutation(event)" class="space-y-3.5">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Tanggal Mutasi</label>
-                <input type="date" id="mut-date" required onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-lg text-xs font-sans tabular-nums bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                <input type="date" id="mut-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-lg text-xs font-sans tabular-nums bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Jenis Mutasi</label>
-                <select id="mut-type" onchange="updateMutationPreview()" class="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]">
+                <select id="mut-type" data-onchange="updateMutationPreview()" class="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]">
                   <option value="TOPUP">Top Up (Dana Masuk)</option>
                   <option value="WITHDRAW">Withdraw (Dana Keluar)</option>
                 </select>
@@ -928,23 +943,23 @@
               <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
                 <label class="text-xs font-medium text-slate-700 dark:text-[#8E9BA8]">Nominal Rupiah (Rp)</label>
                 <div class="flex items-center gap-1">
-                  <button type="button" onclick="setMutationQuickAmount(1000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+1 Jt</button>
-                  <button type="button" onclick="setMutationQuickAmount(2500000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+2,5 Jt</button>
-                  <button type="button" onclick="setMutationQuickAmount(5000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+5 Jt</button>
-                  <button type="button" onclick="setMutationQuickAmount(10000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+10 Jt</button>
+                  <button type="button" data-onclick="setMutationQuickAmount(1000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+1 Jt</button>
+                  <button type="button" data-onclick="setMutationQuickAmount(2500000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+2,5 Jt</button>
+                  <button type="button" data-onclick="setMutationQuickAmount(5000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+5 Jt</button>
+                  <button type="button" data-onclick="setMutationQuickAmount(10000000)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#0C1117] hover:bg-[#10B981]/15 text-[11px] font-sans tabular-nums font-medium text-slate-600 dark:text-[#8E9BA8] hover:text-[#10B981] border border-slate-200/70 dark:border-white/[0.07]">+10 Jt</button>
                 </div>
               </div>
-              <input type="text" inputmode="numeric" data-num-input="int" id="mut-amount" required placeholder="Contoh: 5.000.000" oninput="updateMutationPreview()" class="w-full px-3 py-2.5 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+              <input type="text" inputmode="numeric" data-num-input="int" id="mut-amount" required placeholder="Contoh: 5.000.000" data-oninput="updateMutationPreview()" class="w-full px-3 py-2.5 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
             </div>
 
             <div>
               <div class="flex items-center justify-between gap-2 mb-1">
                 <label for="mut-nav-price" class="text-xs font-medium text-slate-700 dark:text-[#8E9BA8]">Harga Unit (NAV) Eksekusi</label>
-                <button type="button" onclick="resetMutationNavToCurrent()" class="px-2 py-0.5 rounded-md bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/25 text-[11px] font-medium transition-colors">
+                <button type="button" data-onclick="resetMutationNavToCurrent()" class="px-2 py-0.5 rounded-md bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/25 text-[11px] font-medium transition-colors">
                   Gunakan NAV Terkini
                 </button>
               </div>
-              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="mut-nav-price" required placeholder="1.130,9663" oninput="onMutationNavInput()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="mut-nav-price" required placeholder="1.130,9663" data-oninput="onMutationNavInput()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
               <p class="text-[11px] text-slate-500 dark:text-[#8E9BA8] mt-1">Default terisi NAV terkini. Ubah jika mencatat mutasi tanggal mundur (backdate).</p>
             </div>
 
@@ -1046,13 +1061,13 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
             <label for="analytics-year-select" class="text-xs font-medium text-slate-600 dark:text-[#8E9BA8]">Pilih Tahun:</label>
-            <select id="analytics-year-select" onchange="onAnalyticsYearChange()" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-sans tabular-nums font-bold bg-slate-100 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"></select>
+            <select id="analytics-year-select" data-onchange="onAnalyticsYearChange()" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-sans tabular-nums font-bold bg-slate-100 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"></select>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onclick="snapshotCurrentMonth()"
+              data-onclick="snapshotCurrentMonth()"
               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors"
             >
               <i data-lucide="camera" class="w-3.5 h-3.5"></i>
@@ -1061,7 +1076,7 @@
 
             <button
               type="button"
-              onclick="syncMarketData({ force: true })"
+              data-onclick="syncMarketData({ force: true })"
               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] transition-colors"
             >
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-sky-400"></i>
@@ -1070,7 +1085,7 @@
 
             <button
               type="button"
-              onclick="openYearRolloverModal()"
+              data-onclick="openYearRolloverModal()"
               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition-colors"
             >
               <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
@@ -1083,25 +1098,25 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3.5 border-t border-slate-200/70 dark:border-white/[0.07] text-xs">
           <div>
             <label class="block text-xs font-medium text-slate-500 dark:text-[#8E9BA8] mb-1">IHSG Awal Tahun</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-start" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-start" data-onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">IHSG Terkini</label>
               <span id="bench-ihsg-pct-badge" class="text-[11px] font-sans tabular-nums font-bold">0,00%</span>
             </div>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-end" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-ihsg-end" data-onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-500 dark:text-[#8E9BA8] mb-1">LQ45 Awal Tahun</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-start" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-start" data-onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-medium text-slate-500 dark:text-[#8E9BA8]">LQ45 Terkini</label>
               <span id="bench-lq45-pct-badge" class="text-[11px] font-sans tabular-nums font-bold">0,00%</span>
             </div>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-end" onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="bench-lq45-end" data-onchange="updateBenchmarkInputs()" class="no-spin w-full px-3 py-2 rounded-lg font-sans tabular-nums font-semibold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
           </div>
         </div>
       </div>
@@ -1335,7 +1350,7 @@
           </div>
           <button
             type="button"
-            onclick="openManualJournalModal()"
+            data-onclick="openManualJournalModal()"
             class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors"
           >
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -1382,7 +1397,7 @@
                   </div>
                   <p class="text-xs text-slate-500 dark:text-[#8E9BA8] mt-1">Hitung proyeksi harga rata-rata baru sebelum membeli saham</p>
                 </div>
-                <select id="calc-load-ticker" onchange="loadTickerIntoCalculator()" class="px-3 py-1.5 rounded-lg text-xs font-sans tabular-nums font-semibold bg-slate-100 dark:bg-[#0C1117] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#10B981]"></select>
+                <select id="calc-load-ticker" data-onchange="loadTickerIntoCalculator()" class="px-3 py-1.5 rounded-lg text-xs font-sans tabular-nums font-semibold bg-slate-100 dark:bg-[#0C1117] text-slate-800 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#10B981]"></select>
               </div>
 
               <!-- Posisi Saat Ini -->
@@ -1391,11 +1406,11 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-cur-shares" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Lembar Dimiliki</label>
-                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-cur-shares" value="14.600" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-cur-shares" value="14.600" data-oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-cur-avg" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Avg. Price Saat Ini (Rp)</label>
-                    <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="calc-cur-avg" value="3.961,36" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="calc-cur-avg" value="3.961,36" data-oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
               </div>
@@ -1406,22 +1421,22 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-new-price" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Harga Beli (Rp)</label>
-                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-price" value="2.880" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-price" value="2.880" data-oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-new-shares" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Rencana Beli (Lembar)</label>
-                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-shares" value="5.400" oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-shares" value="5.400" data-oninput="syncCalcFromShares()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="calc-new-budget" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Atau Budget Dana (Rp)</label>
-                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-budget" value="15.552.000" oninput="syncCalcFromBudget()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-new-budget" value="15.552.000" data-oninput="syncCalcFromBudget()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                   <div>
                     <label for="calc-target-price" class="block text-xs font-medium text-slate-700 dark:text-[#8E9BA8] mb-1">Simulasi Target Jual (Rp)</label>
-                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-target-price" value="4.000" oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
+                    <input type="text" inputmode="numeric" data-num-input="int" id="calc-target-price" value="4.000" data-oninput="recalculateAverageSim()" class="w-full px-3 py-2 rounded-lg text-sm font-sans tabular-nums font-bold bg-slate-50 dark:bg-[#0C1117] text-slate-900 dark:text-[#EEF2F6] border border-slate-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-[#10B981]" />
                   </div>
                 </div>
               </div>
@@ -1429,7 +1444,7 @@
 
             <div class="pt-3.5 border-t border-slate-200/70 dark:border-white/[0.07]">
               <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#EEF2F6] cursor-pointer select-none">
-                <input type="checkbox" id="calc-include-ipot-fee" checked onchange="recalculateAverageSim()" class="w-4 h-4 rounded accent-[#10B981]" />
+                <input type="checkbox" id="calc-include-ipot-fee" checked data-onchange="recalculateAverageSim()" class="w-4 h-4 rounded accent-[#10B981]" />
                 <span>Sertakan Fee Beli IPOT (0,19% All-In) ke dalam Avg. Price Baru</span>
               </label>
             </div>
@@ -1507,15 +1522,15 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white" id="modal-buy-title">Beli / Tambah Posisi Saham</h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Kalkulasi otomatis Trade Confirmation IPOT (PMK No. 131 Tahun 2024)</p>
         </div>
-        <button type="button" onclick="closeModal('modal-buy')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-buy')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleBuyStock(event)" class="p-5 space-y-3.5">
+      <form data-onsubmit="handleBuyStock(event)" class="p-5 space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: ADRO" oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="buy-ticker" required maxlength="6" placeholder="Contoh: ADRO" data-oninput="this.value = this.value.toUpperCase(); updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sektor / Nama</label>
@@ -1527,23 +1542,23 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah</label>
-              <select id="buy-unit-mode" onchange="updateBuyPreview()" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-transparent focus:outline-none">
+              <select id="buy-unit-mode" data-onchange="updateBuyPreview()" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-transparent focus:outline-none">
                 <option value="LOT">Lot (100 lbr)</option>
                 <option value="SHARES">Lembar</option>
               </select>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="buy-qty" required placeholder="25" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-qty" required placeholder="25" data-oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Beli / Lbr (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="buy-price" required placeholder="2.480" oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="buy-price" required placeholder="2.480" data-oninput="updateBuyPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <div class="grid grid-cols-12 gap-3 items-end">
           <div class="col-span-7">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Sekuritas</label>
-            <select id="buy-fee-preset" onchange="onBuyFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <select id="buy-fee-preset" data-onchange="onBuyFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
               <option value="IPOT">IPOT / Indo Premier (0,19% All-In)</option>
               <option value="CUSTOM">Custom % Fee Broker</option>
               <option value="ZERO">0% (Tanpa Fee)</option>
@@ -1551,12 +1566,12 @@
           </div>
           <div class="col-span-5">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee All-In</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="buy-fee" value="0,19" oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="buy-fee" value="0,19" data-oninput="onBuyFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <label class="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" id="buy-deduct-cash" checked onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-emerald-600" />
+          <input type="checkbox" id="buy-deduct-cash" checked data-onchange="updateBuyPreview()" class="w-4 h-4 rounded accent-emerald-600" />
           <span>Potong Saldo Kas RDN sesuai Net Amount</span>
         </label>
 
@@ -1615,7 +1630,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-buy')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-buy')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Konfirmasi Beli</button>
         </div>
       </form>
@@ -1630,11 +1645,11 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white">Jual / Withdraw Saham: <span id="sell-ticker-label" class="text-emerald-500 font-mono"></span></h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Perhitungan Fee Jual IPOT (termasuk Sales Tax PPh 0,10% & VAT 12%)</p>
         </div>
-        <button type="button" onclick="closeModal('modal-sell')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-sell')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleSellStock(event)" class="p-5 space-y-3.5">
+      <form data-onsubmit="handleSellStock(event)" class="p-5 space-y-3.5">
         <input type="hidden" id="sell-holding-id" />
         <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
           <div>
@@ -1652,23 +1667,23 @@
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lembar Dijual</label>
               <div class="flex gap-1">
-                <button type="button" onclick="setSellFraction(0.25)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">25%</button>
-                <button type="button" onclick="setSellFraction(0.5)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">50%</button>
-                <button type="button" onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
+                <button type="button" data-onclick="setSellFraction(0.25)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">25%</button>
+                <button type="button" data-onclick="setSellFraction(0.5)" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono">50%</button>
+                <button type="button" data-onclick="setSellFraction(1)" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">100%</button>
               </div>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="sell-shares" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-shares" required data-oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Jual / Lbr (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="sell-price" required oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="sell-price" required data-oninput="updateSellPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <div class="grid grid-cols-12 gap-3 items-end">
           <div class="col-span-7">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Preset Fee Jual Sekuritas</label>
-            <select id="sell-fee-preset" onchange="onSellFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <select id="sell-fee-preset" data-onchange="onSellFeePresetChange()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
               <option value="IPOT">IPOT / Indo Premier (0,29% All-In)</option>
               <option value="CUSTOM">Custom % Fee Jual</option>
               <option value="ZERO">0% (Tanpa Fee)</option>
@@ -1676,14 +1691,14 @@
           </div>
           <div class="col-span-5">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">% Fee Jual</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="sell-fee" value="0,29" oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" id="sell-fee" value="0,29" data-oninput="onSellFeeManualInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Transaksi</label>
-            <input type="date" id="sell-date" required onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="date" id="sell-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan TP/CL</label>
@@ -1737,7 +1752,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-sell')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-sell')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white">Eksekusi Jual</button>
         </div>
       </form>
@@ -1749,29 +1764,29 @@
     <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Catat Dividen Tunai</h3>
-        <button type="button" onclick="closeModal('modal-dividend')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-dividend')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleAddDividend(event)" class="p-5 space-y-4">
+      <form data-onsubmit="handleAddDividend(event)" class="p-5 space-y-4">
         <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-700 dark:text-indigo-300">
           Dividen menambah <strong>Saldo Kas</strong> & <strong>Valuasi Portofolio</strong> tanpa menambah Unit Penyertaan, sehingga <strong>Harga Unit (NAV/Unit)</strong> dan <strong>% Kinerja</strong> naik otomatis.
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="div-ticker" list="div-ticker-options" required placeholder="BBRI" oninput="this.value = this.value.toUpperCase(); onDivTickerInput()" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="div-ticker" list="div-ticker-options" required placeholder="BBRI" data-oninput="this.value = this.value.toUpperCase(); onDivTickerInput()" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
             <datalist id="div-ticker-options"></datalist>
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
               <label for="div-date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Tanggal Cair</label>
               <div class="flex items-center gap-1">
-                <button type="button" onclick="setDividendQuickDate('TODAY')" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500/20 text-[10px] font-semibold text-slate-600 dark:text-slate-300">Hari Ini</button>
-                <button type="button" onclick="setDividendQuickDate('NEXT_YEAR')" class="px-1.5 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-300">+1 Thn</button>
+                <button type="button" data-onclick="setDividendQuickDate('TODAY')" class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500/20 text-[10px] font-semibold text-slate-600 dark:text-slate-300">Hari Ini</button>
+                <button type="button" data-onclick="setDividendQuickDate('NEXT_YEAR')" class="px-1.5 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-300">+1 Thn</button>
               </div>
             </div>
-            <input type="date" id="div-date" required onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input type="date" id="div-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2.5 rounded-xl text-sm font-mono font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
         <div id="div-holding-hint" class="hidden px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between gap-2">
@@ -1789,7 +1804,7 @@
           <span>Otomatis hitung & simpan estimasi DPS + bulan cair ke grafik proyeksi jika emiten ini belum memiliki jadwal dividen</span>
         </label>
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-dividend')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-dividend')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white">Simpan Dividen</button>
         </div>
       </form>
@@ -1804,11 +1819,11 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white">Atur Proyeksi Dividen: <span id="sched-ticker-label" class="text-amber-500 font-mono"></span></h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Estimasi Dividen per Lembar (DPS) & Bulan Pembayaran</p>
         </div>
-        <button type="button" onclick="closeModal('modal-dividend-schedule')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-dividend-schedule')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleSaveDividendSchedule(event)" class="p-5 space-y-4">
+      <form data-onsubmit="handleSaveDividendSchedule(event)" class="p-5 space-y-4">
         <input type="hidden" id="sched-ticker-input" />
 
         <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between text-xs">
@@ -1827,7 +1842,7 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
-              <select id="sched-month-1" onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <select id="sched-month-1" data-onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 <option value="0">Januari</option>
                 <option value="1">Februari</option>
                 <option value="2">Maret</option>
@@ -1844,7 +1859,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS (Rp / Lembar)</label>
-              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-1" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-1" value="0" data-oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
             </div>
           </div>
         </div>
@@ -1854,7 +1869,7 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Bulan Cair</label>
-              <select id="sched-month-2" onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <select id="sched-month-2" data-onchange="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 <option value="0">Januari</option>
                 <option value="1">Februari</option>
                 <option value="2">Maret</option>
@@ -1871,7 +1886,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">DPS Interim (Rp / Lbr)</label>
-              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-2" value="0" oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+              <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" id="sched-dps-2" value="0" data-oninput="updateSchedulePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
             </div>
           </div>
         </div>
@@ -1892,7 +1907,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-dividend-schedule')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-dividend-schedule')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950">Simpan Proyeksi</button>
         </div>
       </form>
@@ -1904,14 +1919,14 @@
     <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Update Harga Pasar Sekaligus</h3>
-        <button type="button" onclick="closeModal('modal-bulk-price')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-bulk-price')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleBulkPriceSave(event)" class="p-5 space-y-4">
+      <form data-onsubmit="handleBulkPriceSave(event)" class="p-5 space-y-4">
         <div id="bulk-price-list" class="max-h-80 overflow-y-auto space-y-2.5 pr-1"></div>
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-          <button type="button" onclick="closeModal('modal-bulk-price')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-bulk-price')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan Semua Harga</button>
         </div>
       </form>
@@ -1923,11 +1938,11 @@
     <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Rekonsiliasi Saldo Kas (RDN)</h3>
-        <button type="button" onclick="closeModal('modal-cash')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-cash')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleSaveCash(event)" class="p-5 space-y-4">
+      <form data-onsubmit="handleSaveCash(event)" class="p-5 space-y-4">
         <p class="text-xs text-slate-500 dark:text-slate-400">
           Gunakan fitur ini untuk menyesuaikan saldo RDN (misalnya bunga RDN atau biaya administrasi). Untuk setoran/penarikan modal baru, gunakan tab <strong>Mutasi Dana</strong> agar unit penyertaan terhitung.
         </p>
@@ -1936,7 +1951,7 @@
           <input type="text" inputmode="numeric" data-num-input="int" id="edit-cash-amount" required class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
         <div class="flex justify-end gap-2">
-          <button type="button" onclick="closeModal('modal-cash')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-cash')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Update Kas</button>
         </div>
       </form>
@@ -1951,17 +1966,17 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white">Edit Data Emiten: <span id="edit-holding-title-ticker" class="text-sky-500 font-mono"></span></h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Koreksi kode emiten, nama, jumlah lembar/lot, average price, atau harga pasar</p>
         </div>
-        <button type="button" onclick="closeModal('modal-edit-holding')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-edit-holding')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleEditHolding(event)" class="p-5 space-y-3.5">
+      <form data-onsubmit="handleEditHolding(event)" class="p-5 space-y-3.5">
         <input type="hidden" id="edit-holding-id" />
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="edit-holding-ticker" required maxlength="6" oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="edit-holding-ticker" required maxlength="6" data-oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Perusahaan / Sektor</label>
@@ -1975,15 +1990,15 @@
               <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Lembar</label>
               <span id="edit-prev-lots" class="text-[10px] font-mono text-sky-500 font-semibold">0,00 lot</span>
             </div>
-            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-shares" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-shares" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Avg. Price (Rp)</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="edit-holding-avg" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="2" data-num-min-decimals="2" id="edit-holding-avg" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Price (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-current" required oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="edit-holding-current" required data-oninput="updateEditHoldingPreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -1993,7 +2008,7 @@
         </div>
 
         <label class="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-0.5">
-          <input type="checkbox" id="edit-holding-adjust-cash" onchange="updateEditHoldingPreview()" class="w-4 h-4 mt-0.5 rounded accent-sky-600" />
+          <input type="checkbox" id="edit-holding-adjust-cash" data-onchange="updateEditHoldingPreview()" class="w-4 h-4 mt-0.5 rounded accent-sky-600" />
           <span>Sesuaikan Saldo Kas RDN otomatis berdasarkan selisih perubahan Cost/Modal (centang jika koreksi ini memengaruhi kas RDN)</span>
         </label>
 
@@ -2022,7 +2037,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-edit-holding')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-edit-holding')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white">Simpan Perubahan</button>
         </div>
       </form>
@@ -2034,19 +2049,19 @@
     <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Catat Historis TP / CL Manual</h3>
-        <button type="button" onclick="closeModal('modal-manual-journal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-manual-journal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleAddManualJournal(event)" class="p-5 space-y-4">
+      <form data-onsubmit="handleAddManualJournal(event)" class="p-5 space-y-4">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal</label>
-            <input type="date" id="mj-date" required onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="date" id="mj-date" required data-onclick="try{this.showPicker()}catch(e){}" class="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Emiten</label>
-            <input type="text" id="mj-ticker" required placeholder="ANTM" oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" id="mj-ticker" required placeholder="ANTM" data-oninput="this.value = this.value.toUpperCase()" class="w-full px-3 py-2 rounded-xl text-sm font-mono font-bold uppercase bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-2.5">
@@ -2068,7 +2083,7 @@
           <input type="text" id="mj-note" placeholder="Take Profit / Cut Loss" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
         </div>
         <div class="flex justify-end gap-2">
-          <button type="button" onclick="closeModal('modal-manual-journal')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-manual-journal')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan ke Jurnal</button>
         </div>
       </form>
@@ -2080,7 +2095,7 @@
     <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Sinkronisasi & Penyimpanan Data</h3>
-        <button type="button" onclick="closeModal('modal-cloud')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-cloud')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -2099,7 +2114,7 @@
           Data portofolio tersimpan otomatis secara lokal di browser Anda (dan ke Cloud jika konfigurasi Firebase tersedia). Gunakan tombol <strong>Export JSON</strong> di header untuk mencadangkan atau memindahkan data antar perangkat.
         </p>
         <div class="flex justify-end">
-          <button type="button" onclick="closeModal('modal-cloud')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 text-white">Tutup</button>
+          <button type="button" data-onclick="closeModal('modal-cloud')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 text-white">Tutup</button>
         </div>
       </div>
     </div>
@@ -2118,7 +2133,7 @@
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modal-confirm')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+        <button type="button" data-onclick="closeModal('modal-confirm')" class="px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
         <button type="button" id="confirm-ok-btn" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white">Ya, Lanjutkan</button>
       </div>
     </div>
@@ -2132,11 +2147,11 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white">Tutup Buku & Mulai Tahun Baru</h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Kunci kinerja akhir tahun & reset benchmark YTD ke 0,00%</p>
         </div>
-        <button type="button" onclick="closeModal('modal-year-rollover')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-year-rollover')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleYearRollover(event)" class="p-5 space-y-4 text-xs">
+      <form data-onsubmit="handleYearRollover(event)" class="p-5 space-y-4 text-xs">
         <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 space-y-1">
           <p><strong>Cara Kerja Pergantian Tahun:</strong></p>
           <p>1. Kinerja YTD tahun lama dikunci ke grafik <strong>Performa Tahunan</strong>.</p>
@@ -2161,7 +2176,7 @@
         </div>
 
         <div class="flex justify-end gap-2">
-          <button type="button" onclick="closeModal('modal-year-rollover')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-year-rollover')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950">Eksekusi Tutup Buku</button>
         </div>
       </form>
@@ -2176,11 +2191,11 @@
           <h3 class="text-base font-bold text-slate-900 dark:text-white">Kalibrasi Parameter Awal Unit (NAV)</h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Sesuaikan patokan Modal Awal & Harga Unit Awal dengan portofolio pribadi Anda</p>
         </div>
-        <button type="button" onclick="closeModal('modal-baseline')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-baseline')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form onsubmit="handleSaveBaseline(event)" class="p-5 space-y-4 text-xs">
+      <form data-onsubmit="handleSaveBaseline(event)" class="p-5 space-y-4 text-xs">
         <div class="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/25 space-y-2.5">
           <div class="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
@@ -2195,7 +2210,7 @@
           </label>
           <button
             type="button"
-            onclick="applyCurrentPortfolioAsBaseline()"
+            data-onclick="applyCurrentPortfolioAsBaseline()"
             class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-colors"
           >
             Kalibrasi Sesuai Portofolio Saya Saat Ini
@@ -2205,15 +2220,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Modal Awal (Rp)</label>
-            <input type="text" inputmode="numeric" data-num-input="int" id="base-init-capital" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="numeric" data-num-input="int" id="base-init-capital" required data-oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Unit Awal</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-nav" required oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-nav" required data-oninput="onBaselineCapitalOrNavInput()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
           <div>
             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah Unit Awal</label>
-            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-units" required oninput="updateBaselinePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
+            <input type="text" inputmode="decimal" data-num-input="dec" data-num-decimals="4" data-num-min-decimals="4" id="base-init-units" required data-oninput="updateBaselinePreview()" class="w-full px-3 py-2 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" />
           </div>
         </div>
 
@@ -2237,33 +2252,61 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" onclick="closeModal('modal-baseline')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+          <button type="button" data-onclick="closeModal('modal-baseline')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Simpan Kalibrasi</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 12: Import & Pulihkan Data JSON (File Picker, Drag & Drop, & Paste JSON) -->
+  <!-- Modal 12: Backup Terenkripsi (AES-GCM) & Import / Pulihkan Data JSON -->
   <div id="modal-import" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto">
       <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Import / Pulihkan Data Portofolio</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Pilih file backup .json atau tempel (paste) teks JSON secara langsung</p>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">Backup Terenkripsi &amp; Pulihkan Data JSON</h3>
+          <p id="backup-status-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400">Export backup terenkripsi AES-256-GCM atau pulihkan dari file .json</p>
         </div>
-        <button type="button" onclick="closeModal('modal-import')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <button type="button" data-onclick="closeModal('modal-import')" aria-label="Tutup modal backup dan import" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="p-5 space-y-4 text-xs">
+        <!-- Password-Encrypted Export & Decryption Key Box (Web Crypto AES-256-GCM) -->
+        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0C1117] border border-slate-200/80 dark:border-white/[0.08] space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-slate-800 dark:text-[#EEF2F6] flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-[#10B981]"></i>
+              <span>Enkripsi / Dekripsi Backup (Web Crypto AES-256-GCM)</span>
+            </span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#10B981]/10 text-[#10B981]">PBKDF2 100k</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              type="password"
+              id="backup-crypto-password"
+              placeholder="Password enkripsi / dekripsi (min. 4 karakter)..."
+              autocomplete="off"
+              class="flex-1 px-3 py-2 rounded-lg text-xs bg-white dark:bg-[#141C24] border border-slate-200 dark:border-white/[0.1] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
+            />
+            <button
+              type="button"
+              data-onclick="exportEncryptedJSON()"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-[#10B981] hover:bg-emerald-500 text-slate-950 transition-colors shrink-0"
+            >
+              <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+              <span>Export Terenkripsi</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-[#8E9BA8]">
+            Jika memulihkan file <code class="font-mono">.enc.json</code>, isi password di atas terlebih dahulu sebelum memilih file atau klik Pulihkan.
+          </p>
+        </div>
+
         <!-- File Picker & Dropzone -->
         <div
           id="import-dropzone"
-          ondragover="event.preventDefault(); this.classList.add('border-sky-500', 'bg-sky-500/10')"
-          ondragleave="this.classList.remove('border-sky-500', 'bg-sky-500/10')"
-          ondrop="handleImportFileDrop(event)"
           class="rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950/60 p-5 text-center space-y-2.5 transition-colors"
         >
           <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center mx-auto">
@@ -2278,12 +2321,12 @@
               type="file"
               id="import-json-file-input"
               accept=".json,application/json,text/plain,*/*"
-              onchange="handleImportFileSelected(event)"
+              data-onchange="handleImportFileSelected(event)"
               class="sr-only"
             />
             <button
               type="button"
-              onclick="triggerImportFilePicker()"
+              data-onclick="triggerImportFilePicker()"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-colors"
             >
               <i data-lucide="folder-open" class="w-4 h-4"></i>
@@ -2296,14 +2339,14 @@
         <div id="import-feedback-box" class="hidden p-3 rounded-xl border text-xs leading-relaxed"></div>
 
         <!-- Direct Paste JSON Fallback -->
-        <form onsubmit="handleImportPasteSubmit(event)" class="space-y-2.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+        <form data-onsubmit="handleImportPasteSubmit(event)" class="space-y-2.5 pt-1 border-t border-slate-100 dark:border-slate-800">
           <div class="flex items-center justify-between">
             <label for="import-json-textarea" class="font-semibold text-slate-700 dark:text-slate-300">
               Atau Tempel (Paste) Isi JSON di Sini:
             </label>
             <button
               type="button"
-              onclick="copyCurrentJSONToClipboard()"
+              data-onclick="copyCurrentJSONToClipboard()"
               class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
             >
               Salin JSON Saat Ini
@@ -2316,7 +2359,7 @@
             class="w-full p-3 rounded-xl font-mono text-[11px] bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
           ></textarea>
           <div class="flex justify-end gap-2 pt-1">
-            <button type="button" onclick="closeModal('modal-import')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
+            <button type="button" data-onclick="closeModal('modal-import')" class="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700">Batal</button>
             <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">Pulihkan dari Teks JSON</button>
           </div>
         </form>

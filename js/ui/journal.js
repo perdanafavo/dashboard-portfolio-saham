@@ -114,7 +114,7 @@ export function createJournalUI(ctx) {
             </td>
             <td class="py-3 px-3 text-slate-600 dark:text-[#8E9BA8]">${escapeHTML(j.note || "")}</td>
             <td class="py-3 px-4 text-center">
-              <button type="button" onclick="deleteJournalEntry('${escapeHTML(j.id)}')" aria-label="Hapus jurnal ${escapeHTML(j.ticker)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400 transition-colors" title="Hapus">
+              <button type="button" data-onclick="deleteJournalEntry('${escapeHTML(j.id)}')" aria-label="Hapus jurnal ${escapeHTML(j.ticker)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400 transition-colors" title="Hapus">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </td>

@@ -127,6 +127,7 @@ img,video{max-width:100%;height:auto}
 .duration-500{transition-duration:500ms}
 .fixed{position:fixed}
 .flex{display:flex}
+.flex-1{flex:1 1 0%}
 .flex-col{flex-direction:column}
 .flex-wrap{flex-wrap:wrap}
 .focus\:border-\[\#10B981\]:focus{border-color:rgb(16 185 129)}

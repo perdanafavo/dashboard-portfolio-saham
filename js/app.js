@@ -13,7 +13,11 @@ import {
   saveStateToLocalStorage,
   createCloudSyncController,
   initLiveNumberInputs,
-  syncNumInputs
+  syncNumInputs,
+  recordBackupTimestamp,
+  getBackupReminderStatus,
+  encryptBackupPayload,
+  decryptBackupPayload
 } from "./storage.js";
 import {
   formatUnixMarketDateWIB,
@@ -375,23 +379,70 @@ function askConfirm(title, message, onConfirm) {
 }
 
 // =========================================================================
-// 5. JSON EXPORT / IMPORT / RESET / CLOUD MODAL
+// 5. JSON EXPORT / IMPORT (PLAIN & AES-GCM ENCRYPTED) / BACKUP REMINDER
 // =========================================================================
+function updateBackupReminderUI() {
+  const status = getBackupReminderStatus();
+  const dotEl = document.getElementById("backup-reminder-dot");
+  const btnEl = document.getElementById("btn-export-json");
+  const subEl = document.getElementById("backup-status-subtitle");
+  if (dotEl) {
+    if (status.isDue) {
+      dotEl.classList.remove("hidden");
+    } else {
+      dotEl.classList.add("hidden");
+    }
+  }
+  if (btnEl && status.label) {
+    btnEl.title = `Unduh backup data JSON (${status.label})`;
+  }
+  if (subEl && status.label) {
+    subEl.textContent = `${status.label} • Mendukung AES-256-GCM`;
+  }
+}
+
+function triggerDownloadBlob(contentStr, filename) {
+  const blob = new Blob([contentStr], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 window.exportJSON = function () {
   try {
     const jsonStr = JSON.stringify(state, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `portfolio-nav-backup-${getTodayISO()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    triggerDownloadBlob(jsonStr, `portfolio-nav-backup-${getTodayISO()}.json`);
+    recordBackupTimestamp();
+    updateBackupReminderUI();
     showToast("File backup JSON berhasil diunduh");
   } catch (e) {
     showToast("Gagal mengekspor JSON", "error");
+  }
+};
+
+window.exportEncryptedJSON = async function () {
+  const pwdEl = document.getElementById("backup-crypto-password");
+  const password = pwdEl ? pwdEl.value : "";
+  if (!password || password.length < 4) {
+    showImportFeedback("Masukkan password minimal 4 karakter untuk mengenkripsi backup AES-256-GCM.");
+    if (pwdEl) pwdEl.focus();
+    return;
+  }
+  try {
+    const encryptedEnvelope = await encryptBackupPayload(state, password);
+    const jsonStr = JSON.stringify(encryptedEnvelope, null, 2);
+    triggerDownloadBlob(jsonStr, `portfolio-nav-backup-${getTodayISO()}.enc.json`);
+    recordBackupTimestamp();
+    updateBackupReminderUI();
+    showImportFeedback("Backup terenkripsi (AES-256-GCM) berhasil diunduh.", false);
+    showToast("Backup terenkripsi AES-256-GCM berhasil diunduh");
+  } catch (err) {
+    showImportFeedback(err.message || "Gagal mengenkripsi backup.");
   }
 };
 
@@ -402,6 +453,7 @@ window.openImportModal = function () {
   if (ta) ta.value = "";
   const fileInp = document.getElementById("import-json-file-input");
   if (fileInp) fileInp.value = "";
+  updateBackupReminderUI();
   openModal("modal-import");
 };
 
@@ -420,10 +472,14 @@ function showImportFeedback(msg, isError = true) {
   fb.textContent = msg;
 }
 
-function applyImportedJSONText(rawText) {
+async function applyImportedJSONText(rawText) {
   const cleaned = String(rawText || "").replace(/^\uFEFF/, "").trim();
   if (!cleaned) {
     showImportFeedback("Isi file atau teks JSON masih kosong.");
+    return;
+  }
+  if (cleaned.length > 2 * 1024 * 1024) {
+    showImportFeedback("Ukuran file JSON melebihi batas keamanan (maksimal 2 MB).");
     return;
   }
 
@@ -440,8 +496,22 @@ function applyImportedJSONText(rawText) {
     return;
   }
 
+  if (parsed.encrypted === true) {
+    const pwdEl = document.getElementById("backup-crypto-password");
+    const password = pwdEl ? pwdEl.value : "";
+    try {
+      parsed = await decryptBackupPayload(parsed, password);
+    } catch (decErr) {
+      showImportFeedback(decErr.message || "Gagal mendekripsi file backup.");
+      if (pwdEl) pwdEl.focus();
+      return;
+    }
+  }
+
   const normalized = mergeWithDefaults(parsed);
   state = normalized;
+  recordBackupTimestamp();
+  updateBackupReminderUI();
   window.closeModal("modal-import");
   commitStateChange(`Data berhasil dipulihkan (${state.holdings.length} emiten)`);
 }
@@ -630,6 +700,144 @@ function setupModalAccessibility() {
   });
 }
 
+// =========================================================================
+// 7. CSP-SAFE GLOBAL EVENT DELEGATION (Replaces Inline onclick/onchange/etc.)
+// =========================================================================
+function parseDelegatedArgs(rawArgsStr, targetEl, eventObj) {
+  const s = String(rawArgsStr || "").trim();
+  if (!s) return [];
+  if (s === "event") return [eventObj];
+  if (s === "this.value") return [targetEl.value];
+  if (s === "this.checked") return [Boolean(targetEl.checked)];
+  if (s === "{ force: true }") return [{ force: true }];
+
+  // Comma-separated arguments outside quotes
+  const parts = [];
+  let cur = "";
+  let inQuote = null;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if ((ch === "'" || ch === '"') && (i === 0 || s[i - 1] !== "\\")) {
+      if (inQuote === ch) inQuote = null;
+      else if (!inQuote) inQuote = ch;
+      cur += ch;
+    } else if (ch === "," && !inQuote) {
+      parts.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) parts.push(cur.trim());
+
+  return parts.map((tok) => {
+    if (tok === "this.value") return targetEl.value;
+    if (tok === "this.checked") return Boolean(targetEl.checked);
+    if (tok === "event") return eventObj;
+    if (tok === "true") return true;
+    if (tok === "false") return false;
+    if ((tok.startsWith("'") && tok.endsWith("'")) || (tok.startsWith('"') && tok.endsWith('"'))) {
+      return tok.slice(1, -1);
+    }
+    const num = Number(tok);
+    return Number.isFinite(num) ? num : tok;
+  });
+}
+
+function executeDelegatedExpression(expr, targetEl, eventObj) {
+  if (!expr) return;
+  const statements = String(expr)
+    .split(";")
+    .map((st) => st.trim())
+    .filter(Boolean);
+
+  for (const stmt of statements) {
+    if (stmt === "try{this.showPicker()}catch(e){}") {
+      try {
+        if (typeof targetEl.showPicker === "function") targetEl.showPicker();
+      } catch {
+        // Ignore if showPicker is restricted
+      }
+      continue;
+    }
+    if (stmt === "this.value = this.value.toUpperCase()") {
+      if (typeof targetEl.value === "string") {
+        targetEl.value = targetEl.value.toUpperCase();
+      }
+      continue;
+    }
+    if (stmt === "this.dataset.userPicked='1'" || stmt === 'this.dataset.userPicked="1"') {
+      if (targetEl?.dataset) targetEl.dataset.userPicked = "1";
+      continue;
+    }
+
+    const callMatch = stmt.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
+    if (callMatch) {
+      const fnName = callMatch[1];
+      const argsStr = callMatch[2];
+      const fn = window[fnName];
+      if (typeof fn === "function") {
+        const args = parseDelegatedArgs(argsStr, targetEl, eventObj);
+        fn.apply(window, args);
+      }
+    }
+  }
+}
+
+let delegatedEventsInitialized = false;
+function setupDelegatedEvents() {
+  if (delegatedEventsInitialized) return;
+  delegatedEventsInitialized = true;
+
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const el = t.closest("[data-onclick]");
+    if (!el) return;
+    executeDelegatedExpression(el.getAttribute("data-onclick"), el, e);
+  });
+
+  document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const el = t.closest("[data-onchange]");
+    if (!el) return;
+    executeDelegatedExpression(el.getAttribute("data-onchange"), el, e);
+  });
+
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const el = t.closest("[data-oninput]");
+    if (!el) return;
+    executeDelegatedExpression(el.getAttribute("data-oninput"), el, e);
+  });
+
+  document.addEventListener("submit", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const el = t.closest("form[data-onsubmit]");
+    if (!el) return;
+    executeDelegatedExpression(el.getAttribute("data-onsubmit"), el, e);
+  });
+
+  const dz = document.getElementById("import-dropzone");
+  if (dz) {
+    dz.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dz.classList.add("border-sky-500", "bg-sky-500/10");
+    });
+    dz.addEventListener("dragleave", () => {
+      dz.classList.remove("border-sky-500", "bg-sky-500/10");
+    });
+    dz.addEventListener("drop", (e) => {
+      if (typeof window.handleImportFileDrop === "function") {
+        window.handleImportFileDrop(e);
+      }
+    });
+  }
+}
+
 function initApp() {
   const today = getTodayISO();
   ["mut-date", "sell-date", "div-date", "mj-date"].forEach((id) => {
@@ -637,8 +845,10 @@ function initApp() {
     if (el && !el.value) el.value = today;
   });
 
+  setupDelegatedEvents();
   setupModalAccessibility();
   initLiveNumberInputs();
+  updateBackupReminderUI();
   renderIconsIn(document.body);
   window.renderAll({ force: false });
   scheduleDailyMarketCloseSync();

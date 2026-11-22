@@ -269,7 +269,7 @@ export function createMutationsUI(ctx) {
               data-num-decimals="4"
               data-num-min-decimals="4"
               value="${formatNum(mut.navAtTime, 4)}"
-              onchange="updateMutationNavInline('${escapeHTML(mut.id)}', this.value)"
+              data-onchange="updateMutationNavInline('${escapeHTML(mut.id)}', this.value)"
               title="Klik untuk koreksi Harga Unit (NAV) eksekusi"
               class="w-24 px-2 py-1 rounded-md text-right font-sans tabular-nums bg-transparent hover:bg-slate-100 dark:hover:bg-[#0C1117] border border-transparent focus:border-[#10B981] focus:outline-none text-slate-700 dark:text-[#EEF2F6]"
             />
@@ -280,7 +280,7 @@ export function createMutationsUI(ctx) {
           <td class="py-3 px-3 text-right font-sans tabular-nums font-semibold text-slate-900 dark:text-[#EEF2F6] whitespace-nowrap">${formatIDR(runningPaidIn)}</td>
           <td class="py-3 px-3 text-right font-sans tabular-nums font-semibold text-sky-600 dark:text-sky-400 whitespace-nowrap">${formatNum(runningUnits, 4)}</td>
           <td class="py-3 px-4 text-center">
-            <button type="button" onclick="deleteMutation('${escapeHTML(mut.id)}')" aria-label="Hapus mutasi ${escapeHTML(mut.date)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus mutasi">
+            <button type="button" data-onclick="deleteMutation('${escapeHTML(mut.id)}')" aria-label="Hapus mutasi ${escapeHTML(mut.date)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus mutasi">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </td>

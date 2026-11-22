@@ -188,7 +188,7 @@ export function initLiveNumberInputs() {
     true
   );
 
-  // Capture-phase live formatting so el.value is formatted before inline oninput="..." runs
+  // Capture-phase live formatting so el.value is formatted before inline data-oninput="..." runs
   document.addEventListener(
     "input",
     (e) => {
@@ -447,4 +447,138 @@ export function createCloudSyncController({ getState, setState, onRemoteUpdate, 
     isConnected: () => isCloudConnected,
     getUserId: () => cloudUserId
   };
+}
+
+// =========================================================================
+// BACKUP REMINDER (>30 HARI) & WEB CRYPTO API (PBKDF2 + AES-256-GCM)
+// =========================================================================
+
+const LAST_BACKUP_KEY = "portfolio_nav_last_backup_at";
+const BACKUP_REMINDER_DAYS = 30;
+
+export function recordBackupTimestamp() {
+  try {
+    const nowIso = new Date().toISOString();
+    localStorage.setItem(LAST_BACKUP_KEY, nowIso);
+    return nowIso;
+  } catch {
+    return null;
+  }
+}
+
+export function getBackupReminderStatus() {
+  try {
+    const raw = localStorage.getItem(LAST_BACKUP_KEY);
+    if (!raw) {
+      return {
+        isDue: true,
+        daysSince: null,
+        lastBackupAt: null,
+        label: "Belum pernah backup JSON (>30 hari)"
+      };
+    }
+    const ts = new Date(raw).getTime();
+    if (!Number.isFinite(ts)) {
+      return { isDue: true, daysSince: null, lastBackupAt: null, label: "Belum pernah backup JSON" };
+    }
+    const daysSince = Math.floor((Date.now() - ts) / 86400000);
+    return {
+      isDue: daysSince >= BACKUP_REMINDER_DAYS,
+      daysSince,
+      lastBackupAt: raw,
+      label:
+        daysSince >= BACKUP_REMINDER_DAYS
+          ? `Backup terakhir ${daysSince} hari lalu — disarankan Export JSON`
+          : `Backup terakhir ${daysSince === 0 ? "hari ini" : `${daysSince} hari lalu`}`
+    };
+  } catch {
+    return { isDue: false, daysSince: 0, lastBackupAt: null, label: "" };
+  }
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  for (let i = 0; i < arr.byteLength; i++) {
+    binary += String.fromCharCode(arr[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToBytes(b64) {
+  const binary = atob(String(b64 || "").trim());
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    out[i] = binary.charCodeAt(i);
+  }
+  return out;
+}
+
+async function deriveAesGcmKey(password, saltBytes, iterations = 100000) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(String(password)),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: saltBytes,
+      iterations,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+export async function encryptBackupPayload(stateObj, password) {
+  if (!password || String(password).length < 4) {
+    throw new Error("Password enkripsi minimal 4 karakter.");
+  }
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const iterations = 100000;
+  const key = await deriveAesGcmKey(password, salt, iterations);
+  const encodedPlain = new TextEncoder().encode(JSON.stringify(stateObj));
+  const cipherBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedPlain);
+
+  return {
+    app: "portfolio-nav-tracker",
+    encrypted: true,
+    kdf: "PBKDF2-SHA256",
+    cipher: "AES-256-GCM",
+    iterations,
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(cipherBuf),
+    exportedAt: new Date().toISOString()
+  };
+}
+
+export async function decryptBackupPayload(envelope, password) {
+  if (!envelope || envelope.encrypted !== true || !envelope.ciphertext || !envelope.salt || !envelope.iv) {
+    throw new Error("Format file enkripsi tidak valid.");
+  }
+  if (!password) {
+    throw new Error("File backup ini terenkripsi. Masukkan password dekripsi terlebih dahulu.");
+  }
+  const salt = base64ToBytes(envelope.salt);
+  const iv = base64ToBytes(envelope.iv);
+  const cipherBytes = base64ToBytes(envelope.ciphertext);
+  const iterations = Math.min(500000, Math.max(10000, Number(envelope.iterations) || 100000));
+  const key = await deriveAesGcmKey(password, salt, iterations);
+
+  try {
+    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipherBytes);
+    const plainText = new TextDecoder().decode(plainBuf);
+    return JSON.parse(plainText);
+  } catch {
+    throw new Error("Password salah atau data terenkripsi rusak.");
+  }
 }

@@ -795,7 +795,7 @@ export function createPortfolioUI(ctx) {
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">${m.totalCost > 0 ? formatNum((m.cashBalance / m.totalCost) * 100, 2) : "0,00"}%</td>
         <td class="py-3.5 px-3 text-right font-sans tabular-nums text-slate-700 dark:text-[#8E9BA8]">${formatNum(cashPct, 2)}%</td>
         <td class="py-3.5 px-4 text-center">
-          <button type="button" onclick="openCashModal()" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/70 dark:border-white/[0.08] transition-colors">Edit Kas</button>
+          <button type="button" data-onclick="openCashModal()" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-700 dark:text-[#EEF2F6] border border-slate-200/70 dark:border-white/[0.08] transition-colors">Edit Kas</button>
         </td>
       </tr>
     `;
@@ -937,7 +937,7 @@ export function createPortfolioUI(ctx) {
                 inputmode="numeric"
                 data-num-input="int"
                 value="${Math.round(cur).toLocaleString("id-ID")}"
-                onchange="updateSinglePrice('${safeId}', this.value)"
+                data-onchange="updateSinglePrice('${safeId}', this.value)"
                 class="w-24 px-2.5 py-1.5 rounded-lg text-right font-sans tabular-nums font-bold text-xs sm:text-sm border ${priceInputStyle} focus:outline-none focus:ring-1 focus:ring-[#10B981]"
                 title="Klik untuk edit harga manual"
               />
@@ -970,12 +970,12 @@ export function createPortfolioUI(ctx) {
           </td>
           <td class="py-3.5 px-4 text-center">
             <div class="inline-flex items-center gap-1">
-              <button type="button" onclick="openBuyModal('${safeId}')" aria-label="Beli atau tambah ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981]" title="Tambah / Average">Beli</button>
-              <button type="button" onclick="openSellModal('${safeId}')" aria-label="Jual ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400" title="Jual / TP / CL">Jual</button>
-              <button type="button" onclick="openEditHoldingModal('${safeId}')" aria-label="Edit data emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-600 dark:text-[#8E9BA8] hover:text-[#EEF2F6]" title="Edit Data Emiten">
+              <button type="button" data-onclick="openBuyModal('${safeId}')" aria-label="Beli atau tambah ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-[#10B981]/15 hover:bg-[#10B981]/25 text-emerald-600 dark:text-[#10B981]" title="Tambah / Average">Beli</button>
+              <button type="button" data-onclick="openSellModal('${safeId}')" aria-label="Jual ${escapeHTML(h.ticker)}" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400" title="Jual / TP / CL">Jual</button>
+              <button type="button" data-onclick="openEditHoldingModal('${safeId}')" aria-label="Edit data emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md bg-slate-100 dark:bg-[#0C1117] hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-600 dark:text-[#8E9BA8] hover:text-[#EEF2F6]" title="Edit Data Emiten">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
               </button>
-              <button type="button" onclick="deleteHolding('${safeId}')" aria-label="Hapus emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus Emiten">
+              <button type="button" data-onclick="deleteHolding('${safeId}')" aria-label="Hapus emiten ${escapeHTML(h.ticker)}" class="p-1.5 rounded-md hover:bg-rose-500/15 text-slate-400 dark:text-[#8E9BA8] hover:text-rose-400" title="Hapus Emiten">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
@@ -1097,7 +1097,7 @@ export function createPortfolioUI(ctx) {
                   data-num-decimals="2"
                   value="${formatIDInputValue(item.targetWeight, "dec", 2)}"
                   aria-label="Target bobot ${escapeHTML(item.ticker)}"
-                  onchange="updateHoldingTargetWeight('${safeId}', this.value)"
+                  data-onchange="updateHoldingTargetWeight('${safeId}', this.value)"
                   class="w-20 px-2 py-1 rounded-lg text-right font-sans tabular-nums font-bold text-xs bg-slate-50 dark:bg-[#0C1117] border border-slate-200 dark:border-white/[0.1] text-slate-900 dark:text-[#EEF2F6] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
                 />
                 <span class="text-xs text-slate-400">%</span>

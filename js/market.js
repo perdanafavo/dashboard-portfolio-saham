@@ -33,8 +33,14 @@ export function formatIsoDateLabelWIB(dateStr) {
   }).format(d);
 }
 
+function sanitizeIdxSymbol(raw) {
+  const sym = String(raw || "").toUpperCase().trim().replace(/[^A-Z0-9]/g, "");
+  return /^[A-Z0-9]{2,12}$/.test(sym) ? sym : "";
+}
+
 export async function fetchTradingViewIDX(tickers) {
-  const uniqueSymbols = Array.from(new Set(tickers.map((t) => `IDX:${String(t).toUpperCase().trim()}`)));
+  const validTickers = tickers.map(sanitizeIdxSymbol).filter(Boolean);
+  const uniqueSymbols = Array.from(new Set(validTickers.map((t) => `IDX:${t}`)));
   if (uniqueSymbols.length === 0) return {};
 
   const payload = {
@@ -42,11 +48,19 @@ export async function fetchTradingViewIDX(tickers) {
     columns: ["name", "close", "change", "change_abs", "open", "high", "low", "volume"]
   };
 
-  const res = await fetch("https://scanner.tradingview.com/indonesia/scan", {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=UTF-8" },
-    body: JSON.stringify(payload)
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  let res;
+  try {
+    res = await fetch("https://scanner.tradingview.com/indonesia/scan", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) throw new Error(`TradingView HTTP ${res.status}`);
 
   const json = await res.json();
@@ -151,7 +165,7 @@ export async function fetchStooqQuote(stooqSymbol) {
  */
 export async function fetchMarketQuotes(tickers = []) {
   const normalizedTickers = Array.from(
-    new Set(tickers.map((t) => String(t || "").toUpperCase().trim()).filter(Boolean))
+    new Set(tickers.map(sanitizeIdxSymbol).filter(Boolean))
   );
 
   let sourceProviderLabel = "IDX Real";
