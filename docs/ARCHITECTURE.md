@@ -9,7 +9,7 @@ Dokumen referensi *on-demand* untuk Developer, UI/UX Designer, dan QA sebelum me
 ### A. Head, Styling & Navigasi
 | Bagian | Rentang Baris | Isi Utama |
 | :--- | :---: | :--- |
-| Head & CDN Libraries | `1–50` | Tailwind CSS CDN + config, Chart.js v4.4.4, Lucide Icons |
+| Head & CDN Libraries | `1–50` | Strict CSP `<meta>`, PWA `manifest.json`, Pre-compiled `./css/tailwind.min.css`, Chart.js v4.4.4 (SRI), Lucide Icons v0.460.0 (SRI) |
 | External Stylesheet | `51–52` | `<link rel="stylesheet" href="./css/styles.css" />` *(Tahap 1)* |
 | Header & Tab Navigation | `53–200` | Navbar, tombol tema Dark/Light, tombol 6 tab (`#tab-btn-*`) |
 
@@ -49,28 +49,37 @@ Saat memecah `index.html`, gunakan **native ES Modules** tanpa bundler agar teta
 
 ```text
 dashboard-portfolio-saham/
-├── index.html               # Shell HTML + <script type="module" src="./js/app.js">
+├── index.html               # Shell HTML + Strict CSP + <script type="module" src="./js/app.js">
+├── manifest.json            # PWA Web App Manifest (relative paths)
+├── sw.js                    # PWA Service Worker (Network-First + offline cache fallback)
 ├── AGENTS.md                # Aturan operasional multi-agent
+├── assets/
+│   └── icon.svg             # Ikon aplikasi PWA
 ├── css/
-│   └── styles.css           # Ekstraksi dari <style> (baris 51–111)
+│   ├── tailwind.min.css     # Pre-compiled static Tailwind CSS (tanpa runtime CDN)
+│   └── styles.css           # Custom styling & utility tambahan
 ├── js/
-│   ├── state.js             # Constants, STORAGE_KEY, state & presets (bagian 1)
-│   ├── nav-engine.js        # Pure functions: computeMetrics, NAV, IPOT fees (bagian 2)
-│   ├── storage.js           # localStorage, Firebase sync, JSON Export/Import (bagian 3 & 9)
-│   ├── market.js            # TradingView/Yahoo/Google/Stooq sync + optional /api fallback (bagian 5)
-│   ├── charts.js            # Chart.js helpers & chart renderers (bagian 10 & 14)
+│   ├── state.js             # Constants, STORAGE_KEY, state, presets & allowlisted normalizer
+│   ├── nav-engine.js        # Pure functions: computeMetrics, NAV, IPOT fees
+│   ├── storage.js           # localStorage, Firebase sync, Backup Reminder, AES-GCM Crypto
+│   ├── market.js            # TradingView/Yahoo/Google/Stooq sync + timeout & ticker sanitizer
+│   ├── charts.js            # Chart.js helpers, upsertChart() reuse & chart renderers
 │   ├── ui/
-│   │   ├── portfolio.js     # Tab 1 actions & renderer
+│   │   ├── portfolio.js     # Tab 1 actions, Buying Power separation & lazy table row renderer
 │   │   ├── dividends.js     # Tab 2 actions & renderer
 │   │   ├── mutations.js     # Tab 3 actions & renderer
 │   │   ├── analytics.js     # Tab 4 actions & renderer
 │   │   ├── journal.js       # Tab 5 actions & renderer
 │   │   └── calculator.js    # Tab 6 actions & renderer
-│   └── app.js               # Master renderAll, switchTab, initApp (bagian 6 & 15)
+│   └── app.js               # Master orchestrator, Event Delegation (CSP-safe), Keyboard Shortcuts, initApp
+├── tests/
+│   ├── test-runner.html     # Browser unit test runner
+│   └── core.test.js         # 14 unit tests (NAV, fees, id-ID format, XSS, backup, AES-GCM)
 ├── api/                     # (Opsional — khusus Vercel Serverless Functions)
 │   └── market.js            # Proxy harga saham IDX/IHSG dengan env vars aman
 └── docs/
-    ├── ARCHITECTURE.md      # Dokumen ini
+    ├── ARCHITECTURE.md      # Dokumen peta arsitektur ini
+    ├── HANDOFF.md           # Living Handoff Document untuk transfer sesi/akun/AI
     └── specs/               # Design doc, spec & tiket dari fase PM
 ```
 

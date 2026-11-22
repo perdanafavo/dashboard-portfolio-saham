@@ -2,7 +2,9 @@
 
 Panduan operasional, invarian, alur PM → UI/UX → Developer → QA, routing skill, dan pemilihan model untuk workspace `dashboard-portfolio-saham`.
 
-> **Referensi Arsitektur (Baca *On-Demand*):** Sebelum mengedit `index.html` atau memecah modul, baca `docs/ARCHITECTURE.md` untuk peta rentang baris & blueprint modularisasi.
+> **Referensi Arsitektur & Status Proyek (Baca *On-Demand*):**
+> - Baca `docs/HANDOFF.md` di awal sesi baru untuk langsung mengetahui status commit terakhir, *gotchas* teknis (Strict CSP, Tailwind statis), dan backlog berikutnya.
+> - Baca `docs/ARCHITECTURE.md` sebelum mengedit `index.html` atau modul `./js/*`.
 
 ---
 
@@ -85,6 +87,7 @@ Setiap peran hanya memuat skill yang relevan agar konteks tetap bersih.
      - *Mode & Model:* Rekomendasikan apakah cukup **Single Agent (Argon Medium / Hydrogen)**, perlu **`/teamwork`** (jika ≥ 2–3 file paralel), atau perlu **`/boost` / Neon** (jika menyentuh logika NAV kritis).
      - *Efisiensi Kode, Bahasa & Compact:* Ingatkan aktifnya **`ponytail` (diff minimal/YAGNI)** + **`caveman`** (`caveman ultra` jika batch panjang), serta ketik **`/compact`** jika diskusi perencanaan sudah >10 pesan.
   2. **Saat Transisi Dev/QA → Selesai (Semua Tiket Beres):** Tampilkan kotak pengingat singkat:
+     - *Update Living Handoff:* Pastikan `docs/HANDOFF.md` sudah diperbarui (status commit terakhir, *gotchas* baru, dan sisa backlog) sebelum commit agar sesi/akun/AI berikutnya dapat langsung lanjut tanpa kehilangan konteks. (Untuk pindah akun di tengah sesi, gunakan skill `/handoff`.)
      - *Turunkan Model:* Ingatkan user untuk segera **menurunkan model dari Neon kembali ke Argon (Medium) / Hydrogen** agar kuota mingguan Neon tidak terbuang untuk obrolan ringan.
      - *Compact / Commit:* Ingatkan `/compact` sebelum mulai topik berikutnya.
 - **Format Handoff Ringkas** (jangan teruskan seluruh riwayat chat):
